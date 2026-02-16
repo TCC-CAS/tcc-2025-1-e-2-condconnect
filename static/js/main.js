@@ -209,4 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('new_message', updateNotificationBadges);
     updateNotificationBadges();
+
+    // GLOBAL PAGE RELOAD FUNCTIONALITY
+    // Adiciona funcionalidade para botões recarregarem a página atual
+    document.addEventListener('click', function (e) {
+        const reloadBtn = e.target.closest('[data-reload="true"], .reload-page');
+        if (reloadBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Recarrega a página atual
+            window.location.reload();
+        }
+    });
 });
