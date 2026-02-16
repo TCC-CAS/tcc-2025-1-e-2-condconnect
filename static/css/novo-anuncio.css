@@ -1,0 +1,144 @@
+/* Novo Anúncio Page Styles */
+
+.new-ad-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #2563eb;
+}
+
+.page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.page-title p {
+    color: #6b7280;
+    margin-bottom: 32px;
+}
+
+.ad-form {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    border: 1px solid #e5e7eb;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.form-sublabel {
+    display: block;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.upload-area {
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #6b7280;
+    width: 150px;
+    /* Fixed width for the upload box as per design */
+    height: 150px;
+}
+
+.upload-area:hover {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.upload-icon {
+    width: 24px;
+    height: 24px;
+    color: #9ca3af;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 16px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.submit-btn:hover {
+    background-color: #60a5fa;
+}
+
+/* Specific adjustment for "Publicar Anúncio" button to match image color (looks like a disabled or light blue state) */
+.submit-btn-primary {
+    background-color: #81adfb;
+    color: white;
+}
+
+.submit-btn-primary:hover {
+    background-color: #3b82f6;
+}

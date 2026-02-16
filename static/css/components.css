@@ -1,0 +1,51 @@
+/* Botões */
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    padding: 12px 28px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition-normal);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background-color: var(--card);
+    color: var(--text-main);
+    padding: 12px 28px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition-normal);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--background);
+    border-color: var(--text-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}

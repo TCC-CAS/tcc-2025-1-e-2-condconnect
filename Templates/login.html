@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+
+<body class="auth-body">
+
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img src="/static/assets/images/logo.png" alt="CondConnect Logo"> <!-- Placeholder if logo exists -->
+            <span>CondConnect</span>
+        </div>
+
+        <h1 class="auth-title">Bem-vindo de volta!</h1>
+        <p class="auth-subtitle">Entre para acessar o marketplace</p>
+
+        <form class="auth-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" value="ferrarigabriela31@gmail.com"
+                    placeholder="seu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="form-control" value="password123" placeholder="••••••••">
+            </div>
+
+            <a href="#" class="forgot-password">Esqueci minha senha</a>
+
+            <button type="button" class="auth-btn"
+                onclick="window.location.href='/Templates/dashboard.html'">Entrar</button>
+        </form>
+
+        <div class="auth-footer">
+            Não tem uma conta? <a href="/Templates/cadastro.html">Cadastre-se</a>
+        </div>
+
+        <a href="/Templates/index.html" class="back-link">← Voltar para home</a>
+    </div>
+
+
+    <script src="/static/js/auth.js"></script>
+</body>
+
+</html>

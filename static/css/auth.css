@@ -1,0 +1,199 @@
+/* AUTHENTICATION PAGES */
+
+body.auth-body {
+    background: linear-gradient(135deg, var(--primary), #4338ca);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+}
+
+.auth-card {
+    background: var(--card);
+    padding: 48px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-premium);
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+}
+
+.auth-logo img {
+    height: 32px;
+}
+
+.auth-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--foreground);
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+.auth-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--background);
+    font-size: 15px;
+    color: var(--foreground);
+    font-family: inherit;
+    outline: none;
+    transition: var(--transition-normal);
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 4px var(--ring);
+    border-color: var(--primary);
+    background-color: var(--card);
+}
+
+/* Validation Styles */
+.form-control.invalid {
+    border-color: var(--error);
+}
+
+.form-control.invalid:focus {
+    box-shadow: 0 0 0 4px hsla(0, 84%, 60%, 0.1);
+}
+
+.validation-message {
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 4px;
+    display: none;
+    font-weight: 600;
+}
+
+.form-control.invalid+.validation-message {
+    display: block;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    margin-top: 16px;
+    box-shadow: 0 10px 15px -3px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.3);
+}
+
+.auth-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.2);
+}
+
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    margin-top: 32px;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    font-size: 14px;
+    color: var(--primary);
+    text-decoration: none;
+    margin-top: -16px;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.back-link {
+    display: block;
+    margin-top: 24px;
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition-fast);
+}
+
+.back-link:hover {
+    color: var(--foreground);
+    transform: translateX(-4px);
+}
+
+/* Specific for Signup layout (2 columns) */
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 32px 24px;
+        margin: 20px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
