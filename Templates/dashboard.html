@@ -164,6 +164,19 @@
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </a>
+            <a href="/Templates/admin.html" class="nav-item admin-only" style="display: none;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M12 8v4"></path>
+                    <path d="M12 16h.01"></path>
+                </svg>
+                <span>Moderação</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -206,6 +219,32 @@
             <h1>Olá, Gabriela! 👋</h1>
             <p>Bem-vindo ao seu painel. Veja suas atividades e explore o marketplace.</p>
         </header>
+
+        <!-- Admin Notification Banner (Shown only for Admin role) -->
+        <section id="admin-banner" class="admin-banner" style="display: none; margin-bottom: 30px;">
+            <div
+                style="background: linear-gradient(135rdeg, #4f46e5 0%, #7c3aed 100%); border-radius: var(--radius-lg); padding: 24px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-lg);">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div
+                        style="background: rgba(255,255,255,0.2); width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 700;">Painel de Gestão</h2>
+                        <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">Você tem <strong>3 anúncios
+                                pendentes</strong> para revisão no marketplace.</p>
+                    </div>
+                </div>
+                <a href="/Templates/admin.html" class="btn-primary"
+                    style="background: white; color: #4f46e5; border: none; padding: 12px 24px; font-weight: 700; font-size: 14px; border-radius: 99px; text-decoration: none; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    Acessar Moderação
+                </a>
+            </div>
+        </section>
 
         <!-- Stats Grid -->
         <section class="stats-grid">
@@ -290,6 +329,60 @@
             </div>
         </section>
 
+        <!-- COMPANY ADS (RF12) -->
+        <section class="company-ads" style="margin-bottom: 40px;">
+            <div class="section-header" style="margin-bottom: 16px;">
+                <div>
+                    <h2>Parceiros do Condomínio</h2>
+                    <span class="subtitle">Serviços e produtos recomendados para você</span>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div
+                    style="background: linear-gradient(135deg, #1e293b, #334155); border-radius: 16px; padding: 24px; color: white; position: relative; overflow: hidden; display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow-lg);">
+                    <div
+                        style="width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Limpeza Express</h4>
+                        <p style="margin: 4px 0 12px; font-size: 13px; color: rgba(255,255,255,0.7);">Limpeza
+                            residencial com 20% de desconto para moradores.</p>
+                        <a href="#"
+                            style="color: #60a5fa; text-decoration: none; font-size: 13px; font-weight: 600;">Ver Cupom
+                            →</a>
+                    </div>
+                    <span
+                        style="position: absolute; top: 12px; right: 12px; background: #3b82f6; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;">Patrocinado</span>
+                </div>
+
+                <div
+                    style="background: linear-gradient(135deg, #065f46, #064e3b); border-radius: 16px; padding: 24px; color: white; position: relative; overflow: hidden; display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow-lg);">
+                    <div
+                        style="width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Pet Shop do Prédio</h4>
+                        <p style="margin: 4px 0 12px; font-size: 13px; color: rgba(255,255,255,0.7);">Ração e banho/tosa
+                            com entrega grátis no seu bloco.</p>
+                        <a href="#"
+                            style="color: #34d399; text-decoration: none; font-size: 13px; font-weight: 600;">Acessar
+                            Site →</a>
+                    </div>
+                    <span
+                        style="position: absolute; top: 12px; right: 12px; background: #10b981; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;">Patrocinado</span>
+                </div>
+            </div>
+        </section>
+
         <!-- Recent Products -->
         <section class="recent-products">
             <div class="section-header">
@@ -309,8 +402,8 @@
         <footer class="dashboard-footer">
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="#">Privacidade</a>
-                    <a href="#">Termos</a>
+                    <a href="/Templates/termos.html">Privacidade</a>
+                    <a href="/Templates/termos.html">Termos</a>
                     <a href="#">Ajuda</a>
                     <a href="#">Contato</a>
                 </div>

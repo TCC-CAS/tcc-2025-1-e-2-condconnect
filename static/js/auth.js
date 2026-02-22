@@ -52,4 +52,23 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Login Handling
+    const loginBtn = document.querySelector('.auth-btn');
+    if (loginBtn && loginForm) {
+        loginBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+
+            // Set role based on email
+            const role = (email === 'admin@condconnect.com') ? 'admin' : 'user';
+
+            // Save to localStorage
+            localStorage.setItem('condconnect_user_role', role);
+            localStorage.setItem('condconnect_user_email', email);
+
+            // Redirect to dashboard
+            window.location.href = '/Templates/dashboard.html';
+        });
+    }
 });

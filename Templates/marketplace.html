@@ -164,6 +164,19 @@
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </a>
+            <a href="/Templates/admin.html" class="nav-item admin-only" style="display: none;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M12 8v4"></path>
+                    <path d="M12 16h.01"></path>
+                </svg>
+                <span>Moderação</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -207,9 +220,25 @@
         </header>
 
         <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" id="marketplace-search" class="search-input"
-                placeholder="Buscar produtos no condomínio...">
+        <div class="search-container" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 2; min-width: 300px;">
+                <label style="display: block; font-size: 14px; font-weight: 700; color: #64748b; margin-bottom: 8px;">O
+                    que você procura?</label>
+                <input type="text" id="marketplace-search" class="search-input"
+                    placeholder="Buscar produtos no condomínio...">
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <label
+                    style="display: block; font-size: 14px; font-weight: 700; color: #64748b; margin-bottom: 8px;">Faixa
+                    de Preço (R$)</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number" id="price-min" placeholder="Mín"
+                        style="width: 100%; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 15px; outline: none; background: white; box-shadow: var(--shadow-sm);">
+                    <span style="color: #64748b; font-weight: 600;">até</span>
+                    <input type="number" id="price-max" placeholder="Máx"
+                        style="width: 100%; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: 15px; outline: none; background: white; box-shadow: var(--shadow-sm);">
+                </div>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -293,8 +322,8 @@
         <footer class="dashboard-footer">
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="#">Privacidade</a>
-                    <a href="#">Termos</a>
+                    <a href="/Templates/termos.html">Privacidade</a>
+                    <a href="/Templates/termos.html">Termos</a>
                     <a href="#">Ajuda</a>
                     <a href="#">Contato</a>
                 </div>

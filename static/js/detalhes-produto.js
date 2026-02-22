@@ -22,8 +22,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             document.querySelector('.product-description p').textContent = product.description;
-            document.querySelector('.seller-details h4').textContent = product.seller;
-            document.querySelector('.seller-details p').textContent = product.location;
+            document.getElementById('seller-name').textContent = product.seller;
+            document.getElementById('seller-location').textContent = product.location;
+            document.getElementById('seller-rating').textContent = product.sellerRating || 'N/A';
+            document.getElementById('seller-sales').textContent = (product.totalSales || 0) + ' vendas';
 
             // Update Breadcrumb if exists
             const breadcrumb = document.querySelector('.breadcrumb');
@@ -107,6 +109,84 @@ document.addEventListener('DOMContentLoaded', function () {
 
             localStorage.setItem('condconnect_active_chat', conversationId);
             window.location.href = '/Templates/mensagens.html';
+        });
+    }
+    // STAR RATING LOGIC
+    const stars = document.querySelectorAll('.star-rating');
+    let selectedRating = 0;
+
+    stars.forEach((star, index) => {
+        star.style.cursor = 'pointer';
+        star.addEventListener('mouseover', () => {
+            resetStars();
+            for (let i = 0; i <= index; i++) {
+                stars[i].style.color = '#f59e0b';
+            }
+        });
+
+        star.addEventListener('click', () => {
+            selectedRating = index + 1;
+            resetStars();
+            for (let i = 0; i < selectedRating; i++) {
+                stars[i].style.color = '#f59e0b';
+            }
+        });
+    });
+
+    function resetStars() {
+        stars.forEach(s => {
+            s.style.color = selectedRating > 0 && Array.from(stars).indexOf(s) < selectedRating ? '#f59e0b' : '#cbd5e1';
+        });
+    }
+
+    const commentContainer = document.querySelector('.evaluations-container');
+    if (commentContainer) {
+        commentContainer.addEventListener('mouseleave', resetStars);
+    }
+
+    // COMMENT PUBLISH LOGIC
+    const publishBtn = document.querySelector('.evaluations-container button');
+    const commentArea = document.querySelector('.evaluations-container textarea');
+    const commentsList = document.getElementById('comments-list');
+
+    if (publishBtn && commentArea && commentsList) {
+        publishBtn.addEventListener('click', () => {
+            const text = commentArea.value.trim();
+            if (!text) return;
+
+            const newComment = document.createElement('div');
+            newComment.style.cssText = 'border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; transition: all 0.3s; opacity: 0; transform: translateY(10px);';
+
+            let starsHTML = '';
+            for (let i = 0; i < 5; i++) {
+                starsHTML += `<svg width="12" height="12" fill="${i < (selectedRating || 5) ? '#f59e0b' : '#cbd5e1'}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+            }
+
+            newComment.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 32px; height: 32px; background: var(--primary-soft); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">V</div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 14px; color: #1e293b;">Você</h4>
+                        <div style="display: flex; color: #f59e0b; margin-top: 2px;">
+                            ${starsHTML}
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0;">${text}</p>
+            `;
+
+            commentsList.prepend(newComment);
+
+            // Clear inputs
+            commentArea.value = '';
+            selectedRating = 0;
+            resetStars();
+
+            // Animation
+            setTimeout(() => {
+                newComment.style.opacity = '1';
+                newComment.style.transform = 'translateY(0)';
+            }, 10);
         });
     }
 });

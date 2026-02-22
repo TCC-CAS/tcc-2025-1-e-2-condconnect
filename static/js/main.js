@@ -9,6 +9,8 @@ const CondConnect = {
             category: 'eletronicos',
             image: '/static/assets/images/celular.jpg',
             seller: 'Carlos Silva',
+            sellerRating: 4.8,
+            totalSales: 12,
             location: 'Bloco A - Apto 101',
             description: 'iPhone em estado de novo, sem riscos. Acompanha caixa e carregador original.',
             condition: 'Seminovo'
@@ -20,6 +22,8 @@ const CondConnect = {
             category: 'moveis',
             image: 'https://images.unsplash.com/photo-1577145745727-42b88d4de76d?q=80&w=500&auto=format&fit=crop',
             seller: 'Ana Beatriz',
+            sellerRating: 5.0,
+            totalSales: 8,
             location: 'Bloco C - Apto 305',
             description: 'Mesa de madeira maciça em ótimo estado. Motivo: Mudança.',
             condition: 'Usado'
@@ -31,6 +35,8 @@ const CondConnect = {
             category: 'esportes',
             image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=500&auto=format&fit=crop',
             seller: 'Marcos Oliveira',
+            sellerRating: 4.2,
+            totalSales: 5,
             location: 'Bloco B - Apto 202',
             description: 'Bicicleta revisada mês passado. Aro 29.',
             condition: 'Usado'
@@ -42,6 +48,8 @@ const CondConnect = {
             category: 'eletronicos',
             image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=500&auto=format&fit=crop',
             seller: 'Ricardo Santos',
+            sellerRating: 4.7,
+            totalSales: 21,
             location: 'Bloco A - Apto 504',
             description: 'TV con 1 ano de uso, impecável. Tenho a nota fiscal.',
             condition: 'Usado'
@@ -57,6 +65,8 @@ const CondConnect = {
             category: p.category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
             image: p.image,
             seller: 'Você',
+            sellerRating: 5.0,
+            totalSales: 0,
             location: 'Seu Apto',
             description: p.description,
             condition: p.condition
@@ -136,6 +146,21 @@ const CondConnect = {
                 });
             });
         }
+    },
+
+    // Role-based UI logic
+    syncUserRole: function () {
+        const role = localStorage.getItem('condconnect_user_role');
+        const adminElements = document.querySelectorAll('.admin-only');
+        const adminBanner = document.getElementById('admin-banner');
+
+        if (role === 'admin') {
+            adminElements.forEach(el => el.style.display = 'flex');
+            if (adminBanner) adminBanner.style.display = 'block';
+        } else {
+            adminElements.forEach(el => el.style.display = 'none');
+            if (adminBanner) adminBanner.style.display = 'none';
+        }
     }
 };
 
@@ -143,6 +168,7 @@ const CondConnect = {
 document.addEventListener('DOMContentLoaded', () => {
     CondConnect.initMobileNav();
     CondConnect.initLandingNav();
+    CondConnect.syncUserRole();
     console.log('CondConnect - Inicializado');
 
     // Initial sync
