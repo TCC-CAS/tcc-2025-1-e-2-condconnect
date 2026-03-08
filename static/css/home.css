@@ -6,9 +6,7 @@
     font-size: 20px;
 }
 
-.logo img {
-    height: 36px;
-}
+
 
 .hero {
     display: flex;
@@ -201,7 +199,7 @@
 
 /* BENEFITS */
 .benefits {
-    background: linear-gradient(135deg, var(--primary), #4338ca);
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
     padding: 120px 0;
     color: white;
     text-align: center;
@@ -272,15 +270,87 @@
 
 /* RESPONSIVO */
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
+    .hero-text h1 {
+        font-size: 48px;
+    }
+
+    .features-content {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .features-image {
+        order: -1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+
     .hero {
+        padding: 100px 0 60px;
         flex-direction: column;
         text-align: center;
+    }
+
+    .hero-text h1 {
+        font-size: 36px;
+    }
+
+    .hero-text p {
+        margin: 0 auto 32px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .hero-buttons .btn-primary,
+    .hero-buttons .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .metrics {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    .how {
+        padding: 80px 0;
     }
 
     .steps,
     .benefit-cards {
         flex-direction: column;
+        gap: 20px;
+    }
+
+    .step-card,
+    .benefit-card {
+        padding: 32px;
+    }
+
+    .features {
+        padding: 80px 0;
+    }
+
+    .features-text h2 {
+        font-size: 32px;
+    }
+
+    .features-list {
+        grid-template-columns: 1fr;
+    }
+
+    .benefits h2 {
+        font-size: 32px;
     }
 }
 
@@ -508,7 +578,7 @@
 
 .hero-buttons .btn-primary {
     position: relative;
-    background: linear-gradient(135deg, var(--primary), #4338ca);
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
     color: white;
     padding: 18px 36px;
     font-size: 18px;
@@ -519,8 +589,8 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 10px 30px -5px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4),
-        0 0 0 0 hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.5);
+    box-shadow: 0 10px 30px -5px rgba(0, 78, 100, 0.4),
+        0 0 0 0 rgba(0, 78, 100, 0.5);
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
@@ -572,7 +642,7 @@
 /* Enhanced CTA button */
 .cta .btn-primary {
     position: relative;
-    background: linear-gradient(135deg, var(--primary), #4338ca);
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
     color: white;
     padding: 20px 48px;
     font-size: 20px;
@@ -583,7 +653,7 @@
     align-items: center;
     gap: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 15px 35px -5px hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.5);
+    box-shadow: 0 15px 35px -5px rgba(0, 78, 100, 0.5);
     animation: float 3s ease-in-out infinite;
 }
 

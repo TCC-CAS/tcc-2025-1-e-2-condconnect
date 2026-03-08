@@ -39,7 +39,7 @@
 }
 
 .thumbnail.active {
-    border-color: #2563eb;
+    border-color: var(--primary);
 }
 
 .thumbnail:hover {
@@ -70,7 +70,7 @@
 .product-price {
     font-size: 32px;
     font-weight: 700;
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .product-seller {
@@ -85,8 +85,8 @@
 .seller-avatar {
     width: 48px;
     height: 48px;
-    background: #e0e7ff;
-    color: #2563eb;
+    background: rgba(0, 166, 166, 0.1);
+    color: var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -141,14 +141,14 @@
 }
 
 .btn-primary {
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }

@@ -104,14 +104,16 @@ const CondConnect = {
 
     // Initialization for Mobile Navigation
     initMobileNav: function () {
-        const menuToggle = document.querySelector('.menu-toggle');
+        const menuToggles = document.querySelectorAll('.menu-toggle, .mobile-menu-toggle');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.sidebar-overlay');
 
-        if (menuToggle && sidebar && overlay) {
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
+        if (sidebar && overlay) {
+            menuToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
             });
 
             overlay.addEventListener('click', () => {
@@ -161,6 +163,42 @@ const CondConnect = {
             adminElements.forEach(el => el.style.display = 'none');
             if (adminBanner) adminBanner.style.display = 'none';
         }
+    },
+
+    // Initialization for Notifications Dropdown
+    initNotifications: function () {
+        const notifBtn = document.querySelector('.notification-btn');
+        const notifDropdown = document.querySelector('.notification-dropdown');
+
+        if (notifBtn && notifDropdown) {
+            notifBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                notifDropdown.classList.toggle('active');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                    notifDropdown.classList.remove('active');
+                }
+            });
+
+            // Handle "Mark all as read"
+            const markAllRead = notifDropdown.querySelector('.mark-all-read');
+            if (markAllRead) {
+                markAllRead.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                        const dot = item.querySelector('.unread-dot');
+                        if (dot) dot.remove();
+                    });
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) badge.textContent = '0';
+                });
+            }
+        }
     }
 };
 
@@ -169,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     CondConnect.initMobileNav();
     CondConnect.initLandingNav();
     CondConnect.syncUserRole();
+    CondConnect.initNotifications();
     console.log('CondConnect - Inicializado');
 
     // Initial sync

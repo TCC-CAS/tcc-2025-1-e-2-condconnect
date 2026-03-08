@@ -97,7 +97,7 @@
 .item-price {
     font-size: 16px;
     font-weight: 700;
-    color: #2563eb;
+    color: var(--primary);
     margin-top: 8px;
 }
 
@@ -130,8 +130,8 @@
 }
 
 .qty-btn:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .qty-value {
@@ -195,7 +195,7 @@
 }
 
 .summary-row.total span:last-child {
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .free-shipping {
@@ -231,7 +231,7 @@
 }
 
 .payment-option input[type="radio"] {
-    accent-color: #2563eb;
+    accent-color: var(--primary);
     width: 16px;
     height: 16px;
 }
@@ -248,7 +248,7 @@
 .checkout-btn {
     width: 100%;
     padding: 14px;
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 100px;
@@ -260,7 +260,7 @@
 }
 
 .checkout-btn:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
@@ -274,6 +274,43 @@
     color: #9ca3af;
     text-align: center;
     margin-top: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .cart-container {
+        grid-template-columns: 1fr;
+    }
+
+    .order-summary {
+        /* Changed from .order-summary-section to .order-summary based on existing code */
+        position: static;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .cart-item-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .item-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .quantity-control {
+        /* Changed from .quantity-selector to .quantity-control based on existing code */
+        width: 100%;
+        justify-content: space-between;
+    }
 }
 
 @media (max-width: 900px) {

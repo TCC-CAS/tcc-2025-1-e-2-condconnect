@@ -6,7 +6,7 @@
 }
 
 .btn-new-ad {
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     padding: 8px 18px;
     border-radius: 100px;
@@ -22,7 +22,7 @@
 }
 
 .btn-new-ad:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
@@ -95,7 +95,7 @@
 .product-price {
     font-size: 28px;
     font-weight: 800;
-    color: #2563eb;
+    color: var(--primary);
     margin: 4px 0;
 }
 

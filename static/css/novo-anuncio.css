@@ -18,7 +18,7 @@
 }
 
 .back-link:hover {
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .page-title h1 {
@@ -78,8 +78,8 @@
 }
 
 .upload-area:hover {
-    border-color: #2563eb;
-    background-color: #eff6ff;
+    border-color: var(--primary);
+    background-color: rgba(0, 166, 166, 0.05);
 }
 
 .upload-icon {
@@ -105,7 +105,7 @@
 .form-select:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -117,7 +117,7 @@
 .submit-btn {
     width: 100%;
     padding: 14px;
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 100px;
@@ -130,15 +130,15 @@
 }
 
 .submit-btn:hover {
-    background-color: #60a5fa;
+    background-color: var(--highlight);
 }
 
 /* Specific adjustment for "Publicar Anúncio" button to match image color (looks like a disabled or light blue state) */
 .submit-btn-primary {
-    background-color: #81adfb;
+    background-color: var(--primary);
     color: white;
 }
 
 .submit-btn-primary:hover {
-    background-color: #3b82f6;
+    background-color: var(--primary-hover);
 }

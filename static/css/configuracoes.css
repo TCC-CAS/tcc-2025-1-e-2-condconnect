@@ -7,7 +7,7 @@
 
 .btn-save-settings {
     margin-top: 32px;
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     padding: 14px 28px;
     border-radius: 12px;
@@ -106,7 +106,7 @@
 }
 
 .form-input:focus {
-    border-color: #2563eb;
+    border-color: var(--primary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
@@ -123,12 +123,12 @@
 }
 
 .btn-confirm.blue {
-    background: #2563eb;
+    background: var(--primary);
     color: white;
 }
 
 .btn-confirm.blue:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
 }
 
 .btn-confirm.red {
@@ -201,8 +201,8 @@
 }
 
 .section-icon.blue {
-    background: #eff6ff;
-    color: #2563eb;
+    background: rgba(0, 166, 166, 0.1);
+    color: var(--primary);
 }
 
 .section-icon.green {
@@ -360,4 +360,29 @@ input:checked+.slider:before {
 
 .btn-delete-account:hover {
     background: #fee2e2;
+}
+
+/* Responsividade Configurações */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 0 16px;
+    }
+
+    .settings-section {
+        padding: 24px 16px;
+    }
+
+    .settings-header h2 {
+        font-size: 18px;
+    }
+
+    .btn-save-settings {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-content {
+        padding: 24px 16px;
+        margin: 10px;
+    }
 }

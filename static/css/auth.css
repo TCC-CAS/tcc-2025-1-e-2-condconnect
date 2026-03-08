@@ -1,7 +1,7 @@
 /* AUTHENTICATION PAGES */
 
 body.auth-body {
-    background: linear-gradient(135deg, var(--primary), #4338ca);
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
     display: flex;
     justify-content: center;
     align-items: center;
@@ -34,7 +34,7 @@ body.auth-body {
 }
 
 .auth-logo img {
-    height: 32px;
+    height: 120px;
 }
 
 .auth-title {

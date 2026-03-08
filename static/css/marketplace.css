@@ -243,6 +243,47 @@
     height: 16px;
 }
 
+/* Responsividade Marketplace */
+@media (max-width: 1024px) {
+    .marketplace-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-sidebar {
+        display: none;
+        /* Can be toggled or moved to a modal later */
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .marketplace-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-pills {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        gap: 8px;
+    }
+
+    .category-pill {
+        flex-shrink: 0;
+    }
+}
+
 /* Responsive */
 @media (max-width: 1400px) {
     .products-grid {

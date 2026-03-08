@@ -1,20 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* Primary Color - Vibrant Blue */
-    --primary-h: 221;
-    --primary-s: 83%;
-    --primary-l: 53%;
-    --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
-    --primary-hover: hsl(var(--primary-h), var(--primary-s), 45%);
-    --primary-soft: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.1);
+    /* Primary Color - Azul Petróleo */
+    --primary-h: 194;
+    --primary-s: 100%;
+    --primary-l: 20%;
+    --primary: #004E64;
+    --primary-hover: #003a4a;
+    --primary-soft: rgba(0, 78, 100, 0.1);
 
-    /* Neutral Colors - Slate */
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    /* Highlight Color - Ciano */
+    --highlight: #00A6A6;
+    --highlight-hover: #008f8f;
+
+    /* Neutral Colors - Modern Gray */
+    --background: #F5F7FA;
+    --foreground: #002D3A;
     --card: #ffffff;
     --border: #e2e8f0;
-    --ring: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4);
+    --ring: rgba(0, 166, 166, 0.4);
 
     --text-main: #1e293b;
     --text-muted: #64748b;
@@ -114,4 +118,34 @@ body {
     width: 20px;
     height: 20px;
     color: #22c55e;
+}
+
+/* Global Responsive Utilities */
+.hide-mobile {
+    display: inherit;
+}
+
+.show-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .show-mobile {
+        display: inherit !important;
+    }
+
+    .toast-container {
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+    }
+
+    .toast {
+        width: 100%;
+        justify-content: center;
+    }
 }

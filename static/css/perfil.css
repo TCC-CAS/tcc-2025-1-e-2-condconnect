@@ -43,7 +43,7 @@
 .profile-avatar-large {
     width: 100px;
     height: 100px;
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -57,7 +57,7 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    background: #2563eb;
+    background: var(--primary);
     border: 2px solid white;
     color: white;
     width: 32px;
@@ -71,7 +71,7 @@
 }
 
 .btn-edit-avatar:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
 }
 
 .profile-name {
@@ -131,8 +131,7 @@
 
 .form-input:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--primary);
 }
 
 .form-input:disabled {
@@ -150,7 +149,7 @@
 .btn-save {
     width: 100%;
     padding: 14px;
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 100px;
@@ -167,7 +166,7 @@
 }
 
 .btn-save:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
@@ -185,6 +184,28 @@
 .btn-save.success:hover {
     background-color: #059669;
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsividade Perfil */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 0 16px;
+    }
+
+    .profile-card {
+        padding: 24px 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .profile-avatar-large {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
 }
 
 @media (max-width: 600px) {

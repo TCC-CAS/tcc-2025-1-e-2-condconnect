@@ -47,8 +47,8 @@
 }
 
 .tab-btn.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    color: var(--primary);
+    border-bottom-color: var(--primary);
     font-weight: 600;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .btn-explore {
-    background: #2563eb;
+    background: var(--primary);
     color: white;
     padding: 12px 24px;
     border-radius: 8px;
@@ -108,7 +108,7 @@
 }
 
 .btn-explore:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
 }
 
 /* Order Cards */
@@ -176,7 +176,7 @@
 
 .status-a_caminho {
     background: #dbeafe;
-    color: #1e40af;
+    color: var(--primary);
 }
 
 .status-entregue {
@@ -198,7 +198,7 @@
 
 .order-price {
     font-weight: 700;
-    color: #2563eb;
+    color: var(--primary);
     margin-top: 8px;
     font-size: 18px;
 }
@@ -211,7 +211,7 @@
 
 .btn-track {
     background: #eff6ff;
-    color: #2563eb;
+    color: var(--primary);
     padding: 10px 18px;
     border-radius: 8px;
     font-weight: 600;
@@ -307,7 +307,7 @@
 }
 
 .timeline-item.completed .timeline-dot {
-    background: #2563eb;
+    background: var(--primary);
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
