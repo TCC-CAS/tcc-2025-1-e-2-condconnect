@@ -22,6 +22,9 @@ O CondConnect é uma aplicação web desenvolvida como projeto de TCC com o obje
 
 ## 👥 Equipe
 Projeto desenvolvido para o Trabalho de Conclusão de Curso.
+Ana Luíza da Costa Franchi 
+Gabriela Ferrari Sobral
+Gabriel Henrique Avelar Vicente
 
 ## 📄 Licença
 Projeto acadêmico desenvolvido para fins educacionais.
