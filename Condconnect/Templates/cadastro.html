@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <base href="/tcc-2025-1-e-2-condconnect/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+
+<body class="auth-body">
+
+    <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-logo">
+            <img src="/static/assets/images/logo_comfundo.png" alt="CondConnect">
+        </div>
+
+        <h1 class="auth-title">Criar Nova Conta</h1>
+        <p class="auth-subtitle">Preencha os dados para se cadastrar</p>
+
+        <form class="auth-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Nome Completo</label>
+                    <input type="text" id="name" class="form-control" placeholder="Seu nome">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" placeholder="seu@email.com">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label for="password_confirm">Confirmar Senha</label>
+                    <input type="password" id="password_confirm" class="form-control" placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="apto">Número do Apartamento</label>
+                    <input type="text" id="apto" class="form-control" placeholder="Ex: 101">
+                </div>
+                <div class="form-group">
+                    <label for="block">Bloco</label>
+                    <input type="text" id="block" class="form-control" placeholder="Ex: A">
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group"
+                style="display: flex; align-items: flex-start; gap: 10px; margin-top: 10px;">
+                <input type="checkbox" id="lgpd_consent" style="margin-top: 4px;" required>
+                <label for="lgpd_consent" style="font-size: 13px; color: #6b7280; cursor: pointer;">
+                    Li e concordo com os <a href="/Templates/termos.html"
+                        style="color: var(--primary); text-decoration: none; font-weight: 600;">Termos de Uso</a> e a <a
+                        href="/Templates/termos.html"
+                        style="color: var(--primary); text-decoration: none; font-weight: 600;">Política de
+                        Privacidade</a> (LGPD).
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn">Criar Conta</button>
+        </form>
+
+        <div class="auth-footer">
+            Já tem uma conta? <a href="/Templates/login.html">Fazer login</a>
+        </div>
+
+        <a href="/Templates/index.html" class="back-link">← Voltar para home</a>
+    </div>
+
+
+    <script src="/static/js/auth.js"></script>
+</body>
+
+</html>
