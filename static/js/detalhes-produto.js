@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 title: document.getElementById('detail-title').textContent,
                 price: document.getElementById('detail-price').textContent,
                 image: document.getElementById('detail-image').getAttribute('src'),
-                seller: document.querySelector('.seller-details h4').textContent,
-                location: document.querySelector('.seller-details p').textContent,
+                seller: document.getElementById('seller-name').textContent,
+                location: document.getElementById('seller-location').textContent,
                 quantity: 1
             };
 
