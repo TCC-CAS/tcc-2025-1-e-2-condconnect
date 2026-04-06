@@ -1,11 +1,30 @@
-# Desenvolvimento_TCC
-Repositório padrão para inicio do desenvovimento de TCC
+# CondConnect
 
-Ênfase no acompanhamento e desenvolvimento do projeto de TCC 1 (proposta) e 2 (aplicação.
+Plataforma de marketplace para moradores de condomínios comprarem e venderem produtos entre si.
 
-Prezado alunos(as), Tudo bem?
+## 📌 Sobre o projeto
+O CondConnect é uma aplicação web desenvolvida como projeto de TCC com o objetivo de facilitar a interação entre moradores de um mesmo condomínio, permitindo a compra e venda de produtos de forma simples e segura.
 
-A partir de agora o acompanhamento do desenvolvimento de seu TCC 1 ou 2 será tanto em sala de aula como aqui, com o uso deste recurso. Vocês devem fazer um desenvolvimento contínuo, respeitando as datas das entregas previstas por seu professor.
+## 🚀 Funcionalidades
+- Dashboard do usuário
+- Marketplace de produtos
+- Sistema de favoritos
+- Mensagens entre usuários
+- Carrinho de compras
+- Gestão de produtos
+- Perfil do usuário
 
-## Atenção!
-Este arquivo deve ser alterado no decorrer do desenvolvimento de seu TCC.
+## 🛠 Tecnologias utilizadas
+- HTML
+- CSS
+- JavaScript
+- Git / GitHub
+
+## 👥 Equipe
+Projeto desenvolvido para o Trabalho de Conclusão de Curso.
+Ana Luíza da Costa Franchi 
+Gabriela Ferrari Sobral
+Gabriel Henrique Avelar Vicente
+
+## 📄 Licença
+Projeto acadêmico desenvolvido para fins educacionais.
