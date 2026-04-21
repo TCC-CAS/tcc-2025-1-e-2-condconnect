@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         conversationsList.innerHTML = allConvs.map(conv => {
             const avatar = conv.outro_usuario?.avatar || '?';
             const time = conv.ultima_mensagem_em
-                ? new Date(conv.ultima_mensagem_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+                ? new Date(conv.ultima_mensagem_em.replace(' ', 'T') + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
                 : '';
             return `
                 <div class="conversation-item ${conv.id === activeConvId ? 'active' : ''}" data-id="${conv.id}">
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             messagesList.innerHTML = msgs.map(msg => {
-                const time = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+                const time = new Date(msg.criado_em.replace(' ', 'T') + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
                 return `
                     <div class="message ${msg.tipo}">
                         <div class="message-content">${msg.texto}</div>
