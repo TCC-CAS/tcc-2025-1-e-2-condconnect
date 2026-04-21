@@ -4,7 +4,13 @@ setCORSHeaders();
 
 $userId   = requireAuth();
 $db       = getDB();
-$convId   = (int) ($_GET['conversa_id'] ?? 0);
+
+// conversa_id pode vir via GET ou via body JSON (POST)
+$convId = (int) ($_GET['conversa_id'] ?? 0);
+if (!$convId && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $bodyTemp = getBody();
+    $convId = (int) ($bodyTemp['conversa_id'] ?? 0);
+}
 
 if (!$convId) respondError('conversa_id é obrigatório');
 

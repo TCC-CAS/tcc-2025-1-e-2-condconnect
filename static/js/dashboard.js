@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Carregar dados do usuário
     async function carregarDashboard() {
         try {
+            // Sempre busca dados frescos no dashboard (não usa cache)
+            CondConnect.currentUser = null;
+            localStorage.removeItem('condconnect_user');
             const user = await CondConnect.getMe();
             if (!user) {
                 window.location.href = '/Templates/login.html';
@@ -9,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             // Preencher nome
-            const nomeEl = document.querySelector('.welcome-name, .user-name');
+            const nomeEl = document.querySelector('.welcome-name');
             if (nomeEl) nomeEl.textContent = user.nome?.split(' ')[0] || 'Usuário';
 
             const emailEl = document.querySelector('.user-email');
