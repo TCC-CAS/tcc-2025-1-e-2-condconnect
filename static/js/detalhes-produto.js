@@ -27,13 +27,37 @@ document.addEventListener('DOMContentLoaded', async function () {
     set('seller-rating', produto.vendedor?.rating?.toFixed(1) || 'N/A');
     set('seller-sales', (produto.vendedor?.vendas || 0) + ' vendas');
 
-    if (mainImage) mainImage.src = produto.foto;
+    if (mainImage && produto.foto) mainImage.src = produto.foto;
 
     const descEl = document.querySelector('.product-description p');
     if (descEl) descEl.textContent = produto.descricao || '';
 
     const condTag = document.querySelector('.condition-tag, .product-tag');
     if (condTag) condTag.textContent = produto.condicao;
+
+    // Meta (categoria + data)
+    const metaEl = document.getElementById('detail-meta');
+    if (metaEl && produto.criado_em) {
+        const dias = Math.floor((Date.now() - new Date(produto.criado_em)) / 86400000);
+        const tempoStr = dias === 0 ? 'hoje' : dias === 1 ? 'há 1 dia' : `há ${dias} dias`;
+        metaEl.innerHTML = `<span>${produto.categoria}</span> • <span>Publicado ${tempoStr}</span>`;
+    }
+
+    // Thumbnails
+    const thumbList = document.getElementById('thumbnail-list');
+    if (thumbList && produto.foto) {
+        const fotos = [produto.foto, ...(produto.imagens || [])];
+        thumbList.innerHTML = fotos.map((f, i) =>
+            `<img src="${f}" alt="Foto ${i+1}" class="thumbnail ${i === 0 ? 'active' : ''}">`
+        ).join('');
+        thumbList.querySelectorAll('.thumbnail').forEach(img => {
+            img.addEventListener('click', () => {
+                if (mainImage) mainImage.src = img.src;
+                thumbList.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                img.classList.add('active');
+            });
+        });
+    }
 
     // Breadcrumb
     const breadcrumb = document.querySelector('.breadcrumb');
