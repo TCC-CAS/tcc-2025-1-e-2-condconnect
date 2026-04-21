@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $preco     = isset($body['preco']) ? (float) str_replace(',', '.', $body['preco']) : null;
     $categoria = trim($body['categoria'] ?? '');
     $condicao  = $body['condicao'] ?? 'Seminovo';
-    $foto      = trim($body['foto'] ?? '');
+    $foto      = trim($body['foto_principal'] ?? $body['foto'] ?? '');
 
     if (!$titulo || $preco === null || !$categoria) {
         respondError('Campos obrigatórios: titulo, preco, categoria');
