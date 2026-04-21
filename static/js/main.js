@@ -41,7 +41,7 @@ const CondConnect = {
             return this.currentUser;
         }
         try {
-            const user = await this.api('/me');
+            const user = await this.api('/me.php');
             this.currentUser = user;
             localStorage.setItem('condconnect_user', JSON.stringify(user));
             return user;

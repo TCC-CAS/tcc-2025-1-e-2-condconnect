@@ -3,13 +3,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function carregarDashboard() {
         try {
             // Sempre busca dados frescos no dashboard (não usa cache)
-            CondConnect.currentUser = null;
-            localStorage.removeItem('condconnect_user');
-            const user = await CondConnect.getMe();
-            if (!user) {
-                window.location.href = '/Templates/login.html';
-                return;
-            }
+            const user = await CondConnect.api('/me.php');
+            CondConnect.currentUser = user;
+            localStorage.setItem('condconnect_user', JSON.stringify(user));
 
             // Preencher nome
             const nomeEl = document.querySelector('.welcome-name');
