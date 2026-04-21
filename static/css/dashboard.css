@@ -951,7 +951,7 @@ body.dashboard-body {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .top-navbar {
         display: none;
         /* Mobile header takes over */
@@ -970,8 +970,8 @@ body.dashboard-body {
     .main-content {
         margin-left: 0;
         width: 100%;
-        padding: 92px 16px 40px;
-        /* Space for mobile header: 72px + 20px */
+        padding: 92px 20px 100px;
+        /* Space for mobile header: 72px + 20px; extra bottom for tab bar */
     }
 
     .actions-grid,
@@ -1097,7 +1097,7 @@ body.dashboard-body {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .mobile-header {
         display: flex;
     }
@@ -1173,7 +1173,7 @@ body.dashboard-body {
     transform: scale(1.1);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .bottom-tab-bar {
         display: flex;
     }
