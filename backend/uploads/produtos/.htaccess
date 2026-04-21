@@ -1,0 +1,4 @@
+# Impede execução de PHP nesta pasta (segurança)
+php_flag engine off
+Options -ExecCGI
+AddHandler cgi-script .php .pl .py .jsp .asp .sh .cgi
