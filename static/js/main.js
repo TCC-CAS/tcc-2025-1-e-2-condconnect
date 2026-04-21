@@ -187,15 +187,36 @@ const CondConnect = {
             const badge = document.querySelector('.notification-badge');
             if (badge) badge.textContent = data.nao_lidas || '0';
             const lista = document.querySelector('.notification-list');
-            if (lista && data.notificacoes?.length) {
-                lista.innerHTML = data.notificacoes.slice(0, 5).map(n => `
-                    <div class="notification-item ${n.lida ? '' : 'unread'}" data-id="${n.id}">
-                        <p style="margin:0;font-size:13px;font-weight:${n.lida ? '400' : '600'}">${n.titulo}</p>
-                        <p style="margin:4px 0 0;font-size:12px;color:#64748b">${n.mensagem || ''}</p>
-                    </div>
-                `).join('');
+            if (lista) {
+                if (data.notificacoes?.length) {
+                    lista.innerHTML = data.notificacoes.slice(0, 5).map(n => `
+                        <div class="notification-item ${n.lida ? '' : 'unread'}" data-id="${n.id}">
+                            <p style="margin:0;font-size:13px;font-weight:${n.lida ? '400' : '600'}">${n.titulo}</p>
+                            <p style="margin:4px 0 0;font-size:12px;color:#64748b">${n.mensagem || ''}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    lista.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b;font-size:13px">Nenhuma notificação</p>';
+                }
             }
         } catch {}
+    },
+
+    async syncUserHeader() {
+        const user = await this.getMe();
+        if (!user) return;
+        document.querySelectorAll('.user-name').forEach(el => el.textContent = user.nome);
+        document.querySelectorAll('.user-role').forEach(el => {
+            el.textContent = user.papel === 'admin' ? 'Administrador' : 'Membro';
+        });
+        document.querySelectorAll('.header-avatar').forEach(el => {
+            el.src = user.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
+            el.alt = user.nome;
+        });
+        document.querySelectorAll('.header-user-initials').forEach(el => {
+            const parts = user.nome.trim().split(' ');
+            el.textContent = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+        });
     },
 
     formatarPreco(preco) {
@@ -246,6 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
     CondConnect.initLandingNav();
     CondConnect.syncUserRole();
     CondConnect.initNotifications();
+    CondConnect.syncUserHeader();
+    CondConnect.carregarNotificacoes();
 
     // Like button delegation
     document.addEventListener('click', async function(e) {
