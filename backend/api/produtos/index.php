@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         respondError('Campos obrigatórios: titulo, preco, categoria');
     }
 
-    $condicoesValidas = ['Novo', 'Seminovo', 'Usado'];
+    $condicoesValidas = ['Novo', 'Seminovo', 'Usado', 'Não se aplica'];
     if (!in_array($condicao, $condicoesValidas)) $condicao = 'Seminovo';
 
     $stmt = $db->prepare(
