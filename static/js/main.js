@@ -24,8 +24,10 @@ const CondConnect = {
         } catch (err) {
             if (err.status === 401) {
                 localStorage.removeItem('condconnect_user');
-                // Redirecionar para login apenas se não estiver na landing
-                if (!window.location.pathname.includes('index') && !window.location.pathname.endsWith('/')) {
+                const path = window.location.pathname;
+                const publicPages = ['index', 'login', 'cadastro'];
+                const isPublic = publicPages.some(p => path.includes(p)) || path.endsWith('/');
+                if (!isPublic) {
                     window.location.href = '/Templates/login.html';
                 }
             }
