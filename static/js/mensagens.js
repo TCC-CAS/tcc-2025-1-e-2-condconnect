@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const sendBtn = document.getElementById('send-btn');
 
     let activeConvId = null;
+    let activeConv = null;
     let poolingInterval = null;
 
     async function renderConversations() {
@@ -42,6 +43,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.querySelectorAll('.conversation-item').forEach(item => {
                 item.addEventListener('click', () => {
                     activeConvId = parseInt(item.getAttribute('data-id'));
+                    activeConv = convs.find(c => c.id === activeConvId);
+                    atualizarHeaderChat();
                     renderConversations();
                     renderMessages();
                 });
@@ -50,6 +53,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Selecionar primeiro se nenhum ativo
             if (!activeConvId && convs.length > 0) {
                 activeConvId = convs[0].id;
+                activeConv = convs[0];
+                atualizarHeaderChat();
                 renderConversations();
                 renderMessages();
             }
@@ -111,6 +116,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch (err) {
             chatInput.value = text;
         }
+    }
+
+    function atualizarHeaderChat() {
+        if (!activeConv) return;
+        if (chatTitle) chatTitle.textContent = activeConv.outro_usuario?.nome || '';
+        if (chatStatus) chatStatus.textContent = '';
+        const avatar = document.querySelector('.chat-header .chat-avatar');
+        if (avatar) avatar.textContent = activeConv.outro_usuario?.avatar || '?';
     }
 
     // Verificar se deve abrir conversa específica (vindo de detalhes-produto)
