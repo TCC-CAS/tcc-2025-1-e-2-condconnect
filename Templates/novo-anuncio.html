@@ -293,12 +293,13 @@
                 <div class="form-group">
                     <label class="form-label">Fotos do Produto</label>
                     <span class="form-sublabel">Adicione fotos para atrair mais compradores</span>
-                    <div class="upload-area">
+                    <input type="file" id="product-image" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    <div class="upload-area" style="cursor:pointer;" onclick="document.getElementById('product-image').click()">
                         <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
-                        <span>Upload</span>
+                        <span>Clique para fazer upload</span>
                     </div>
                 </div>
 
