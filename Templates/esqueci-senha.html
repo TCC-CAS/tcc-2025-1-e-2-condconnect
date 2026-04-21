@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <base href="/tcc-2025-1-e-2-condconnect/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueci minha senha - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+
+<body class="auth-body">
+
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img src="/static/assets/images/logo_comfundo.png" alt="CondConnect">
+        </div>
+
+        <h1 class="auth-title">Recuperar senha</h1>
+        <p class="auth-subtitle">Digite seu e-mail e enviaremos um link para redefinir sua senha</p>
+
+        <div id="form-area">
+            <form class="auth-form" id="esqueci-form">
+                <div class="form-group">
+                    <label for="email">E-mail cadastrado</label>
+                    <input type="email" id="email" class="form-control" placeholder="seu@email.com" required>
+                </div>
+
+                <div id="error-msg" style="display:none; background:#fee2e2; color:#dc2626; padding:12px 16px; border-radius:10px; font-size:14px; margin-bottom:8px;"></div>
+
+                <button type="submit" class="auth-btn" id="submit-btn">Enviar link de recuperação</button>
+            </form>
+        </div>
+
+        <div id="success-area" style="display:none; text-align:center; padding: 16px 0;">
+            <div style="width:64px; height:64px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h3 style="color:#16a34a; font-size:18px; margin-bottom:8px;">E-mail enviado!</h3>
+            <p style="color:#64748b; font-size:14px; line-height:1.6;">Verifique sua caixa de entrada. O link expira em <strong>1 hora</strong>.<br>Se não encontrar, verifique o spam.</p>
+        </div>
+
+        <div class="auth-footer" style="margin-top:16px;">
+            <a href="/Templates/login.html">← Voltar para o login</a>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        document.getElementById('esqueci-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const btn = document.getElementById('submit-btn');
+            const errorEl = document.getElementById('error-msg');
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            errorEl.style.display = 'none';
+
+            try {
+                await CondConnect.api('/auth/esqueci-senha.php', {
+                    method: 'POST',
+                    body: { email }
+                });
+                document.getElementById('form-area').style.display = 'none';
+                document.getElementById('success-area').style.display = 'block';
+            } catch (err) {
+                errorEl.textContent = err.message || 'Erro ao enviar. Tente novamente.';
+                errorEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Enviar link de recuperação';
+            }
+        });
+    </script>
+</body>
+
+</html>

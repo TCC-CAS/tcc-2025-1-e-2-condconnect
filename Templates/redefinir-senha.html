@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <base href="/tcc-2025-1-e-2-condconnect/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir senha - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+
+<body class="auth-body">
+
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img src="/static/assets/images/logo_comfundo.png" alt="CondConnect">
+        </div>
+
+        <h1 class="auth-title">Nova senha</h1>
+        <p class="auth-subtitle">Digite sua nova senha abaixo</p>
+
+        <div id="invalid-token" style="display:none; text-align:center; padding:16px 0;">
+            <p style="color:#dc2626; font-size:15px;">Link inválido ou expirado.<br>Solicite um novo link de recuperação.</p>
+            <a href="/Templates/esqueci-senha.html" class="auth-btn" style="display:block; margin-top:16px; text-decoration:none; text-align:center;">Solicitar novo link</a>
+        </div>
+
+        <div id="form-area">
+            <form class="auth-form" id="redefinir-form">
+                <div class="form-group">
+                    <label for="senha">Nova senha</label>
+                    <input type="password" id="senha" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmar">Confirmar nova senha</label>
+                    <input type="password" id="confirmar" class="form-control" placeholder="Repita a senha" required>
+                </div>
+
+                <div id="error-msg" style="display:none; background:#fee2e2; color:#dc2626; padding:12px 16px; border-radius:10px; font-size:14px; margin-bottom:8px;"></div>
+
+                <button type="submit" class="auth-btn" id="submit-btn">Salvar nova senha</button>
+            </form>
+        </div>
+
+        <div id="success-area" style="display:none; text-align:center; padding:16px 0;">
+            <div style="width:64px; height:64px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h3 style="color:#16a34a; font-size:18px; margin-bottom:8px;">Senha redefinida!</h3>
+            <p style="color:#64748b; font-size:14px;">Redirecionando para o login...</p>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        const token = new URLSearchParams(window.location.search).get('token');
+
+        if (!token) {
+            document.getElementById('form-area').style.display = 'none';
+            document.getElementById('invalid-token').style.display = 'block';
+        }
+
+        document.getElementById('redefinir-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const senha = document.getElementById('senha').value;
+            const confirmar = document.getElementById('confirmar').value;
+            const btn = document.getElementById('submit-btn');
+            const errorEl = document.getElementById('error-msg');
+
+            errorEl.style.display = 'none';
+
+            if (senha !== confirmar) {
+                errorEl.textContent = 'As senhas não coincidem.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                await CondConnect.api('/auth/redefinir-senha.php', {
+                    method: 'POST',
+                    body: { token, senha }
+                });
+                document.getElementById('form-area').style.display = 'none';
+                document.getElementById('success-area').style.display = 'block';
+                setTimeout(() => { window.location.href = '/Templates/login.html'; }, 2500);
+            } catch (err) {
+                if (err.status === 400) {
+                    document.getElementById('form-area').style.display = 'none';
+                    document.getElementById('invalid-token').style.display = 'block';
+                } else {
+                    errorEl.textContent = err.message || 'Erro ao redefinir senha.';
+                    errorEl.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Salvar nova senha';
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
