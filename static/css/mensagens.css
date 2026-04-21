@@ -146,6 +146,9 @@
 .chat-area {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -189,6 +192,7 @@
 
 .messages-list {
     flex: 1;
+    min-height: 0;
     padding: 24px;
     overflow-y: auto;
     background: #f9fafb;
