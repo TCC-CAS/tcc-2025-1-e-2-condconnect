@@ -105,8 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pedidoId = (int) $db->lastInsertId();
         $pedidosCriados[] = $pedidoId;
 
-        // Marcar produto como vendido
-        $db->prepare("UPDATE produtos SET status = 'vendido' WHERE id = ?")->execute([$item['produto_id']]);
+        // Diminuir quantidade; marcar como vendido só se zerar
+        $db->prepare("UPDATE produtos SET quantidade = GREATEST(0, quantidade - ?) WHERE id = ?")->execute([$item['quantidade'], $item['produto_id']]);
+        $db->prepare("UPDATE produtos SET status = 'vendido' WHERE id = ? AND quantidade = 0")->execute([$item['produto_id']]);
         // Atualizar stats
         $db->prepare("UPDATE usuarios SET total_vendas = total_vendas + 1 WHERE id = ?")->execute([$item['vendedor_id']]);
         $db->prepare("UPDATE usuarios SET total_compras = total_compras + 1 WHERE id = ?")->execute([$userId]);

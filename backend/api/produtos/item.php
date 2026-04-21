@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'condicao'    => $p['condicao'],
         'status'      => $p['status'],
         'foto'        => $p['foto_principal'] ?: null,
+        'quantidade'  => (int) $p['quantidade'],
         'imagens'     => $imagens,
         'criado_em'   => $p['criado_em'],
         'favorito'    => $favorito,
@@ -100,6 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if (isset($body['preco'])) {
         $campos[]  = "preco = ?";
         $valores[] = (float) str_replace(',', '.', $body['preco']);
+    }
+
+    if (isset($body['quantidade'])) {
+        $campos[]  = "quantidade = ?";
+        $valores[] = max(1, (int) $body['quantidade']);
     }
 
     if (isset($body['status']) && currentUserRole() === 'admin') {

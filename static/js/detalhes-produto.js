@@ -22,6 +22,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     set('detail-title', produto.titulo);
     set('detail-price', produto.preco_fmt);
+    const qtdEl = document.getElementById('detail-quantity');
+    if (qtdEl) {
+        if (produto.quantidade > 0) {
+            qtdEl.innerHTML = `<span style="color:#16a34a;font-weight:600;">● ${produto.quantidade} disponíve${produto.quantidade === 1 ? 'l' : 'is'}</span>`;
+        } else {
+            qtdEl.innerHTML = `<span style="color:#dc2626;font-weight:600;">● Esgotado</span>`;
+        }
+    }
     set('seller-name', produto.vendedor?.nome || '');
     set('seller-location', produto.vendedor?.localizacao || '');
     set('seller-rating', produto.vendedor?.rating?.toFixed(1) || 'N/A');

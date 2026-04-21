@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('product-title').value = produto.titulo;
             document.getElementById('product-description').value = produto.descricao || '';
             document.getElementById('product-price').value = produto.preco;
+            if (document.getElementById('product-quantity')) {
+                document.getElementById('product-quantity').value = produto.quantidade ?? 1;
+            }
             fotoUrl = produto.foto || '';
 
             // Selecionar categoria
@@ -85,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const condSelect = document.getElementById('product-condition');
             const categoria  = catSelect.options[catSelect.selectedIndex].value || catSelect.options[catSelect.selectedIndex].text;
             const condicao   = condSelect.options[condSelect.selectedIndex].value || condSelect.options[condSelect.selectedIndex].text;
+            const quantidade = Math.max(1, parseInt(document.getElementById('product-quantity')?.value || '1'));
 
             if (!titulo || isNaN(preco) || !categoria) {
                 alert('Preencha título, preço e categoria');
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
 
-            const body = { titulo, descricao, preco, categoria, condicao, foto_principal: fotoUrl };
+            const body = { titulo, descricao, preco, categoria, condicao, quantidade, foto_principal: fotoUrl };
 
             try {
                 if (editId) {

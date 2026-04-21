@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $whereStr = implode(' AND ', $where);
 
     $sql = "SELECT p.id, p.titulo, p.descricao, p.preco, p.categoria, p.condicao,
-                   p.status, p.foto_principal, p.criado_em,
+                   p.status, p.foto_principal, p.quantidade, p.criado_em,
                    u.id as vendedor_id, u.nome as vendedor_nome,
                    u.apartamento as vendedor_apto, u.bloco as vendedor_bloco,
                    u.rating as vendedor_rating, u.total_vendas as vendedor_vendas
@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'condicao'    => $p['condicao'],
             'status'      => $p['status'],
             'foto'        => $p['foto_principal'] ?: null,
+            'quantidade'  => (int) $p['quantidade'],
             'criado_em'   => $p['criado_em'],
             'favorito'    => in_array((int)$p['id'], $favoritos),
             'vendedor'    => [
@@ -116,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = trim($body['categoria'] ?? '');
     $condicao  = $body['condicao'] ?? 'Seminovo';
     $foto      = trim($body['foto_principal'] ?? $body['foto'] ?? '');
+    $quantidade = max(1, (int) ($body['quantidade'] ?? 1));
 
     if (!$titulo || $preco === null || !$categoria) {
         respondError('Campos obrigatórios: titulo, preco, categoria');
@@ -125,10 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!in_array($condicao, $condicoesValidas)) $condicao = 'Seminovo';
 
     $stmt = $db->prepare(
-        "INSERT INTO produtos (usuario_id, titulo, descricao, preco, categoria, condicao, foto_principal)
-         VALUES (?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO produtos (usuario_id, titulo, descricao, preco, categoria, condicao, foto_principal, quantidade)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $titulo, $descricao, $preco, $categoria, $condicao, $foto ?: null]);
+    $stmt->execute([$userId, $titulo, $descricao, $preco, $categoria, $condicao, $foto ?: null, $quantidade]);
     $produtoId = (int) $db->lastInsertId();
 
     respond([
