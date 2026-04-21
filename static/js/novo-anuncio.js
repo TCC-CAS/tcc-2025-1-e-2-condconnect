@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     body: formData,
                 });
                 fotoUrl = result.url;
-                if (uploadArea) uploadArea.innerHTML = `<img src="${fotoUrl}" style="max-height:200px;border-radius:8px;object-fit:cover;">`;
+                if (uploadArea) uploadArea.innerHTML = `<img src="${fotoUrl}" style="width:100%;height:200px;border-radius:8px;object-fit:cover;">`;
             } catch (err) {
                 if (uploadArea) uploadArea.innerHTML = '<p style="color:#dc2626">Erro ao enviar imagem</p>';
             }
