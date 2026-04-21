@@ -52,7 +52,7 @@ function enviarEmailReset(string $para, string $link): bool {
     $host     = 'smtp.gmail.com';
     $porta    = 587;
     $usuario  = 'condconnect2025@gmail.com';
-    $senha    = 'SENHA_APP_AQUI'; // ← Cole aqui a Senha de App do Gmail (16 caracteres)
+    $senha    = 'roke ejvm okut ivgr';
     $remetente = 'CondConnect <condconnect2025@gmail.com>';
 
     $assunto  = 'Recuperação de senha - CondConnect';
