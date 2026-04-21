@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <base href="/tcc-2025-1-e-2-condconnect/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/termos.css">
+    <style>
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .faq-question {
+            width: 100%;
+            background: var(--card);
+            border: none;
+            padding: 18px 24px;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--foreground);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Outfit', sans-serif;
+            transition: background 0.2s;
+        }
+        .faq-question:hover { background: var(--background); }
+        .faq-question svg { flex-shrink: 0; transition: transform 0.3s; }
+        .faq-question.open svg { transform: rotate(180deg); }
+        .faq-answer {
+            display: none;
+            padding: 0 24px 18px;
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.7;
+            background: var(--card);
+        }
+        .faq-answer.open { display: block; }
+    </style>
+</head>
+
+<body class="legal-body">
+
+    <div class="legal-container">
+        <a href="/Templates/index.html" class="back-to-site">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Voltar ao início
+        </a>
+
+        <div class="legal-header">
+            <h1>Central de Ajuda</h1>
+            <p>Perguntas frequentes e respostas rápidas</p>
+        </div>
+
+        <div class="legal-content">
+
+            <div class="legal-section">
+                <h2>Conta e Acesso</h2>
+                <div class="section-text">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como faço para criar minha conta?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Acesse a tela de cadastro, preencha seu nome, e-mail, senha, bloco e apartamento. Sua conta fica ativa imediatamente após o cadastro.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Esqueci minha senha. O que faço?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">No momento, entre em contato com nossa equipe pelo e-mail condconnct382@gmail.com informando seu e-mail cadastrado para redefinição de senha.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como altero meus dados de perfil?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Acesse o menu lateral e clique em "Perfil". Lá você pode atualizar seus dados pessoais, foto e informações de contato.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>Compras e Vendas</h2>
+                <div class="section-text">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como anuncio um produto?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Vá em "Meus Produtos" no menu e clique em "Novo Anúncio". Preencha o título, preço, categoria, condição e adicione uma foto. Seu anúncio aparece imediatamente no marketplace.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como faço para comprar um produto?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">No Marketplace, clique no produto desejado, veja os detalhes e clique em "Adicionar ao Carrinho". Depois acesse o Carrinho e finalize a compra.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como edito ou removo meu anúncio?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Acesse "Meus Produtos", encontre o anúncio e clique em "Editar" para alterar informações, ou em "Excluir" para remover o anúncio do marketplace.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como combinar a entrega com o vendedor?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Use o chat interno da plataforma clicando em "Contatar Vendedor" na página do produto. Combinem um ponto de entrega seguro dentro do condomínio.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>Pagamentos</h2>
+                <div class="section-text">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Quais formas de pagamento são aceitas?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">O pagamento é combinado diretamente entre comprador e vendedor. As formas mais usadas são Pix e dinheiro na entrega. Use sempre canais seguros e guarde os comprovantes.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            O CondConnect cobra alguma taxa?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Não! O CondConnect é gratuito para todos os moradores. Não há taxa sobre vendas, cadastro ou qualquer funcionalidade da plataforma.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <h2>Problemas e Suporte</h2>
+                <div class="section-text">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como denuncio um anúncio ou usuário?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Na página do produto, role até o final e clique em "Denunciar Anúncio". Informe o motivo e nossa equipe irá analisar em até 24 horas.</div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Não encontrei o que precisava. Como falo com vocês?
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div class="faq-answer">Acesse nossa página de <a href="/Templates/contato.html" style="color: var(--primary);">Contato</a> e envie uma mensagem. Respondemos em até 48 horas úteis.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const answer = btn.nextElementSibling;
+                const isOpen = btn.classList.contains('open');
+                document.querySelectorAll('.faq-question').forEach(b => {
+                    b.classList.remove('open');
+                    b.nextElementSibling.classList.remove('open');
+                });
+                if (!isOpen) {
+                    btn.classList.add('open');
+                    answer.classList.add('open');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

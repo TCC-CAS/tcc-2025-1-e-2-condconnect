@@ -59,8 +59,8 @@
             </p>
 
             <div class="hero-buttons">
-                <a href="#" class="btn-primary">Entrar no Marketplace →</a>
-                <a href="#" class="btn-secondary">Saiba mais</a>
+                <a href="#" id="btn-marketplace" class="btn-primary">Entrar no Marketplace →</a>
+                <a href="/Templates/como-funciona.html" class="btn-secondary">Saiba mais</a>
             </div>
 
             <div class="metrics">
@@ -233,8 +233,8 @@
                     <h5>Recursos</h5>
                     <div class="footer-links">
                         <a href="/Templates/marketplace.html">Marketplace</a>
-                        <a href="#">Como Funciona</a>
-                        <a href="#">Segurança</a>
+                        <a href="/Templates/como-funciona.html">Como Funciona</a>
+                        <a href="/Templates/seguranca.html">Segurança</a>
                     </div>
                 </div>
 
@@ -243,7 +243,7 @@
                     <div class="footer-links">
                         <a href="/Templates/termos.html">Termos de Uso</a>
                         <a href="/Templates/termos.html">Privacidade</a>
-                        <a href="#">Contato</a>
+                        <a href="/Templates/contato.html">Contato</a>
                     </div>
                 </div>
 
@@ -252,7 +252,7 @@
                     <div class="footer-links">
                         <a href="/Templates/cadastro.html">Cadastrar-se</a>
                         <a href="/Templates/login.html">Login Morador</a>
-                        <a href="#">Ajuda</a>
+                        <a href="/Templates/ajuda.html">Ajuda</a>
                     </div>
                 </div>
             </div>
@@ -285,6 +285,17 @@
 
 
     <script src="/static/js/main.js"></script>
+    <script>
+        document.getElementById('btn-marketplace').addEventListener('click', function (e) {
+            e.preventDefault();
+            const user = localStorage.getItem('condconnect_user');
+            if (user) {
+                window.location.href = '/Templates/marketplace.html';
+            } else {
+                window.location.href = '/Templates/login.html';
+            }
+        });
+    </script>
 </body>
 
 </html>
