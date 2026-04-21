@@ -8,56 +8,69 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     let activeConvId = null;
     let activeConv = null;
+    let allConvs = [];
     let poolingInterval = null;
 
-    async function renderConversations() {
-        if (!conversationsList) return;
-        try {
-            const convs = await CondConnect.api('/conversas/index.php');
+    // Verificar se deve abrir conversa específica (vindo de detalhes-produto)
+    const convIdParam = new URLSearchParams(window.location.search).get('conversa');
+    if (convIdParam) activeConvId = parseInt(convIdParam);
 
-            if (convs.length === 0) {
+    function renderConversationsList() {
+        if (!conversationsList || !allConvs.length) {
+            if (conversationsList && !allConvs.length) {
                 conversationsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Nenhuma conversa iniciada.</div>';
-                return;
             }
+            return;
+        }
 
-            conversationsList.innerHTML = convs.map(conv => {
-                const avatar = conv.outro_usuario?.avatar || '?';
-                const time = conv.ultima_mensagem_em
-                    ? new Date(conv.ultima_mensagem_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                    : '';
-                return `
-                    <div class="conversation-item ${conv.id === activeConvId ? 'active' : ''}" data-id="${conv.id}">
-                        <div class="chat-avatar">${avatar}</div>
-                        <div class="conversation-info">
-                            <div class="chat-header-info">
-                                <span class="chat-name">${conv.outro_usuario?.nome || ''}</span>
-                                <span class="chat-time">${time}</span>
-                            </div>
-                            <div class="last-message">${conv.ultima_mensagem || 'Iniciar conversa...'}</div>
+        conversationsList.innerHTML = allConvs.map(conv => {
+            const avatar = conv.outro_usuario?.avatar || '?';
+            const time = conv.ultima_mensagem_em
+                ? new Date(conv.ultima_mensagem_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                : '';
+            return `
+                <div class="conversation-item ${conv.id === activeConvId ? 'active' : ''}" data-id="${conv.id}">
+                    <div class="chat-avatar">${avatar}</div>
+                    <div class="conversation-info">
+                        <div class="chat-header-info">
+                            <span class="chat-name">${conv.outro_usuario?.nome || ''}</span>
+                            <span class="chat-time">${time}</span>
                         </div>
-                        ${conv.nao_lidas > 0 ? `<div class="unread-count">${conv.nao_lidas}</div>` : ''}
+                        <div class="last-message">${conv.ultima_mensagem || 'Iniciar conversa...'}</div>
                     </div>
-                `;
-            }).join('');
+                    ${conv.nao_lidas > 0 ? `<div class="unread-count">${conv.nao_lidas}</div>` : ''}
+                </div>
+            `;
+        }).join('');
 
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    activeConvId = parseInt(item.getAttribute('data-id'));
-                    activeConv = convs.find(c => c.id === activeConvId);
-                    atualizarHeaderChat();
-                    renderConversations();
-                    renderMessages();
-                });
-            });
-
-            // Selecionar primeiro se nenhum ativo
-            if (!activeConvId && convs.length > 0) {
-                activeConvId = convs[0].id;
-                activeConv = convs[0];
+        conversationsList.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const id = parseInt(item.getAttribute('data-id'));
+                if (id === activeConvId) return;
+                activeConvId = id;
+                activeConv = allConvs.find(c => c.id === id);
                 atualizarHeaderChat();
-                renderConversations();
+                renderConversationsList();
                 renderMessages();
+            });
+        });
+    }
+
+    async function loadConversations() {
+        try {
+            allConvs = await CondConnect.api('/conversas/index.php');
+
+            // Selecionar primeira conversa se nenhuma ativa
+            if (!activeConvId && allConvs.length > 0) {
+                activeConvId = allConvs[0].id;
+                activeConv = allConvs[0];
+                atualizarHeaderChat();
+            } else if (activeConvId) {
+                activeConv = allConvs.find(c => c.id === activeConvId) || null;
+                if (activeConv) atualizarHeaderChat();
             }
+
+            renderConversationsList();
         } catch {}
     }
 
@@ -87,8 +100,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             messagesList.scrollTop = messagesList.scrollHeight;
 
-            // Atualizar lista para limpar badges
-            renderConversations();
+            // Atualizar badges sem re-renderizar tudo
+            const conv = allConvs.find(c => c.id === activeConvId);
+            if (conv && conv.nao_lidas > 0) {
+                conv.nao_lidas = 0;
+                renderConversationsList();
+            }
         } catch {}
     }
 
@@ -104,7 +121,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 body: { conversa_id: activeConvId, texto: text },
             });
 
-            // Adicionar mensagem ao DOM imediatamente (otimista)
             const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const msgEl = document.createElement('div');
             msgEl.className = 'message sent';
@@ -112,7 +128,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             messagesList?.appendChild(msgEl);
             if (messagesList) messagesList.scrollTop = messagesList.scrollHeight;
 
-            renderConversations();
+            // Atualiza última mensagem na lista
+            const conv = allConvs.find(c => c.id === activeConvId);
+            if (conv) {
+                conv.ultima_mensagem = text;
+                conv.ultima_mensagem_em = new Date().toISOString();
+                renderConversationsList();
+            }
         } catch (err) {
             chatInput.value = text;
         }
@@ -126,19 +148,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (avatar) avatar.textContent = activeConv.outro_usuario?.avatar || '?';
     }
 
-    // Verificar se deve abrir conversa específica (vindo de detalhes-produto)
-    const convIdParam = new URLSearchParams(window.location.search).get('conversa');
-    if (convIdParam) activeConvId = parseInt(convIdParam);
-
     if (sendBtn) sendBtn.addEventListener('click', sendMessage);
     if (chatInput) chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-    await renderConversations();
+    await loadConversations();
+    await renderMessages();
 
-    // Polling a cada 10s para novas mensagens
-    poolingInterval = setInterval(() => {
-        if (activeConvId) renderMessages();
-        renderConversations();
+    // Polling a cada 10s
+    poolingInterval = setInterval(async () => {
+        if (activeConvId) await renderMessages();
+        await loadConversations();
     }, 10000);
 
     window.addEventListener('beforeunload', () => clearInterval(poolingInterval));

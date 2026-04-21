@@ -323,3 +323,36 @@
     color: #6b7280;
     margin: 0;
 }
+
+@media (max-width: 640px) {
+    .order-card {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .order-img {
+        width: 100%;
+        height: 160px;
+        border-radius: 8px;
+    }
+
+    .order-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .order-title {
+        flex: 1 1 100%;
+        font-size: 15px;
+        word-break: break-word;
+    }
+
+    .order-details {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .order-actions {
+        flex-wrap: wrap;
+    }
+}

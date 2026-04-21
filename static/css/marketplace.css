@@ -237,7 +237,17 @@
 .location-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 55%;
+}
+
+.location-info {
+    max-width: 40%;
+    flex-shrink: 0;
 }
 
 .seller-info svg,

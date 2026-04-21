@@ -170,5 +170,18 @@
 @media (max-width: 768px) {
     .product-detail-container {
         grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 24px;
+    }
+
+    .main-image {
+        display: block;
+        margin: 0 auto;
+        height: 280px;
+        max-width: 100%;
+    }
+
+    .action-buttons {
+        flex-direction: column;
     }
 }

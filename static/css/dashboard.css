@@ -975,10 +975,16 @@ body.dashboard-body {
     }
 
     .actions-grid,
-    .stats-grid,
     .products-grid,
     .dashboard-actions-row {
         grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
