@@ -229,7 +229,7 @@ const CondConnect = {
         return `
             <a href="${linkHref}" class="product-card" data-id="${produto.id}">
                 <div class="product-image-container">
-                    <img src="${produto.foto || '/static/assets/images/produto-placeholder.jpg'}" alt="${produto.titulo}" class="product-image">
+                    <img src="${produto.foto || ''}" alt="${produto.titulo}" class="product-image" onerror="this.style.opacity='0';this.parentElement.style.background='#e2e8f0'">
                     <span class="product-tag ${condicaoClass}">${produto.condicao || 'Usado'}</span>
                     <div class="like-btn" data-id="${produto.id}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

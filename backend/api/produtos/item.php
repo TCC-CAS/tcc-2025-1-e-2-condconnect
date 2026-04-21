@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'categoria'   => $p['categoria'],
         'condicao'    => $p['condicao'],
         'status'      => $p['status'],
-        'foto'        => $p['foto_principal'] ?? '/static/assets/images/produto-placeholder.jpg',
+        'foto'        => $p['foto_principal'] ?: null,
         'imagens'     => $imagens,
         'criado_em'   => $p['criado_em'],
         'favorito'    => $favorito,

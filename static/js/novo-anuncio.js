@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
 
-            const body = { titulo, descricao, preco, categoria, condicao, foto: fotoUrl };
+            const body = { titulo, descricao, preco, categoria, condicao, foto_principal: fotoUrl };
 
             try {
                 if (editId) {

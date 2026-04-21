@@ -32,7 +32,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const dataFmt = new Date(produto.criado_em).toLocaleDateString('pt-BR');
                 return `
                     <div class="product-item" data-id="${produto.id}">
-                        <img src="${produto.foto}" alt="${produto.titulo}" class="product-thumb" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">
+                        ${produto.foto
+                            ? `<img src="${produto.foto}" alt="${produto.titulo}" class="product-thumb" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">`
+                            : `<div style="width:70px;height:70px;border-radius:8px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+                        }
                         <div class="product-details">
                             <h3 class="product-title">${produto.titulo}</h3>
                             <span class="product-status tag-${produto.status}">${label}</span>
