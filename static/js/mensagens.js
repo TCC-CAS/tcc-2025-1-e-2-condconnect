@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         conversationsList.innerHTML = allConvs.map(conv => {
             const avatar = conv.outro_usuario?.avatar || '?';
             const time = conv.ultima_mensagem_em
-                ? new Date(conv.ultima_mensagem_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                ? new Date(conv.ultima_mensagem_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
                 : '';
             return `
                 <div class="conversation-item ${conv.id === activeConvId ? 'active' : ''}" data-id="${conv.id}">
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             messagesList.innerHTML = msgs.map(msg => {
-                const time = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const time = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
                 return `
                     <div class="message ${msg.tipo}">
                         <div class="message-content">${msg.texto}</div>
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 body: { conversa_id: activeConvId, texto: text },
             });
 
-            const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
             const msgEl = document.createElement('div');
             msgEl.className = 'message sent';
             msgEl.innerHTML = `<div class="message-content">${text}</div><span class="message-time">${now}</span>`;
