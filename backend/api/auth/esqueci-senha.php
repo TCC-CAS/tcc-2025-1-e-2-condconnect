@@ -30,7 +30,7 @@ $db->prepare("INSERT INTO password_resets (email, token, expira_em) VALUES (?, ?
    ->execute([$email, $token, $expira]);
 
 $host    = $_SERVER['HTTP_HOST'] ?? '54.242.139.170';
-$baseUrl = "http://$host/tcc-2025-1-e-2-condconnect/Templates/redefinir-senha.html";
+$baseUrl = "http://$host/Templates/redefinir-senha.html";
 $link    = $baseUrl . '?token=' . $token;
 
 $enviado = enviarEmailReset($email, $link);
