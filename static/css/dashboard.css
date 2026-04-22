@@ -952,9 +952,12 @@ body.dashboard-body {
 }
 
 @media (max-width: 900px) {
+    body.dashboard-body {
+        flex-direction: column;
+    }
+
     .top-navbar {
         display: none;
-        /* Mobile header takes over */
     }
 
     .sidebar {
