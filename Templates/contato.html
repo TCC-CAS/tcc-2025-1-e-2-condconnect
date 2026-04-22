@@ -101,19 +101,43 @@
 
     <script src="/static/js/main.js"></script>
     <script>
-        document.getElementById('contato-form').addEventListener('submit', function (e) {
+        document.getElementById('contato-form').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const nome = document.getElementById('nome').value.trim();
-            const email = document.getElementById('email').value.trim();
+            const nome     = document.getElementById('nome').value.trim();
+            const email    = document.getElementById('email').value.trim();
+            const assunto  = document.getElementById('assunto').value;
             const mensagem = document.getElementById('mensagem').value.trim();
+            const feedback = document.getElementById('form-feedback');
+            const btn      = this.querySelector('button[type="submit"]');
+
             if (!nome || !email || !mensagem) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+                feedback.textContent = 'Preencha todos os campos obrigatórios.';
+                feedback.style.color = '#dc2626';
+                feedback.style.display = 'block';
                 return;
             }
-            const feedback = document.getElementById('form-feedback');
-            feedback.textContent = '✓ Mensagem enviada! Responderemos em até 48 horas.';
-            feedback.style.display = 'block';
-            this.reset();
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            feedback.style.display = 'none';
+
+            try {
+                await CondConnect.api('/contato.php', {
+                    method: 'POST',
+                    body: { nome, email, assunto, mensagem }
+                });
+                feedback.textContent = '✓ Mensagem enviada! Responderemos em até 48 horas.';
+                feedback.style.color = '#16a34a';
+                feedback.style.display = 'block';
+                this.reset();
+            } catch (err) {
+                feedback.textContent = err.message || 'Erro ao enviar. Tente novamente.';
+                feedback.style.color = '#dc2626';
+                feedback.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enviar Mensagem';
+            }
         });
     </script>
 </body>
