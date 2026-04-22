@@ -60,8 +60,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                         </div>
                         <div class="order-actions">
                             <button class="btn-track" data-id="${order.id}">Acompanhar Pedido</button>
-                            ${tipo === 'sales' && order.status === 'confirmado' ? `<button class="btn-enviar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Marcar Enviado</button>` : ''}
-                            ${tipo === 'purchases' && order.status === 'enviado' ? `<button class="btn-receber" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Confirmar Recebimento</button>` : ''}
+                            ${tipo === 'sales' && order.status === 'aguardando' ? `<button class="btn-confirmar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Pedido</button>` : ''}
+                            ${tipo === 'sales' && order.status === 'confirmado' ? `<button class="btn-enviar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Marcar Enviado</button>` : ''}
+                            ${tipo === 'purchases' && order.status === 'enviado' ? `<button class="btn-receber" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Recebimento</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -70,6 +71,18 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Acompanhar
             document.querySelectorAll('.btn-track').forEach(btn => {
                 btn.addEventListener('click', () => openTracking(parseInt(btn.getAttribute('data-id'))));
+            });
+
+            // Confirmar pedido (vendedor)
+            document.querySelectorAll('.btn-confirmar').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    btn.disabled = true; btn.textContent = 'Confirmando...';
+                    try {
+                        await CondConnect.api(`/pedidos/item.php?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
+                        renderOrders(tipo);
+                    } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = 'Confirmar Pedido'; }
+                });
             });
 
             // Marcar enviado (vendedor)

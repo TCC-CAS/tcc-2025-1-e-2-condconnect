@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../helpers.php';
+require_once __DIR__ . '/../email-helper.php';
 setCORSHeaders();
 
 $userId = requireAuth();
@@ -112,8 +113,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare("UPDATE usuarios SET total_vendas = total_vendas + 1 WHERE id = ?")->execute([$item['vendedor_id']]);
         $db->prepare("UPDATE usuarios SET total_compras = total_compras + 1 WHERE id = ?")->execute([$userId]);
 
-        // Notificar vendedor
+        // Notificar vendedor (notificação interna)
         notificar($item['vendedor_id'], 'pedido', 'Novo Pedido!', 'Você recebeu um novo pedido.', '/Templates/meus-pedidos.html');
+
+        // E-mail para o vendedor
+        $infos = $db->prepare("SELECT u.nome as vendedor_nome, u.email as vendedor_email, c.nome as comprador_nome, pr.titulo FROM usuarios u JOIN usuarios c ON c.id = ? JOIN produtos pr ON pr.id = ? WHERE u.id = ?");
+        $infos->execute([$userId, $item['produto_id'], $item['vendedor_id']]);
+        $inf = $infos->fetch();
+        if ($inf) {
+            $idFmt  = 'CC-' . str_pad($pedidoId, 5, '0', STR_PAD_LEFT);
+            $preco  = 'R$ ' . number_format($total, 2, ',', '.');
+            $corpo  = emailPedidoLayout('🛒 Você recebeu um novo pedido!',
+                "<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{$inf['vendedor_nome']}</strong>! Você recebeu um novo pedido no CondConnect.</p>
+                 <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
+                   <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
+                   <p style='margin:4px 0 12px;color:#1e293b;font-weight:700;font-size:16px;'>{$inf['titulo']}</p>
+                   <p style='margin:0;color:#64748b;font-size:13px;'>ID: <strong>$idFmt</strong> &nbsp;•&nbsp; Valor: <strong>$preco</strong></p>
+                   <p style='margin:8px 0 0;color:#64748b;font-size:13px;'>Comprador: <strong>{$inf['comprador_nome']}</strong></p>
+                 </div>
+                 <a href='http://54.242.139.170/Templates/meus-pedidos.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Pedido</a>
+                 <p style='color:#64748b;font-size:14px;text-align:center;'>Confirme o pedido para avisar o comprador.</p>"
+            );
+            smtpSend($inf['vendedor_email'], "Novo pedido $idFmt - CondConnect", $corpo);
+        }
     }
 
     // Limpar carrinho
