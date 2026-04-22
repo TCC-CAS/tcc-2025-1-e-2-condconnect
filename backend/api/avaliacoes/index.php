@@ -29,13 +29,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute([$usuarioId]);
     }
 
-    $avs = $stmt->fetchAll();
+    $avs   = $stmt->fetchAll();
     $media = count($avs) > 0 ? array_sum(array_column($avs, 'nota')) / count($avs) : 0;
 
+    $podeAvaliar = false;
+    $jaAvaliou   = false;
+
+    // Verificar se o usuário logado pode avaliar este produto
+    if ($produtoId && isset($_SESSION['user_id'])) {
+        $userId = (int) $_SESSION['user_id'];
+
+        // Tem pedido entregue deste produto?
+        $comprou = $db->prepare(
+            "SELECT id FROM pedidos WHERE comprador_id = ? AND produto_id = ? AND status = 'entregue' LIMIT 1"
+        );
+        $comprou->execute([$userId, $produtoId]);
+        $podeAvaliar = (bool) $comprou->fetch();
+
+        // Já avaliou?
+        $avaliou = $db->prepare(
+            "SELECT id FROM avaliacoes WHERE avaliador_id = ? AND produto_id = ? LIMIT 1"
+        );
+        $avaliou->execute([$userId, $produtoId]);
+        $jaAvaliou = (bool) $avaliou->fetch();
+    }
+
     respond([
-        'avaliacoes' => $avs,
-        'media'      => round($media, 1),
-        'total'      => count($avs),
+        'avaliacoes'   => $avs,
+        'media'        => round($media, 1),
+        'total'        => count($avs),
+        'pode_avaliar' => $podeAvaliar,
+        'ja_avaliou'   => $jaAvaliou,
     ]);
 }
 
@@ -53,8 +77,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$avaliado || $nota < 1 || $nota > 5) {
         respondError('avaliado_id e nota (1-5) são obrigatórios');
     }
-
     if ($avaliado === $userId) respondError('Você não pode avaliar a si mesmo');
+
+    // Verificar se comprou e recebeu o produto
+    if ($produtoId) {
+        $comprou = $db->prepare(
+            "SELECT id FROM pedidos WHERE comprador_id = ? AND produto_id = ? AND status = 'entregue' LIMIT 1"
+        );
+        $comprou->execute([$userId, $produtoId]);
+        if (!$comprou->fetch()) {
+            respondError('Você só pode avaliar produtos que comprou e recebeu.', 403);
+        }
+
+        // Evitar avaliação duplicada
+        $jaAvaliou = $db->prepare(
+            "SELECT id FROM avaliacoes WHERE avaliador_id = ? AND produto_id = ? LIMIT 1"
+        );
+        $jaAvaliou->execute([$userId, $produtoId]);
+        if ($jaAvaliou->fetch()) {
+            respondError('Você já avaliou este produto.', 409);
+        }
+    }
 
     $stmt = $db->prepare(
         "INSERT INTO avaliacoes (avaliador_id, avaliado_id, produto_id, pedido_id, nota, comentario)

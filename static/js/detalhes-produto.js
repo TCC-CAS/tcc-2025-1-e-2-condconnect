@@ -200,46 +200,66 @@ document.addEventListener('DOMContentLoaded', async function () {
         }).join('');
     }
 
-    // Publicar avaliação
-    const stars = document.querySelectorAll('.star-rating');
-    let selectedRating = 0;
+    // Seção de avaliação — verificar permissão
+    const avaliacaoContainer = document.querySelector('.evaluations-container');
+    const reviewFormArea = avaliacaoContainer?.querySelector('div:has(h3)') ||
+                           avaliacaoContainer?.querySelector('[id="review-form-area"]');
 
-    stars.forEach((star, index) => {
-        star.style.cursor = 'pointer';
-        star.addEventListener('click', () => {
-            selectedRating = index + 1;
-            stars.forEach((s, i) => { s.style.color = i < selectedRating ? '#f59e0b' : '#cbd5e1'; });
-        });
-        star.addEventListener('mouseover', () => {
-            stars.forEach((s, i) => { s.style.color = i <= index ? '#f59e0b' : '#cbd5e1'; });
-        });
-        star.addEventListener('mouseleave', () => {
-            stars.forEach((s, i) => { s.style.color = i < selectedRating ? '#f59e0b' : '#cbd5e1'; });
-        });
-    });
+    try {
+        const avData = await CondConnect.api(`/avaliacoes/index.php?produto_id=${productId}`);
+        const formSection = avaliacaoContainer?.querySelector('div[style*="margin-top: 32px"], div[style*="margin-top:32px"]') ||
+                            [...(avaliacaoContainer?.children || [])].find(el => el.querySelector('h3'));
 
-    const publishBtn = document.querySelector('.evaluations-container button');
-    const commentArea = document.querySelector('.evaluations-container textarea');
+        if (formSection) {
+            if (avData.ja_avaliou) {
+                formSection.innerHTML = `<p style="color:#16a34a;font-weight:600;padding:16px;background:#dcfce7;border-radius:10px;">✓ Você já avaliou este produto.</p>`;
+            } else if (!avData.pode_avaliar) {
+                formSection.innerHTML = `<p style="color:#64748b;padding:16px;background:#f1f5f9;border-radius:10px;">🔒 Apenas compradores que receberam este produto podem avaliá-lo.</p>`;
+            } else {
+                // Pode avaliar — ativar stars e botão
+                const stars = formSection.querySelectorAll('.star-rating');
+                let selectedRating = 0;
 
-    if (publishBtn && commentArea) {
-        publishBtn.addEventListener('click', async () => {
-            const texto = commentArea.value.trim();
-            if (!texto || !selectedRating) {
-                alert('Selecione uma nota e escreva um comentário');
-                return;
-            }
-            try {
-                await CondConnect.api('/avaliacoes/index.php', {
-                    method: 'POST',
-                    body: { avaliado_id: produto.vendedor.id, produto_id: productId, nota: selectedRating, comentario: texto },
+                stars.forEach((star, index) => {
+                    star.style.cursor = 'pointer';
+                    star.addEventListener('click', () => {
+                        selectedRating = index + 1;
+                        stars.forEach((s, i) => { s.style.color = i < selectedRating ? '#f59e0b' : '#cbd5e1'; });
+                    });
+                    star.addEventListener('mouseover', () => {
+                        stars.forEach((s, i) => { s.style.color = i <= index ? '#f59e0b' : '#cbd5e1'; });
+                    });
+                    star.addEventListener('mouseleave', () => {
+                        stars.forEach((s, i) => { s.style.color = i < selectedRating ? '#f59e0b' : '#cbd5e1'; });
+                    });
                 });
-                commentArea.value = '';
-                selectedRating = 0;
-                stars.forEach(s => s.style.color = '#cbd5e1');
-                alert('Avaliação enviada com sucesso!');
-            } catch (err) {
-                alert(err.message || 'Erro ao enviar avaliação');
+
+                const publishBtn = formSection.querySelector('button');
+                const commentArea = formSection.querySelector('textarea');
+
+                if (publishBtn && commentArea) {
+                    publishBtn.addEventListener('click', async () => {
+                        const texto = commentArea.value.trim();
+                        if (!texto || !selectedRating) {
+                            alert('Selecione uma nota e escreva um comentário');
+                            return;
+                        }
+                        publishBtn.disabled = true;
+                        publishBtn.textContent = 'Enviando...';
+                        try {
+                            await CondConnect.api('/avaliacoes/index.php', {
+                                method: 'POST',
+                                body: { avaliado_id: produto.vendedor.id, produto_id: productId, nota: selectedRating, comentario: texto },
+                            });
+                            formSection.innerHTML = `<p style="color:#16a34a;font-weight:600;padding:16px;background:#dcfce7;border-radius:10px;">✓ Avaliação enviada com sucesso! Obrigado.</p>`;
+                        } catch (err) {
+                            alert(err.message || 'Erro ao enviar avaliação');
+                            publishBtn.disabled = false;
+                            publishBtn.textContent = 'Publicar Avaliação';
+                        }
+                    });
+                }
             }
-        });
-    }
+        }
+    } catch {}
 });
