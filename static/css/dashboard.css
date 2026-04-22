@@ -1178,3 +1178,7 @@ body.dashboard-body {
         display: flex;
     }
 }
+
+.location-info {
+    display: none;
+}
