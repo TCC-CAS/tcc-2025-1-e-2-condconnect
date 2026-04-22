@@ -1084,10 +1084,6 @@ body.dashboard-body {
 }
 
 @media (max-width: 1200px) {
-    .main-content {
-        padding: 40px;
-    }
-
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
     }
