@@ -26,6 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $totalPedidos = $db->prepare("SELECT COUNT(*) FROM pedidos WHERE comprador_id = ?");
     $totalPedidos->execute([$userId]);
 
+    $totalVendas = $db->prepare("SELECT COUNT(*) FROM pedidos WHERE vendedor_id = ? AND status = 'entregue'");
+    $totalVendas->execute([$userId]);
+
+    $faturamento = $db->prepare("SELECT COALESCE(SUM(preco_total), 0) FROM pedidos WHERE vendedor_id = ? AND status = 'entregue'");
+    $faturamento->execute([$userId]);
+
     // Notificações não lidas
     $notifNaoLidas = $db->prepare("SELECT COUNT(*) FROM notificacoes WHERE usuario_id = ? AND lida = 0");
     $notifNaoLidas->execute([$userId]);
@@ -41,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     respond(array_merge($user, [
         'id'              => (int) $user['id'],
         'rating'          => (float) $user['rating'],
-        'total_vendas'    => (int) $user['total_vendas'],
+        'total_vendas'    => (int) $totalVendas->fetchColumn(),
+        'faturamento'     => (float) $faturamento->fetchColumn(),
         'total_compras'   => (int) $user['total_compras'],
         'total_produtos'  => (int) $totalProdutos->fetchColumn(),
         'total_favoritos' => (int) $totalFavoritos->fetchColumn(),

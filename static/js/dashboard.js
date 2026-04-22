@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 if (el) el.textContent = val;
             });
 
+            const fatEl = document.getElementById('stat-faturamento');
+            if (fatEl) {
+                const fat = user.faturamento || 0;
+                fatEl.textContent = 'R$ ' + fat.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
             // Admin banner
             if (user.papel === 'admin') {
                 const banner = document.getElementById('admin-banner');
