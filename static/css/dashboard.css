@@ -970,8 +970,7 @@ body.dashboard-body {
     .main-content {
         margin-left: 0;
         width: 100%;
-        padding: 92px 20px 100px;
-        /* Space for mobile header: 72px + 20px; extra bottom for tab bar */
+        padding: 20px 20px 100px;
     }
 
     .actions-grid,
@@ -1029,19 +1028,17 @@ body.dashboard-body {
 /* MOBILE ELEMENTS */
 .mobile-header {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 72px;
-    background: rgba(255, 255, 255, 0.85);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    padding: 0 20px;
+    width: 100%;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 12px 20px;
     align-items: center;
     justify-content: space-between;
-    z-index: 1001;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    box-sizing: border-box;
+}
+
+.mobile-header .mobile-logo img {
+    height: 96px !important;
 }
 
 .mobile-logo {
