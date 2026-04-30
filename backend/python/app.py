@@ -1133,20 +1133,31 @@ def upload_imagem():
         return err('Nenhuma imagem enviada')
 
     file = request.files['imagem']
-    if file.content_length and file.content_length > 5 * 1024 * 1024:
+    data = file.read()
+
+    if len(data) > 5 * 1024 * 1024:
         return err('Imagem deve ter no máximo 5MB')
 
-    allowed = {'image/jpeg', 'image/png', 'image/webp'}
-    if file.content_type not in allowed:
+    filename_orig = file.filename or ''
+    ext = filename_orig.rsplit('.', 1)[-1].lower() if '.' in filename_orig else ''
+    mime = file.content_type or ''
+
+    if ext not in ('jpg', 'jpeg', 'png', 'webp') and 'image' not in mime:
         return err('Formato inválido. Use JPEG, PNG ou WebP')
 
-    ext_map = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}
-    ext = ext_map[file.content_type]
+    if ext in ('jpg', 'jpeg') or 'jpeg' in mime:
+        ext = 'jpg'
+    elif ext == 'webp' or 'webp' in mime:
+        ext = 'webp'
+    else:
+        ext = 'png'
+
     filename = f"{uid}_{int(datetime.now().timestamp())}_{secrets.token_hex(4)}.{ext}"
     filepath = os.path.join(UPLOAD_DIR, filename)
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    file.save(filepath)
+    with open(filepath, 'wb') as f:
+        f.write(data)
 
     url = f"/static/assets/uploads/{filename}"
     return ok({'url': url, 'message': 'Imagem enviada com sucesso'}, 201)
