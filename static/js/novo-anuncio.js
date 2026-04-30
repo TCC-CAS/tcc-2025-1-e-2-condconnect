@@ -10,14 +10,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     const editId = urlParams.get('edit');
     let fotoUrl = '';
 
-    // Modo edição
+    / Modo edição
     if (editId) {
         if (pageTitle) pageTitle.textContent = 'Editar Anúncio';
         if (pageSubtitle) pageSubtitle.textContent = 'Atualize as informações do seu produto';
         if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
 
         try {
-            const produto = await CondConnect.api(`/produtos/item.php?id=${editId}`);
+            const produto = await CondConnect.api(`/produtos/item/?id=${editId}`);
             document.getElementById('product-title').value = produto.titulo;
             document.getElementById('product-description').value = produto.descricao || '';
             document.getElementById('product-price').value = produto.preco;
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             fotoUrl = produto.foto || '';
 
-            // Selecionar categoria
+            / Selecionar categoria
             const catSelect = document.getElementById('product-category');
             for (let i = 0; i < catSelect.options.length; i++) {
                 if (catSelect.options[i].value === produto.categoria || catSelect.options[i].text === produto.categoria) {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
 
-            // Selecionar condição
+            / Selecionar condição
             const condSelect = document.getElementById('product-condition');
             for (let i = 0; i < condSelect.options.length; i++) {
                 if (condSelect.options[i].value === produto.condicao || condSelect.options[i].text === produto.condicao) {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
 
-            // Preview da imagem existente
+            / Preview da imagem existente
             if (produto.foto && uploadArea) {
                 uploadArea.innerHTML = `<img src="${produto.foto}" style="max-height:200px;border-radius:8px;object-fit:cover;">`;
             }
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Upload de imagem
+    / Upload de imagem
     if (fileInput) {
         fileInput.addEventListener('change', async function () {
             const file = this.files[0];
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (uploadArea) uploadArea.innerHTML = '<p style="color:#64748b">Enviando imagem...</p>';
 
             try {
-                const result = await CondConnect.api('/uploads/imagem.php', {
+                const result = await CondConnect.api('/uploads/imagem', {
                     method: 'POST',
                     body: formData,
                 });
@@ -101,9 +101,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             try {
                 if (editId) {
-                    await CondConnect.api(`/produtos/item.php?id=${editId}`, { method: 'PUT', body });
+                    await CondConnect.api(`/produtos/item/?id=${editId}`, { method: 'PUT', body });
                 } else {
-                    await CondConnect.api('/produtos/index.php', { method: 'POST', body });
+                    await CondConnect.api('/produtos/index', { method: 'POST', body });
                 }
                 window.location.href = '/Templates/meus-produtos.html';
             } catch (err) {

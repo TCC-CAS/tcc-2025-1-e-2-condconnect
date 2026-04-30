@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const tipoApi = tipo === 'purchases' ? 'compras' : 'vendas';
-            const data = await CondConnect.api(`/pedidos/index.php?tipo=${tipoApi}`);
+            const data = await CondConnect.api(`/pedidos/index/?tipo=${tipoApi}`);
             currentPedidos = data.pedidos || [];
 
             const countPurchases = document.getElementById('purchases-count');
@@ -68,40 +68,40 @@ document.addEventListener('DOMContentLoaded', async function () {
                 `;
             }).join('');
 
-            // Acompanhar
+            / Acompanhar
             document.querySelectorAll('.btn-track').forEach(btn => {
                 btn.addEventListener('click', () => openTracking(parseInt(btn.getAttribute('data-id'))));
             });
 
-            // Confirmar pedido (vendedor)
+            / Confirmar pedido (vendedor)
             document.querySelectorAll('.btn-confirmar').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     btn.disabled = true; btn.textContent = 'Confirmando...';
                     try {
-                        await CondConnect.api(`/pedidos/item.php?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
+                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = 'Confirmar Pedido'; }
                 });
             });
 
-            // Marcar enviado (vendedor)
+            / Marcar enviado (vendedor)
             document.querySelectorAll('.btn-enviar').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        await CondConnect.api(`/pedidos/item.php?id=${id}`, { method: 'PUT', body: { status: 'enviado' } });
+                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'enviado' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); }
                 });
             });
 
-            // Confirmar recebimento (comprador)
+            / Confirmar recebimento (comprador)
             document.querySelectorAll('.btn-receber').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        await CondConnect.api(`/pedidos/item.php?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
+                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); }
                 });
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         modal.classList.add('active');
     }
 
-    // Tabs
+    / Tabs
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));

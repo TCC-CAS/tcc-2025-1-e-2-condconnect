@@ -1,20 +1,20 @@
 document.addEventListener('DOMContentLoaded', async function () {
-    // Carregar dados do usuário
+    / Carregar dados do usuário
     async function carregarDashboard() {
         try {
-            // Sempre busca dados frescos no dashboard (não usa cache)
-            const user = await CondConnect.api('/me.php');
+            / Sempre busca dados frescos no dashboard (não usa cache)
+            const user = await CondConnect.api('/me');
             CondConnect.currentUser = user;
             localStorage.setItem('condconnect_user', JSON.stringify(user));
 
-            // Preencher nome
+            / Preencher nome
             const nomeEl = document.querySelector('.welcome-name');
             if (nomeEl) nomeEl.textContent = user.nome?.split(' ')[0] || 'Usuário';
 
             const emailEl = document.querySelector('.user-email');
             if (emailEl) emailEl.textContent = user.email;
 
-            // Stats
+            / Stats
             const stats = {
                 'stat-produtos': user.total_produtos || 0,
                 'stat-pedidos': user.total_pedidos || 0,
@@ -32,13 +32,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 fatEl.textContent = 'R$ ' + fat.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
 
-            // Admin banner
+            / Admin banner
             if (user.papel === 'admin') {
                 const banner = document.getElementById('admin-banner');
                 if (banner) banner.style.display = 'block';
             }
 
-            // Notificações
+            / Notificações
             const badge = document.querySelector('.notification-badge');
             if (badge && user.notif_nao_lidas > 0) {
                 badge.textContent = user.notif_nao_lidas;
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         `).join('');
 
         try {
-            const produtos = await CondConnect.api('/produtos/index.php?limite=4');
+            const produtos = await CondConnect.api('/produtos/index/?limite=4');
             if (produtos.length === 0) {
                 recentGrid.innerHTML = '<p class="empty-state">Nenhum produto anunciado ainda.</p>';
                 return;

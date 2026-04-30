@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     const adminUserList = document.getElementById('admin-user-list');
     const statsContainer = document.getElementById('admin-stats');
 
-    // Carregar stats
+    / Carregar stats
     async function carregarStats() {
         if (!statsContainer) return;
         try {
-            const stats = await CondConnect.api('/admin/stats.php');
+            const stats = await CondConnect.api('/admin/stats');
 
             statsContainer.innerHTML = `
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px;">
@@ -29,13 +29,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch {}
     }
 
-    // Carregar produtos para moderação
+    / Carregar produtos para moderação
     async function renderAdminProducts(status = 'all') {
         if (!adminProductList) return;
         adminProductList.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b">Carregando...</p>';
 
         try {
-            const produtos = await CondConnect.api(`/admin/produtos.php?status=${status}`);
+            const produtos = await CondConnect.api(`/admin/produtos/?status=${status}`);
 
             if (produtos.length === 0) {
                 adminProductList.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px">Nenhum anúncio encontrado.</p>';
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        await CondConnect.api('/admin/produtos.php', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'aprovar' } });
+                        await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'aprovar' } });
                         renderAdminProducts(status);
                     } catch (err) { alert(err.message); }
                 });
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const motivo = prompt('Motivo da rejeição:');
                     if (!motivo) return;
                     try {
-                        await CondConnect.api('/admin/produtos.php', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'rejeitar', motivo } });
+                        await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'rejeitar', motivo } });
                         renderAdminProducts(status);
                     } catch (err) { alert(err.message); }
                 });
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const id = btn.getAttribute('data-id');
                     if (!confirm('Tem certeza que deseja remover este anúncio permanentemente?')) return;
                     try {
-                        await CondConnect.api('/admin/produtos.php', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'remover' } });
+                        await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'remover' } });
                         renderAdminProducts(status);
                     } catch (err) { alert(err.message); }
                 });
@@ -99,13 +99,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Carregar usuários
+    / Carregar usuários
     async function renderAdminUsers() {
         if (!adminUserList) return;
         adminUserList.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b">Carregando...</p>';
 
         try {
-            const usuarios = await CondConnect.api('/admin/usuarios.php');
+            const usuarios = await CondConnect.api('/admin/usuarios');
 
             adminUserList.innerHTML = `
                 <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const acao = btn.getAttribute('data-acao');
                     if (!confirm(`Confirmar ação: ${acao}?`)) return;
                     try {
-                        await CondConnect.api('/admin/usuarios.php', { method: 'PUT', body: { usuario_id: id, acao } });
+                        await CondConnect.api('/admin/usuarios', { method: 'PUT', body: { usuario_id: id, acao } });
                         renderAdminUsers();
                     } catch (err) { alert(err.message); }
                 });
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Filtros de status
+    / Filtros de status
     const filterStatus = document.querySelectorAll('[data-status]');
     filterStatus.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
-    // Tabs entre produtos e usuários
+    / Tabs entre produtos e usuários
     const tabs = document.querySelectorAll('.admin-tab');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {

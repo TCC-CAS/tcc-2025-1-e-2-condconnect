@@ -89,7 +89,7 @@ def handle_options():
 
 # ── AUTH ──────────────────────────────────────────────────────────────────────
 
-@app.route('/auth/login.php', methods=['POST', 'OPTIONS'])
+@app.route('/auth/login', methods=['POST', 'OPTIONS'])
 def login():
     body = get_body()
     email = (body.get('email') or '').strip()
@@ -116,7 +116,7 @@ def login():
         db.close()
 
 
-@app.route('/auth/register.php', methods=['POST', 'OPTIONS'])
+@app.route('/auth/register', methods=['POST', 'OPTIONS'])
 def register():
     body = get_body()
     nome = (body.get('nome') or '').strip()
@@ -158,13 +158,13 @@ def register():
         db.close()
 
 
-@app.route('/auth/logout.php', methods=['POST', 'GET', 'OPTIONS'])
+@app.route('/auth/logout', methods=['POST', 'GET', 'OPTIONS'])
 def logout():
     session.clear()
     return ok({'message': 'Logout realizado com sucesso'})
 
 
-@app.route('/auth/esqueci-senha.php', methods=['POST', 'OPTIONS'])
+@app.route('/auth/esqueci-senha', methods=['POST', 'OPTIONS'])
 def esqueci_senha():
     body = get_body()
     email = (body.get('email') or '').strip()
@@ -211,7 +211,7 @@ def esqueci_senha():
         db.close()
 
 
-@app.route('/auth/redefinir-senha.php', methods=['POST', 'OPTIONS'])
+@app.route('/auth/redefinir-senha', methods=['POST', 'OPTIONS'])
 def redefinir_senha():
     body = get_body()
     token = (body.get('token') or '').strip()
@@ -243,7 +243,7 @@ def redefinir_senha():
 
 # ── ME ────────────────────────────────────────────────────────────────────────
 
-@app.route('/me.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/me', methods=['GET', 'PUT', 'OPTIONS'])
 def me():
     uid, e = require_auth()
     if e:
@@ -319,7 +319,7 @@ def me():
 
 # ── PRODUTOS ──────────────────────────────────────────────────────────────────
 
-@app.route('/produtos/index.php', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/produtos', methods=['GET', 'POST', 'OPTIONS'])
 def produtos():
     db = get_db()
     try:
@@ -411,7 +411,7 @@ def produtos():
         db.close()
 
 
-@app.route('/produtos/item.php', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/produtos/item', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
 def produto_item():
     pid = int(request.args.get('id', 0))
     if not pid:
@@ -503,7 +503,7 @@ def produto_item():
 
 # ── PEDIDOS ───────────────────────────────────────────────────────────────────
 
-@app.route('/pedidos/index.php', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/pedidos', methods=['GET', 'POST', 'OPTIONS'])
 def pedidos():
     uid, e = require_auth()
     if e:
@@ -626,7 +626,7 @@ def pedidos():
         db.close()
 
 
-@app.route('/pedidos/item.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/pedidos/item', methods=['GET', 'PUT', 'OPTIONS'])
 def pedido_item():
     uid, e = require_auth()
     if e:
@@ -747,7 +747,7 @@ def pedido_item():
 
 # ── CARRINHO ──────────────────────────────────────────────────────────────────
 
-@app.route('/carrinho/index.php', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+@app.route('/carrinho', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def carrinho():
     uid, e = require_auth()
     if e:
@@ -820,7 +820,7 @@ def carrinho():
 
 # ── FAVORITOS ─────────────────────────────────────────────────────────────────
 
-@app.route('/favoritos/index.php', methods=['GET', 'POST', 'DELETE', 'OPTIONS'])
+@app.route('/favoritos', methods=['GET', 'POST', 'DELETE', 'OPTIONS'])
 def favoritos():
     uid, e = require_auth()
     if e:
@@ -870,7 +870,7 @@ def favoritos():
 
 # ── CONVERSAS ─────────────────────────────────────────────────────────────────
 
-@app.route('/conversas/index.php', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/conversas', methods=['GET', 'POST', 'OPTIONS'])
 def conversas():
     uid, e = require_auth()
     if e:
@@ -930,7 +930,7 @@ def conversas():
         db.close()
 
 
-@app.route('/conversas/mensagens.php', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/conversas/mensagens', methods=['GET', 'POST', 'OPTIONS'])
 def mensagens():
     uid, e = require_auth()
     if e:
@@ -985,7 +985,7 @@ def mensagens():
 
 # ── NOTIFICAÇÕES ──────────────────────────────────────────────────────────────
 
-@app.route('/notificacoes/index.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/notificacoes', methods=['GET', 'PUT', 'OPTIONS'])
 def notificacoes():
     uid, e = require_auth()
     if e:
@@ -1015,7 +1015,7 @@ def notificacoes():
 
 # ── AVALIAÇÕES ────────────────────────────────────────────────────────────────
 
-@app.route('/avaliacoes/index.php', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/avaliacoes', methods=['GET', 'POST', 'OPTIONS'])
 def avaliacoes():
     db = get_db()
     try:
@@ -1094,7 +1094,7 @@ def avaliacoes():
 
 # ── USUÁRIOS / PERFIL ─────────────────────────────────────────────────────────
 
-@app.route('/usuarios/perfil.php', methods=['GET', 'OPTIONS'])
+@app.route('/usuarios/perfil', methods=['GET', 'OPTIONS'])
 def perfil():
     uid = int(request.args.get('id', 0))
     if not uid:
@@ -1123,7 +1123,7 @@ def perfil():
 
 # ── UPLOADS ───────────────────────────────────────────────────────────────────
 
-@app.route('/uploads/imagem.php', methods=['POST', 'OPTIONS'])
+@app.route('/uploads/imagem', methods=['POST', 'OPTIONS'])
 def upload_imagem():
     uid, e = require_auth()
     if e:
@@ -1154,7 +1154,7 @@ def upload_imagem():
 
 # ── CONFIGURAÇÕES ─────────────────────────────────────────────────────────────
 
-@app.route('/configuracoes/index.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/configuracoes', methods=['GET', 'PUT', 'OPTIONS'])
 def configuracoes():
     uid, e = require_auth()
     if e:
@@ -1191,7 +1191,7 @@ def configuracoes():
 
 # ── ADMIN ─────────────────────────────────────────────────────────────────────
 
-@app.route('/admin/produtos.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/admin/produtos', methods=['GET', 'PUT', 'OPTIONS'])
 def admin_produtos():
     uid, e = require_admin()
     if e:
@@ -1234,7 +1234,7 @@ def admin_produtos():
         db.close()
 
 
-@app.route('/admin/usuarios.php', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/admin/usuarios', methods=['GET', 'PUT', 'OPTIONS'])
 def admin_usuarios():
     uid, e = require_admin()
     if e:
@@ -1272,7 +1272,7 @@ def admin_usuarios():
         db.close()
 
 
-@app.route('/admin/stats.php', methods=['GET', 'OPTIONS'])
+@app.route('/admin/stats', methods=['GET', 'OPTIONS'])
 def admin_stats():
     _, e = require_admin()
     if e:
@@ -1303,7 +1303,7 @@ def admin_stats():
 
 # ── RELATÓRIOS ────────────────────────────────────────────────────────────────
 
-@app.route('/relatorios/index.php', methods=['POST', 'OPTIONS'])
+@app.route('/relatorios', methods=['POST', 'OPTIONS'])
 def relatorios():
     uid, e = require_auth()
     if e:
@@ -1328,7 +1328,7 @@ def relatorios():
 
 # ── CONTATO ───────────────────────────────────────────────────────────────────
 
-@app.route('/contato.php', methods=['POST', 'OPTIONS'])
+@app.route('/contato', methods=['POST', 'OPTIONS'])
 def contato():
     body = get_body()
     nome = (body.get('nome') or '').strip()

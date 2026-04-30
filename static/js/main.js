@@ -1,4 +1,4 @@
-// CondConnect - Global App State & API Helper
+/ CondConnect - Global App State & API Helper
 const API_BASE = '/backend/api';
 
 const CondConnect = {
@@ -26,7 +26,7 @@ const CondConnect = {
                 localStorage.removeItem('condconnect_user');
                 const path = window.location.pathname;
                 const publicPages = ['index', 'login', 'cadastro', 'esqueci-senha', 'redefinir-senha'];
-                const isPublic = publicPages.some(p => path.includes(p)) || path.endsWith('/');
+                const isPublic = publicPages.some(p => path.includes(p)) || path.endsWith('');
                 if (!isPublic) {
                     window.location.href = '/Templates/login.html';
                 }
@@ -43,7 +43,7 @@ const CondConnect = {
             return this.currentUser;
         }
         try {
-            const user = await this.api('/me.php');
+            const user = await this.api('/me');
             this.currentUser = user;
             localStorage.setItem('condconnect_user', JSON.stringify(user));
             return user;
@@ -66,17 +66,17 @@ const CondConnect = {
         localStorage.removeItem('condconnect_user_email');
     },
 
-    // Favoritos via API
+    / Favoritos via API
     async toggleFavorito(produtoId) {
         const favs = JSON.parse(localStorage.getItem('condconnect_favorites') || '[]');
         const isFav = favs.includes(produtoId);
         try {
             if (isFav) {
-                await this.api(`/favoritos/index.php?produto_id=${produtoId}`, { method: 'DELETE' });
+                await this.api(`/favoritos/index/?produto_id=${produtoId}`, { method: 'DELETE' });
                 const novo = favs.filter(f => f !== produtoId);
                 localStorage.setItem('condconnect_favorites', JSON.stringify(novo));
             } else {
-                await this.api('/favoritos/index.php', { method: 'POST', body: { produto_id: produtoId } });
+                await this.api('/favoritos/index', { method: 'POST', body: { produto_id: produtoId } });
                 favs.push(produtoId);
                 localStorage.setItem('condconnect_favorites', JSON.stringify(favs));
             }
@@ -173,7 +173,7 @@ const CondConnect = {
                 markAll.addEventListener('click', async e => {
                     e.preventDefault();
                     try {
-                        await this.api('/notificacoes/index.php', { method: 'PUT', body: {} });
+                        await this.api('/notificacoes/index', { method: 'PUT', body: {} });
                         document.querySelectorAll('.notification-item.unread').forEach(i => i.classList.remove('unread'));
                         const badge = document.querySelector('.notification-badge');
                         if (badge) badge.textContent = '0';
@@ -185,7 +185,7 @@ const CondConnect = {
 
     async carregarNotificacoes() {
         try {
-            const data = await this.api('/notificacoes/index.php');
+            const data = await this.api('/notificacoes/index');
             const badge = document.querySelector('.notification-badge');
             if (badge) badge.textContent = data.nao_lidas || '0';
             const lista = document.querySelector('.notification-list');
@@ -212,7 +212,7 @@ const CondConnect = {
             el.textContent = user.papel === 'admin' ? 'Administrador' : 'Membro';
         });
         document.querySelectorAll('.header-avatar').forEach(el => {
-            el.src = user.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
+            el.src = user.foto_url || `https:/ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
             el.alt = user.nome;
         });
         document.querySelectorAll('.header-user-initials').forEach(el => {
@@ -263,7 +263,7 @@ const CondConnect = {
     }
 };
 
-// Global Init
+/ Global Init
 document.addEventListener('DOMContentLoaded', () => {
     CondConnect.initMobileNav();
     CondConnect.initLandingNav();
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     CondConnect.syncUserHeader();
     CondConnect.carregarNotificacoes();
 
-    // Like button delegation
+    / Like button delegation
     document.addEventListener('click', async function(e) {
         const likeBtn = e.target.closest('.like-btn');
         if (!likeBtn) return;
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const isFav = await CondConnect.toggleFavorito(productId);
-            if (isFav === null) return; // não autenticado
+            if (isFav === null) return; / não autenticado
             likeBtn.style.color = isFav ? '#ef4444' : '';
             likeBtn.querySelector('svg')?.setAttribute('fill', isFav ? 'currentColor' : 'none');
         } catch {}

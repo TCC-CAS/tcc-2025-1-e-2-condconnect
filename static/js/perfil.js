@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const profileForm = document.getElementById('profile-form');
 
-    // Carregar dados do usuário logado
+    / Carregar dados do usuário logado
     async function carregarPerfil() {
         try {
             const user = await CondConnect.getMe();
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 if (el) el.value = val;
             });
 
-            // Header info
+            / Header info
             const headerName = document.querySelector('.profile-name, .user-display-name');
             if (headerName) headerName.textContent = user.nome;
 
@@ -31,11 +31,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             const locationEl = document.querySelector('.profile-location');
             if (locationEl) locationEl.textContent = `Bloco ${user.bloco} - Apto ${user.apartamento}`;
 
-            // Foto
+            / Foto
             const fotoEl = document.querySelector('.profile-avatar img, .avatar-img');
             if (fotoEl && user.foto_url) fotoEl.src = user.foto_url;
 
-            // Stats
+            / Stats
             const statsMap = {
                 'stat-produtos':  user.total_produtos,
                 'stat-vendas':    user.total_vendas,
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             });
 
-            // Senha
+            / Senha
             const senhaAtual = document.getElementById('current-password')?.value;
             const novaSenha  = document.getElementById('new-password')?.value;
             if (senhaAtual && novaSenha) {
@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             try {
-                await CondConnect.api('/me.php', { method: 'PUT', body });
-                // Atualizar cache
+                await CondConnect.api('/me', { method: 'PUT', body });
+                / Atualizar cache
                 CondConnect.currentUser = null;
                 localStorage.removeItem('condconnect_user');
                 await CondConnect.getMe();
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     carregarPerfil();
 });
 
-// Spinner style
+/ Spinner style
 const style = document.createElement('style');
 style.textContent = `@keyframes spin { 100% { transform: rotate(360deg); } } .spinner { animation: spin 1s linear infinite; }`;
 document.head.appendChild(style);

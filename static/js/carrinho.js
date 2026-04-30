@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         cartList.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280">Carregando...</div>';
 
         try {
-            const data = await CondConnect.api('/carrinho/index.php');
+            const data = await CondConnect.api('/carrinho/index');
             const { itens, subtotal, total_fmt } = data;
 
             if (!itens || itens.length === 0) {
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const id  = parseInt(this.getAttribute('data-id'));
                 const qty = parseInt(this.getAttribute('data-qty')) + 1;
                 try {
-                    await CondConnect.api('/carrinho/index.php', { method: 'PUT', body: { item_id: id, quantidade: qty } });
+                    await CondConnect.api('/carrinho/index', { method: 'PUT', body: { item_id: id, quantidade: qty } });
                     renderCart();
                 } catch {}
             });
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const qtyEl = this.nextElementSibling;
                 const qty = parseInt(qtyEl?.textContent || '1') - 1;
                 try {
-                    await CondConnect.api('/carrinho/index.php', { method: 'PUT', body: { item_id: id, quantidade: qty } });
+                    await CondConnect.api('/carrinho/index', { method: 'PUT', body: { item_id: id, quantidade: qty } });
                     renderCart();
                 } catch {}
             });
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             btn.addEventListener('click', async function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 try {
-                    await CondConnect.api(`/carrinho/index.php?item_id=${id}`, { method: 'DELETE' });
+                    await CondConnect.api(`/carrinho/index/?item_id=${id}`, { method: 'DELETE' });
                     renderCart();
                 } catch {}
             });
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         clearCartBtn.addEventListener('click', async function () {
             if (!confirm('Deseja limpar todo o seu carrinho?')) return;
             try {
-                await CondConnect.api('/carrinho/index.php', { method: 'DELETE' });
+                await CondConnect.api('/carrinho/index', { method: 'DELETE' });
                 renderCart();
             } catch {}
         });
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             this.disabled = true;
             this.textContent = 'Processando...';
             try {
-                await CondConnect.api('/pedidos/index.php', { method: 'POST', body: {} });
+                await CondConnect.api('/pedidos/index', { method: 'POST', body: {} });
                 alert('Pedido realizado com sucesso!');
                 window.location.href = '/Templates/meus-pedidos.html';
             } catch (err) {

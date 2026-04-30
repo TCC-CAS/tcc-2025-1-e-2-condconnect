@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (precoMax !== null) params.set('preco_max', precoMax);
 
         try {
-            const produtos = await CondConnect.api(`/produtos/index.php?${params}`);
+            const produtos = await CondConnect.api(`/produtos/index/?${params}`);
 
-            // Sincronizar favoritos do servidor
+            / Sincronizar favoritos do servidor
             const favIds = produtos.filter(p => p.favorito).map(p => p.id);
             localStorage.setItem('condconnect_favorites', JSON.stringify(favIds));
 

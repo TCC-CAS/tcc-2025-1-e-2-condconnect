@@ -6,17 +6,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (!productId) return;
 
-    // Carregar produto da API
+    / Carregar produto da API
     let produto = null;
     try {
-        produto = await CondConnect.api(`/produtos/item.php?id=${productId}`);
+        produto = await CondConnect.api(`/produtos/item/?id=${productId}`);
     } catch {
         document.querySelector('.product-detail-container, .main-content')?.insertAdjacentHTML('afterbegin',
             '<div style="text-align:center;padding:60px;color:#dc2626">Produto não encontrado.</div>');
         return;
     }
 
-    // Preencher dados na página
+    / Preencher dados na página
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     const setImg = (id, src) => { const el = document.getElementById(id); if (el) el.src = src; };
 
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const condTag = document.querySelector('.condition-tag, .product-tag');
     if (condTag) condTag.textContent = produto.condicao;
 
-    // Meta (categoria + data)
+    / Meta (categoria + data)
     const metaEl = document.getElementById('detail-meta');
     if (metaEl && produto.criado_em) {
         const dias = Math.floor((Date.now() - new Date(produto.criado_em)) / 86400000);
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         metaEl.innerHTML = `<span>${produto.categoria}</span> • <span>Publicado ${tempoStr}</span>`;
     }
 
-    // Thumbnails
+    / Thumbnails
     const thumbList = document.getElementById('thumbnail-list');
     if (thumbList && produto.foto) {
         const fotos = [produto.foto, ...(produto.imagens || [])];
@@ -67,13 +67,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Breadcrumb
+    / Breadcrumb
     const breadcrumb = document.querySelector('.breadcrumb');
     if (breadcrumb) {
         breadcrumb.innerHTML = `<a href="/Templates/marketplace.html">Marketplace</a> / <span>${produto.categoria}</span> / <span>${produto.titulo}</span>`;
     }
 
-    // Botão favorito
+    / Botão favorito
     const favBtn = document.querySelector('.btn-favorite, [data-action="favorite"]');
     if (favBtn) {
         if (produto.favorito) {
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Thumbnails (imagens extras)
+    / Thumbnails (imagens extras)
     if (produto.imagens?.length) {
         thumbnails.forEach((thumb, i) => {
             if (produto.imagens[i]) thumb.src = produto.imagens[i];
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
-    // Adicionar ao carrinho
+    / Adicionar ao carrinho
     const addToCartBtn = document.getElementById('add-to-cart-btn');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', async function () {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             this.disabled = true;
             this.innerHTML = 'Adicionando...';
             try {
-                await CondConnect.api('/carrinho/index.php', {
+                await CondConnect.api('/carrinho/index', {
                     method: 'POST',
                     body: { produto_id: productId, quantidade: 1 },
                 });
@@ -134,13 +134,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Contatar vendedor
+    / Contatar vendedor
     const contactBtn = document.querySelector('.btn-secondary');
     if (contactBtn && contactBtn.textContent.includes('Contatar')) {
         contactBtn.addEventListener('click', async function (e) {
             e.preventDefault();
             try {
-                const result = await CondConnect.api('/conversas/index.php', {
+                const result = await CondConnect.api('/conversas/index', {
                     method: 'POST',
                     body: { usuario_id: produto.vendedor.id, produto_id: productId },
                 });
@@ -152,14 +152,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Denunciar
+    / Denunciar
     const reportBtn = document.querySelector('[data-action="report"], .btn-report');
     if (reportBtn) {
         reportBtn.addEventListener('click', async () => {
             const motivo = prompt('Motivo da denúncia:');
             if (!motivo) return;
             try {
-                await CondConnect.api('/relatorios/index.php', {
+                await CondConnect.api('/relatorios/index', {
                     method: 'POST',
                     body: { tipo: 'produto', alvo_id: productId, motivo },
                 });
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    // Resumo de avaliações
+    / Resumo de avaliações
     const reviewsSummary = document.getElementById('reviews-summary');
     if (reviewsSummary && produto.avaliacoes?.length) {
         const media = (produto.avaliacoes.reduce((s, a) => s + a.nota, 0) / produto.avaliacoes.length).toFixed(1);
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         reviewsSummary.innerHTML = `<span style="font-weight:700;color:#f59e0b;">${media}</span><span style="color:#f59e0b;">${starSvg}</span><span style="color:#64748b;font-size:14px;">(${produto.avaliacoes.length} avaliação${produto.avaliacoes.length !== 1 ? 'ões' : ''})</span>`;
     }
 
-    // Avaliações
+    / Avaliações
     const commentsList = document.getElementById('comments-list');
     if (commentsList && produto.avaliacoes?.length) {
         commentsList.innerHTML = produto.avaliacoes.map(av => {
@@ -200,13 +200,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }).join('');
     }
 
-    // Seção de avaliação — verificar permissão
+    / Seção de avaliação — verificar permissão
     const avaliacaoContainer = document.querySelector('.evaluations-container');
     const reviewFormArea = avaliacaoContainer?.querySelector('div:has(h3)') ||
                            avaliacaoContainer?.querySelector('[id="review-form-area"]');
 
     try {
-        const avData = await CondConnect.api(`/avaliacoes/index.php?produto_id=${productId}`);
+        const avData = await CondConnect.api(`/avaliacoes/index/?produto_id=${productId}`);
         const formSection = avaliacaoContainer?.querySelector('div[style*="margin-top: 32px"], div[style*="margin-top:32px"]') ||
                             [...(avaliacaoContainer?.children || [])].find(el => el.querySelector('h3'));
 
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else if (!avData.pode_avaliar) {
                 formSection.innerHTML = `<p style="color:#64748b;padding:16px;background:#f1f5f9;border-radius:10px;">🔒 Apenas compradores que receberam este produto podem avaliá-lo.</p>`;
             } else {
-                // Pode avaliar — ativar stars e botão
+                / Pode avaliar — ativar stars e botão
                 const stars = formSection.querySelectorAll('.star-rating');
                 let selectedRating = 0;
 
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         publishBtn.disabled = true;
                         publishBtn.textContent = 'Enviando...';
                         try {
-                            await CondConnect.api('/avaliacoes/index.php', {
+                            await CondConnect.api('/avaliacoes/index', {
                                 method: 'POST',
                                 body: { avaliado_id: produto.vendedor.id, produto_id: productId, nota: selectedRating, comentario: texto },
                             });

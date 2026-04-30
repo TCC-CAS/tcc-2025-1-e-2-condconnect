@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     let allConvs = [];
     let poolingInterval = null;
 
-    // Verificar se deve abrir conversa específica (vindo de detalhes-produto)
+    / Verificar se deve abrir conversa específica (vindo de detalhes-produto)
     const convIdParam = new URLSearchParams(window.location.search).get('conversa');
     if (convIdParam) activeConvId = parseInt(convIdParam);
 
@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function loadConversations() {
         try {
-            allConvs = await CondConnect.api('/conversas/index.php');
+            allConvs = await CondConnect.api('/conversas/index');
 
-            // Selecionar primeira conversa se nenhuma ativa
+            / Selecionar primeira conversa se nenhuma ativa
             if (!activeConvId && allConvs.length > 0) {
                 activeConvId = allConvs[0].id;
                 activeConv = allConvs[0];
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         try {
-            const msgs = await CondConnect.api(`/conversas/mensagens.php?conversa_id=${activeConvId}`);
+            const msgs = await CondConnect.api(`/conversas/mensagens/?conversa_id=${activeConvId}`);
 
             if (!msgs.length) {
                 messagesList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Nenhuma mensagem ainda. Diga olá!</div>';
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             messagesList.scrollTop = messagesList.scrollHeight;
 
-            // Atualizar badges sem re-renderizar tudo
+            / Atualizar badges sem re-renderizar tudo
             const conv = allConvs.find(c => c.id === activeConvId);
             if (conv && conv.nao_lidas > 0) {
                 conv.nao_lidas = 0;
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         chatInput.value = '';
 
         try {
-            await CondConnect.api('/conversas/mensagens.php', {
+            await CondConnect.api('/conversas/mensagens', {
                 method: 'POST',
                 body: { conversa_id: activeConvId, texto: text },
             });
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             messagesList?.appendChild(msgEl);
             if (messagesList) messagesList.scrollTop = messagesList.scrollHeight;
 
-            // Atualiza última mensagem na lista
+            / Atualiza última mensagem na lista
             const conv = allConvs.find(c => c.id === activeConvId);
             if (conv) {
                 conv.ultima_mensagem = text;
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadConversations();
     await renderMessages();
 
-    // Polling a cada 10s
+    / Polling a cada 10s
     poolingInterval = setInterval(async () => {
         if (activeConvId) await renderMessages();
         await loadConversations();
