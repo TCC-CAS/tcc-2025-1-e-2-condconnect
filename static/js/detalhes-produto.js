@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     / Carregar produto da API
     let produto = null;
     try {
-        produto = await CondConnect.api(`/produtos/item/?id=${productId}`);
+        produto = await CondConnect.api(`/produtos/item?id=${productId}`);
     } catch {
         document.querySelector('.product-detail-container, .main-content')?.insertAdjacentHTML('afterbegin',
             '<div style="text-align:center;padding:60px;color:#dc2626">Produto não encontrado.</div>');
@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
     set('seller-name', produto.vendedor?.nome || '');
+    const avatarEl = document.querySelector('.seller-avatar');
+    if (avatarEl && produto.vendedor?.nome) {
+        const parts = produto.vendedor.nome.trim().split(/\s+/);
+        avatarEl.textContent = parts.length >= 2
+            ? (parts[0][0] + parts[1][0]).toUpperCase()
+            : parts[0][0].toUpperCase();
+    }
     set('seller-location', produto.vendedor?.localizacao || '');
     set('seller-rating', produto.vendedor?.rating?.toFixed(1) || 'N/A');
     set('seller-sales', (produto.vendedor?.vendas || 0) + ' vendas');
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                            avaliacaoContainer?.querySelector('[id="review-form-area"]');
 
     try {
-        const avData = await CondConnect.api(`/avaliacoes/index/?produto_id=${productId}`);
+        const avData = await CondConnect.api(`/avaliacoes?produto_id=${productId}`);
         const formSection = avaliacaoContainer?.querySelector('div[style*="margin-top: 32px"], div[style*="margin-top:32px"]') ||
                             [...(avaliacaoContainer?.children || [])].find(el => el.querySelector('h3'));
 

@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             btn.addEventListener('click', async function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 try {
-                    await CondConnect.api(`/carrinho/index/?item_id=${id}`, { method: 'DELETE' });
+                    await CondConnect.api(`/carrinho?item_id=${id}`, { method: 'DELETE' });
                     renderCart();
                 } catch {}
             });

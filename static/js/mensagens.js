@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         try {
-            const msgs = await CondConnect.api(`/conversas/mensagens/?conversa_id=${activeConvId}`);
+            const msgs = await CondConnect.api(`/conversas/mensagens?conversa_id=${activeConvId}`);
 
             if (!msgs.length) {
                 messagesList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Nenhuma mensagem ainda. Diga olá!</div>';

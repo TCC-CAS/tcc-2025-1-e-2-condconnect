@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const tipoApi = tipo === 'purchases' ? 'compras' : 'vendas';
-            const data = await CondConnect.api(`/pedidos/index/?tipo=${tipoApi}`);
+            const data = await CondConnect.api(`/pedidos?tipo=${tipoApi}`);
             currentPedidos = data.pedidos || [];
 
             const countPurchases = document.getElementById('purchases-count');
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const id = btn.getAttribute('data-id');
                     btn.disabled = true; btn.textContent = 'Confirmando...';
                     try {
-                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
+                        await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = 'Confirmar Pedido'; }
                 });
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'enviado' } });
+                        await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'enviado' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); }
                 });
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
-                        await CondConnect.api(`/pedidos/item/?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
+                        await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
                         renderOrders(tipo);
                     } catch (err) { alert(err.message); }
                 });

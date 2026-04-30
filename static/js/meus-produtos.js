@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         productsList.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Carregando...</div>';
 
         try {
-            const produtos = await CondConnect.api('/produtos/index/?meus=1');
+            const produtos = await CondConnect.api('/produtos?meus=1');
 
             if (produtos.length === 0) {
                 productsList.innerHTML = `
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     const id = btn.getAttribute('data-id');
                     if (!confirm('Tem certeza que deseja excluir este anúncio?')) return;
                     try {
-                        await CondConnect.api(`/produtos/item/?id=${id}`, { method: 'DELETE' });
+                        await CondConnect.api(`/produtos/item?id=${id}`, { method: 'DELETE' });
                         renderMyProducts();
                     } catch (err) {
                         alert(err.message || 'Erro ao excluir produto');

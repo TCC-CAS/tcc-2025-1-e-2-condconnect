@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         adminProductList.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b">Carregando...</p>';
 
         try {
-            const produtos = await CondConnect.api(`/admin/produtos/?status=${status}`);
+            const produtos = await CondConnect.api(`/admin/produtos?status=${status}`);
 
             if (produtos.length === 0) {
                 adminProductList.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px">Nenhum anúncio encontrado.</p>';

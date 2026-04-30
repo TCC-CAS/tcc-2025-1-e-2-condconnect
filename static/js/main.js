@@ -72,11 +72,11 @@ const CondConnect = {
         const isFav = favs.includes(produtoId);
         try {
             if (isFav) {
-                await this.api(`/favoritos/index/?produto_id=${produtoId}`, { method: 'DELETE' });
+                await this.api(`/favoritos?produto_id=${produtoId}`, { method: 'DELETE' });
                 const novo = favs.filter(f => f !== produtoId);
                 localStorage.setItem('condconnect_favorites', JSON.stringify(novo));
             } else {
-                await this.api('/favoritos/index', { method: 'POST', body: { produto_id: produtoId } });
+                await this.api('/favoritos', { method: 'POST', body: { produto_id: produtoId } });
                 favs.push(produtoId);
                 localStorage.setItem('condconnect_favorites', JSON.stringify(favs));
             }

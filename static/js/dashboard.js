@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         `).join('');
 
         try {
-            const produtos = await CondConnect.api('/produtos/index/?limite=4');
+            const produtos = await CondConnect.api('/produtos?limite=4');
             if (produtos.length === 0) {
                 recentGrid.innerHTML = '<p class="empty-state">Nenhum produto anunciado ainda.</p>';
                 return;

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
 
         try {
-            const produto = await CondConnect.api(`/produtos/item/?id=${editId}`);
+            const produto = await CondConnect.api(`/produtos/item?id=${editId}`);
             document.getElementById('product-title').value = produto.titulo;
             document.getElementById('product-description').value = produto.descricao || '';
             document.getElementById('product-price').value = produto.preco;
@@ -101,9 +101,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             try {
                 if (editId) {
-                    await CondConnect.api(`/produtos/item/?id=${editId}`, { method: 'PUT', body });
+                    await CondConnect.api(`/produtos/item?id=${editId}`, { method: 'PUT', body });
                 } else {
-                    await CondConnect.api('/produtos/index', { method: 'POST', body });
+                    await CondConnect.api('/produtos', { method: 'POST', body });
                 }
                 window.location.href = '/Templates/meus-produtos.html';
             } catch (err) {
