@@ -39,12 +39,19 @@
                         <div class="last-message">${conv.ultima_mensagem || 'Iniciar conversa...'}</div>
                     </div>
                     ${conv.nao_lidas > 0 ? `<div class="unread-count">${conv.nao_lidas}</div>` : ''}
+                    <button class="delete-conv-btn" data-conv-id="${conv.id}" title="Apagar conversa">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
                 </div>
             `;
         }).join('');
 
         conversationsList.querySelectorAll('.conversation-item').forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-conv-btn')) return;
                 const id = parseInt(item.getAttribute('data-id'));
                 if (id === activeConvId) return;
                 activeConvId = id;
@@ -52,6 +59,25 @@
                 atualizarHeaderChat();
                 renderConversationsList();
                 renderMessages();
+            });
+        });
+
+        conversationsList.querySelectorAll('.delete-conv-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const cid = parseInt(btn.getAttribute('data-conv-id'));
+                if (!confirm('Apagar esta conversa? As mensagens serão perdidas.')) return;
+                try {
+                    await CondConnect.api(`/conversas?id=${cid}`, { method: 'DELETE' });
+                    allConvs = allConvs.filter(c => c.id !== cid);
+                    if (activeConvId === cid) {
+                        activeConvId = allConvs[0]?.id || null;
+                        activeConv = allConvs[0] || null;
+                        atualizarHeaderChat();
+                        renderMessages();
+                    }
+                    renderConversationsList();
+                } catch {}
             });
         });
     }

@@ -879,7 +879,7 @@ def favoritos():
 
 # ── CONVERSAS ─────────────────────────────────────────────────────────────────
 
-@app.route('/conversas', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/conversas', methods=['GET', 'POST', 'DELETE', 'OPTIONS'])
 def conversas():
     uid, e = require_auth()
     if e:
@@ -922,6 +922,19 @@ def conversas():
                 })
             return ok(result)
 
+        if request.method == 'DELETE':
+            conv_id = int(request.args.get('id', 0))
+            if not conv_id:
+                return err('id da conversa é obrigatório')
+            with db.cursor() as c:
+                c.execute("SELECT id FROM conversas WHERE id=%s AND (usuario1_id=%s OR usuario2_id=%s)", (conv_id, uid, uid))
+                if not c.fetchone():
+                    return err('Conversa não encontrada', 404)
+                c.execute("DELETE FROM mensagens WHERE conversa_id=%s", (conv_id,))
+                c.execute("DELETE FROM conversas WHERE id=%s", (conv_id,))
+            return ok({'message': 'Conversa apagada'})
+
+        # POST
         body = get_body()
         outro_id = int(body.get('usuario_id', 0))
         produto_id = body.get('produto_id')
@@ -937,8 +950,8 @@ def conversas():
 
         with db.cursor() as c:
             c.execute("INSERT INTO conversas (usuario1_id, usuario2_id, produto_id) VALUES (%s,%s,%s)", (uid, outro_id, produto_id))
-            cid = c.lastrowid
-        return ok({'id': cid, 'message': 'Conversa criada'}, 201)
+            conv_id = c.lastrowid
+        return ok({'id': conv_id, 'message': 'Conversa criada'}, 201)
     finally:
         db.close()
 
