@@ -942,7 +942,8 @@ def mensagens():
     uid, e = require_auth()
     if e:
         return e
-    cid = int(request.args.get('conversa_id', 0))
+    body = get_body()
+    cid = int(request.args.get('conversa_id') or body.get('conversa_id') or 0)
     if not cid:
         return err('conversa_id é obrigatório')
 
