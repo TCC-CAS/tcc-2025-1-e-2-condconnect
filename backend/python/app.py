@@ -961,9 +961,9 @@ def mensagens():
                     (cid,)
                 )
                 msgs = c.fetchall()
-            return ok({'mensagens': [{'id': m['id'], 'texto': m['texto'], 'criado_em': str(m['criado_em']),
-                                      'lida': bool(m['lida']),
-                                      'remetente': {'id': m['rid'], 'nome': m['rnome'], 'foto': m['rfoto']}} for m in msgs]})
+            return ok([{'id': m['id'], 'texto': m['texto'], 'criado_em': str(m['criado_em']),
+                        'lida': bool(m['lida']), 'tipo': 'sent' if m['rid'] == uid else 'received',
+                        'remetente': {'id': m['rid'], 'nome': m['rnome'], 'foto': m['rfoto']}} for m in msgs])
 
         body = get_body()
         texto = (body.get('texto') or '').strip()
