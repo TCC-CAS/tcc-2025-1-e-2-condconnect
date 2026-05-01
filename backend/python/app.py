@@ -758,7 +758,7 @@ def carrinho():
         if request.method == 'GET':
             with db.cursor() as c:
                 c.execute(
-                    """SELECT ic.id, ic.quantidade, ic.produto_id, p.titulo, p.preco, p.foto_principal, p.status, p.usuario_id as vendedor_id
+                    """SELECT ic.id, ic.quantidade, ic.produto_id, p.titulo, p.preco, p.foto_principal, p.status, p.quantidade as estoque, p.usuario_id as vendedor_id
                        FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.usuario_id=%s""",
                     (uid,)
                 )
@@ -774,7 +774,7 @@ def carrinho():
                         'id': i['produto_id'], 'titulo': i['titulo'],
                         'preco': preco, 'preco_fmt': preco_fmt,
                         'foto': i['foto_principal'], 'status': i['status'],
-                        'localizacao': ''
+                        'estoque': int(i['estoque'] or 0), 'localizacao': ''
                     },
                     'disponivel': i['status'] == 'disponivel' and i['vendedor_id'] != uid
                 })
@@ -811,6 +811,14 @@ def carrinho():
             quantidade = int(body.get('quantidade', 1))
             if quantidade < 1:
                 return err('Quantidade inválida')
+            with db.cursor() as c:
+                c.execute("SELECT p.quantidade as estoque FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.id=%s AND ic.usuario_id=%s", (item_id, uid))
+                row = c.fetchone()
+            if not row:
+                return err('Item não encontrado', 404)
+            estoque = int(row['estoque'] or 0)
+            if quantidade > estoque:
+                return err(f'Quantidade máxima disponível: {estoque}', 400)
             with db.cursor() as c:
                 c.execute("UPDATE itens_carrinho SET quantidade=%s WHERE id=%s AND usuario_id=%s", (quantidade, item_id, uid))
             return ok({'message': 'Quantidade atualizada'})

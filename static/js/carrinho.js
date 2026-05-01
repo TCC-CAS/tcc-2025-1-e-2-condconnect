@@ -35,7 +35,10 @@
             if (cartSubtotal) cartSubtotal.textContent = fmt(subtotal);
             if (cartTotal) cartTotal.textContent = fmt(subtotal);
 
-            cartList.innerHTML = itens.map(item => `
+            cartList.innerHTML = itens.map(item => {
+                const estoque = item.produto.estoque || 0;
+                const noMax = item.quantidade >= estoque;
+                return `
                 <div class="cart-item" data-id="${item.id}" data-produto-id="${item.produto.id}">
                     <img src="${item.produto.foto}" alt="${item.produto.titulo}" class="cart-item-image">
                     <div class="cart-item-details">
@@ -43,12 +46,13 @@
                             <h3 class="item-title">${item.produto.titulo}</h3>
                             <p class="item-subtitle">${item.produto.localizacao}</p>
                             <div class="item-price">${item.produto.preco_fmt}</div>
+                            ${estoque > 0 ? `<p style="font-size:12px;color:#6b7280;margin:2px 0 0;">Estoque: ${estoque}</p>` : ''}
                         </div>
                         <div class="item-controls">
                             <div class="quantity-control">
                                 <button class="qty-btn minus" data-id="${item.id}">-</button>
                                 <span class="qty-value">${item.quantidade}</span>
-                                <button class="qty-btn plus" data-id="${item.id}" data-qty="${item.quantidade}">+</button>
+                                <button class="qty-btn plus" data-id="${item.id}" data-qty="${item.quantidade}" data-estoque="${estoque}" ${noMax ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
                             </div>
                             <button class="remove-btn" data-id="${item.id}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -58,8 +62,8 @@
                             </button>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
             addEventListeners();
         } catch (err) {
@@ -70,8 +74,11 @@
     function addEventListeners() {
         document.querySelectorAll('.qty-btn.plus').forEach(btn => {
             btn.addEventListener('click', async function () {
-                const id  = parseInt(this.getAttribute('data-id'));
-                const qty = parseInt(this.getAttribute('data-qty')) + 1;
+                if (this.disabled) return;
+                const id      = parseInt(this.getAttribute('data-id'));
+                const qty     = parseInt(this.getAttribute('data-qty')) + 1;
+                const estoque = parseInt(this.getAttribute('data-estoque') || '0');
+                if (estoque > 0 && qty > estoque) return;
                 try {
                     await CondConnect.api('/carrinho', { method: 'PUT', body: { item_id: id, quantidade: qty } });
                     renderCart();
