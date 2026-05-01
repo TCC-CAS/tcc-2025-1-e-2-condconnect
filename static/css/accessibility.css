@@ -1,0 +1,192 @@
+/* ── Skip to content ─────────────────────────────────────────────────────── */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    background: #00a6a6;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 0 0 8px 8px;
+    font-weight: 700;
+    font-size: 14px;
+    z-index: 9999;
+    text-decoration: none;
+    transition: top 0.2s;
+}
+.skip-link:focus {
+    top: 0;
+}
+
+/* ── Focus ring visível para navegação por teclado ───────────────────────── */
+*:focus-visible {
+    outline: 3px solid #00a6a6 !important;
+    outline-offset: 3px !important;
+    border-radius: 4px;
+}
+
+/* ── Botão flutuante de acessibilidade ───────────────────────────────────── */
+#accessibility-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    background: #00a6a6;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 9998;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+#accessibility-btn:hover {
+    background: #008f8f;
+    transform: scale(1.08);
+}
+
+/* ── Painel de acessibilidade ────────────────────────────────────────────── */
+#accessibility-panel {
+    position: fixed;
+    bottom: 88px;
+    right: 24px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    z-index: 9997;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+}
+#accessibility-panel.open {
+    display: flex;
+}
+#accessibility-panel h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.a11y-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #374151;
+    gap: 8px;
+}
+.a11y-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+.a11y-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.a11y-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #cbd5e1;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.a11y-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.a11y-toggle input:checked + .a11y-toggle-slider {
+    background: #00a6a6;
+}
+.a11y-toggle input:checked + .a11y-toggle-slider::before {
+    transform: translateX(18px);
+}
+
+/* ── Alto contraste ──────────────────────────────────────────────────────── */
+body.high-contrast {
+    background: #000 !important;
+    color: #fff !important;
+}
+body.high-contrast * {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+}
+body.high-contrast a,
+body.high-contrast button,
+body.high-contrast .nav-item,
+body.high-contrast .btn,
+body.high-contrast .product-card {
+    color: #ffff00 !important;
+    border: 1px solid #fff !important;
+}
+body.high-contrast img {
+    filter: grayscale(1) contrast(1.5);
+}
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+    background: #111 !important;
+    color: #fff !important;
+    border: 2px solid #fff !important;
+}
+body.high-contrast .sidebar,
+body.high-contrast .mobile-header,
+body.high-contrast .card,
+body.high-contrast .stat-card {
+    background: #111 !important;
+    border: 1px solid #888 !important;
+}
+body.high-contrast #accessibility-btn {
+    background: #ffff00 !important;
+    color: #000 !important;
+}
+body.high-contrast #accessibility-panel {
+    background: #111 !important;
+    border: 2px solid #fff !important;
+}
+body.high-contrast #accessibility-panel * {
+    color: #fff !important;
+    background: #111 !important;
+}
+
+/* ── Fonte grande ────────────────────────────────────────────────────────── */
+body.large-font {
+    font-size: 18px !important;
+}
+body.large-font p,
+body.large-font span,
+body.large-font a,
+body.large-font li,
+body.large-font label,
+body.large-font button,
+body.large-font input,
+body.large-font select {
+    font-size: 1.15em !important;
+}
+
+/* ── Região anunciadora de conteúdo dinâmico (ARIA live) ─────────────────── */
+#aria-announcer {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
