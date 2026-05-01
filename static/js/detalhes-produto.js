@@ -283,7 +283,23 @@
     if (fazerPropostaBtn && produto.status === 'disponivel') {
         const me = await CondConnect.api('/me').catch(() => null);
         if (me && me.id !== produto.vendedor?.id) {
+            // Verificar quantas propostas já foram enviadas para este produto
+            const minhasPropostas = await CondConnect.api(`/propostas?tipo=enviadas&produto_id=${productId}`).catch(() => ({ propostas: [] }));
+            const totalPropostas = minhasPropostas.propostas?.length || 0;
+            const limite = 3;
+
             fazerPropostaBtn.style.display = 'inline-flex';
+
+            if (totalPropostas >= limite) {
+                fazerPropostaBtn.disabled = true;
+                fazerPropostaBtn.style.opacity = '0.5';
+                fazerPropostaBtn.style.cursor = 'not-allowed';
+                fazerPropostaBtn.title = `Limite de ${limite} propostas por produto atingido`;
+                fazerPropostaBtn.innerHTML = fazerPropostaBtn.innerHTML.replace('Fazer Proposta', `Fazer Proposta (${totalPropostas}/${limite})`);
+            } else if (totalPropostas > 0) {
+                fazerPropostaBtn.title = `Você já enviou ${totalPropostas} de ${limite} propostas para este produto`;
+                fazerPropostaBtn.innerHTML = fazerPropostaBtn.innerHTML.replace('Fazer Proposta', `Fazer Proposta (${totalPropostas}/${limite})`);
+            }
         }
     }
 

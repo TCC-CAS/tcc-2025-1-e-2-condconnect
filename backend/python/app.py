@@ -109,6 +109,10 @@ def init_db():
                     atualizado_em DATETIME DEFAULT NOW() ON UPDATE NOW()
                 )
             """)
+            try:
+                c.execute("ALTER TABLE itens_carrinho ADD COLUMN preco_negociado DECIMAL(10,2) NULL DEFAULT NULL")
+            except Exception:
+                pass  # column already exists
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -584,7 +588,7 @@ def pedidos():
         if not produto_ids:
             with db.cursor() as c:
                 c.execute(
-                    "SELECT ic.produto_id, ic.quantidade, p.preco, p.usuario_id as vendedor_id, p.status FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.usuario_id=%s",
+                    "SELECT ic.produto_id, ic.quantidade, COALESCE(ic.preco_negociado, p.preco) as preco, p.usuario_id as vendedor_id, p.status FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.usuario_id=%s",
                     (uid,)
                 )
                 itens = c.fetchall()
@@ -787,7 +791,10 @@ def carrinho():
         if request.method == 'GET':
             with db.cursor() as c:
                 c.execute(
-                    """SELECT ic.id, ic.quantidade, ic.produto_id, p.titulo, p.preco, p.foto_principal, p.status, p.quantidade as estoque, p.usuario_id as vendedor_id
+                    """SELECT ic.id, ic.quantidade, ic.produto_id, p.titulo,
+                              COALESCE(ic.preco_negociado, p.preco) as preco,
+                              ic.preco_negociado,
+                              p.foto_principal, p.status, p.quantidade as estoque, p.usuario_id as vendedor_id
                        FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.usuario_id=%s""",
                     (uid,)
                 )
@@ -796,14 +803,15 @@ def carrinho():
             result = []
             for i in itens:
                 preco = float(i['preco'])
-                preco_fmt = f"R$ {preco:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+                preco_fmt = fmt_price(preco)
                 result.append({
                     'id': i['id'], 'quantidade': i['quantidade'],
                     'produto': {
                         'id': i['produto_id'], 'titulo': i['titulo'],
                         'preco': preco, 'preco_fmt': preco_fmt,
                         'foto': i['foto_principal'], 'status': i['status'],
-                        'estoque': int(i['estoque'] or 0), 'localizacao': ''
+                        'estoque': int(i['estoque'] or 0), 'localizacao': '',
+                        'preco_negociado': bool(i['preco_negociado'])
                     },
                     'disponivel': i['status'] == 'disponivel' and i['vendedor_id'] != uid
                 })
@@ -1469,8 +1477,14 @@ def propostas_route():
                          JOIN usuarios u ON pr.comprador_id=u.id
                          WHERE pr.vendedor_id=%s ORDER BY pr.criado_em DESC"""
 
+            produto_id_filter = request.args.get('produto_id')
+            params = [uid]
+            if produto_id_filter:
+                sql = sql.replace('ORDER BY', 'AND pr.produto_id=%s ORDER BY')
+                params.append(produto_id_filter)
+
             with db.cursor() as c:
-                c.execute(sql, (uid,))
+                c.execute(sql, params)
                 rows = c.fetchall()
 
             result = [{
@@ -1510,6 +1524,9 @@ def propostas_route():
         vendedor_id = produto['usuario_id']
 
         with db.cursor() as c:
+            c.execute("SELECT COUNT(*) as n FROM propostas WHERE produto_id=%s AND comprador_id=%s", (produto_id, uid))
+            if c.fetchone()['n'] >= 3:
+                return err('Você atingiu o limite de 3 propostas para este produto')
             c.execute("SELECT id FROM propostas WHERE produto_id=%s AND comprador_id=%s AND status='pendente'", (produto_id, uid))
             if c.fetchone():
                 return err('Você já tem uma proposta pendente para este produto')
@@ -1599,9 +1616,15 @@ def proposta_item():
         titulo = proposta['produto_titulo']
 
         if acao == 'aceitar':
+            # Adiciona ao carrinho do comprador com o preço negociado
+            with db.cursor() as c:
+                c.execute("DELETE FROM itens_carrinho WHERE usuario_id=%s AND produto_id=%s", (proposta['comprador_id'], proposta['produto_id']))
+                c.execute("INSERT INTO itens_carrinho (usuario_id, produto_id, quantidade, preco_negociado) VALUES (%s,%s,1,%s)",
+                          (proposta['comprador_id'], proposta['produto_id'], proposta['valor_proposto']))
+
             notificar(db, proposta['comprador_id'], 'proposta', 'Proposta Aceita!',
-                      f'Sua proposta de {valor_str} para "{titulo}" foi aceita!',
-                      '/Templates/meus-pedidos.html?tab=propostas')
+                      f'Sua proposta de {valor_str} para "{titulo}" foi aceita! O produto foi adicionado ao seu carrinho.',
+                      '/Templates/carrinho.html')
             try:
                 corpo = email_layout('🎉 Sua proposta foi aceita!',
                     f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Boa notícia, <strong>{proposta['comprador_nome']}</strong>! O vendedor aceitou sua proposta.</p>

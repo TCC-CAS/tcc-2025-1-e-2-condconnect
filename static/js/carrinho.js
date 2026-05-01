@@ -45,7 +45,7 @@
                         <div>
                             <h3 class="item-title">${item.produto.titulo}</h3>
                             <p class="item-subtitle">${item.produto.localizacao}</p>
-                            <div class="item-price">${item.produto.preco_fmt}</div>
+                            <div class="item-price">${item.produto.preco_fmt}${item.produto.preco_negociado ? ' <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:100px;font-weight:700;vertical-align:middle;">Negociado</span>' : ''}</div>
                             ${estoque > 0 ? `<p style="font-size:12px;color:#6b7280;margin:2px 0 0;">Estoque: ${estoque}</p>` : ''}
                         </div>
                         <div class="item-controls">
