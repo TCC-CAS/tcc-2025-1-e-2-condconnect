@@ -897,14 +897,21 @@ def conversas():
 
             result = []
             for c_row in convs:
-                outro = {'id': c_row['u2id'], 'nome': c_row['u2nome'], 'foto': c_row['u2foto']} if c_row['u1id'] == uid else {'id': c_row['u1id'], 'nome': c_row['u1nome'], 'foto': c_row['u1foto']}
+                if c_row['u1id'] == uid:
+                    outro_nome = c_row['u2nome'] or ''
+                    outro = {'id': c_row['u2id'], 'nome': outro_nome, 'foto': c_row['u2foto']}
+                else:
+                    outro_nome = c_row['u1nome'] or ''
+                    outro = {'id': c_row['u1id'], 'nome': outro_nome, 'foto': c_row['u1foto']}
+                parts = outro_nome.strip().split()
+                outro['avatar'] = ((parts[0][0] if parts else '') + (parts[1][0] if len(parts) > 1 else '')).upper() or '?'
                 result.append({
                     'id': c_row['id'], 'outro_usuario': outro,
                     'produto': {'titulo': c_row['produto_titulo']} if c_row['produto_titulo'] else None,
                     'ultima_mensagem': c_row['ultima_msg'], 'nao_lidas': c_row['nao_lidas'],
                     'ultima_mensagem_em': str(c_row['ultima_mensagem_em']) if c_row['ultima_mensagem_em'] else None
                 })
-            return ok({'conversas': result})
+            return ok(result)
 
         body = get_body()
         outro_id = int(body.get('usuario_id', 0))
