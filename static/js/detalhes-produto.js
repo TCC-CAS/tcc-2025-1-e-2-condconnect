@@ -269,4 +269,77 @@
             }
         }
     } catch {}
+
+    // Fazer proposta
+    const fazerPropostaBtn = document.getElementById('fazer-proposta-btn');
+    const propostaModal = document.getElementById('proposta-modal');
+    const fecharPropostaModal = document.getElementById('fechar-proposta-modal');
+    const fecharPropostaBtn = document.getElementById('fechar-proposta-btn');
+    const enviarPropostaBtn = document.getElementById('enviar-proposta-btn');
+    const propostaErro = document.getElementById('proposta-erro');
+    const propostaNome = document.getElementById('proposta-produto-nome');
+
+    // Mostrar botão apenas se for produto de outro usuário e disponível
+    if (fazerPropostaBtn && produto.status === 'disponivel') {
+        const me = await CondConnect.api('/me').catch(() => null);
+        if (me && me.id !== produto.vendedor?.id) {
+            fazerPropostaBtn.style.display = 'inline-flex';
+        }
+    }
+
+    if (fazerPropostaBtn) {
+        fazerPropostaBtn.addEventListener('click', () => {
+            if (propostaNome) propostaNome.textContent = `Produto: ${produto.titulo} — Preço anunciado: ${produto.preco_fmt}`;
+            if (propostaModal) propostaModal.style.display = 'flex';
+            document.getElementById('proposta-valor')?.focus();
+        });
+    }
+
+    const fecharModal = () => {
+        if (propostaModal) propostaModal.style.display = 'none';
+        if (propostaErro) propostaErro.style.display = 'none';
+        const v = document.getElementById('proposta-valor');
+        const m = document.getElementById('proposta-mensagem');
+        if (v) v.value = '';
+        if (m) m.value = '';
+    };
+
+    if (fecharPropostaModal) fecharPropostaModal.addEventListener('click', fecharModal);
+    if (fecharPropostaBtn) fecharPropostaBtn.addEventListener('click', fecharModal);
+    if (propostaModal) propostaModal.addEventListener('click', e => { if (e.target === propostaModal) fecharModal(); });
+
+    if (enviarPropostaBtn) {
+        enviarPropostaBtn.addEventListener('click', async () => {
+            const valorInput = document.getElementById('proposta-valor');
+            const mensagemInput = document.getElementById('proposta-mensagem');
+            const valor = parseFloat(valorInput?.value);
+            const mensagem = mensagemInput?.value.trim() || '';
+
+            if (!valor || valor <= 0) {
+                if (propostaErro) { propostaErro.textContent = 'Informe um valor válido.'; propostaErro.style.display = 'block'; }
+                return;
+            }
+
+            const valorFmt = valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            if (!confirm(`Tem certeza que deseja enviar uma proposta de ${valorFmt} para "${produto.titulo}"?`)) return;
+
+            enviarPropostaBtn.disabled = true;
+            enviarPropostaBtn.textContent = 'Enviando...';
+            if (propostaErro) propostaErro.style.display = 'none';
+
+            try {
+                await CondConnect.api('/propostas', {
+                    method: 'POST',
+                    body: { produto_id: productId, valor_proposto: valor, mensagem }
+                });
+                fecharModal();
+                alert('Proposta enviada! O vendedor será notificado por e-mail.');
+            } catch (err) {
+                if (propostaErro) { propostaErro.textContent = err.message || 'Erro ao enviar proposta.'; propostaErro.style.display = 'block'; }
+            } finally {
+                enviarPropostaBtn.disabled = false;
+                enviarPropostaBtn.textContent = 'Enviar Proposta';
+            }
+        });
+    }
 });

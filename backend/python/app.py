@@ -81,10 +81,39 @@ def hash_password(plain):
 def fmt_id(n):
     return 'CC-' + str(n).zfill(5)
 
+def fmt_price(v):
+    return f"R$ {float(v):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
 @app.before_request
 def handle_options():
     if request.method == 'OPTIONS':
         return ok(), 200
+
+
+# ── DB INIT ───────────────────────────────────────────────────────────────────
+
+def init_db():
+    try:
+        db = get_db()
+        with db.cursor() as c:
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS propostas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    produto_id INT NOT NULL,
+                    comprador_id INT NOT NULL,
+                    vendedor_id INT NOT NULL,
+                    valor_proposto DECIMAL(10,2) NOT NULL,
+                    mensagem TEXT,
+                    status ENUM('pendente','aceita','recusada','cancelada') DEFAULT 'pendente',
+                    criado_em DATETIME DEFAULT NOW(),
+                    atualizado_em DATETIME DEFAULT NOW() ON UPDATE NOW()
+                )
+            """)
+        db.close()
+    except Exception as e:
+        print(f'init_db error: {e}')
+
+init_db()
 
 
 # ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -1408,6 +1437,207 @@ def contato():
     if not enviado:
         return err('Erro ao enviar mensagem. Tente novamente mais tarde.', 500)
     return ok({'ok': True})
+
+
+# ── PROPOSTAS ─────────────────────────────────────────────────────────────────
+
+@app.route('/propostas', methods=['GET', 'POST', 'OPTIONS'])
+def propostas_route():
+    uid, e = require_auth()
+    if e:
+        return e
+
+    db = get_db()
+    try:
+        if request.method == 'GET':
+            tipo = request.args.get('tipo', 'recebidas')
+
+            if tipo == 'enviadas':
+                sql = """SELECT pr.id, pr.valor_proposto, pr.mensagem, pr.status, pr.criado_em,
+                                p.titulo as produto_titulo, p.foto_principal as produto_foto, p.id as produto_id,
+                                u.nome as outro_nome
+                         FROM propostas pr
+                         JOIN produtos p ON pr.produto_id=p.id
+                         JOIN usuarios u ON pr.vendedor_id=u.id
+                         WHERE pr.comprador_id=%s ORDER BY pr.criado_em DESC"""
+            else:
+                sql = """SELECT pr.id, pr.valor_proposto, pr.mensagem, pr.status, pr.criado_em,
+                                p.titulo as produto_titulo, p.foto_principal as produto_foto, p.id as produto_id,
+                                u.nome as outro_nome
+                         FROM propostas pr
+                         JOIN produtos p ON pr.produto_id=p.id
+                         JOIN usuarios u ON pr.comprador_id=u.id
+                         WHERE pr.vendedor_id=%s ORDER BY pr.criado_em DESC"""
+
+            with db.cursor() as c:
+                c.execute(sql, (uid,))
+                rows = c.fetchall()
+
+            result = [{
+                'id': r['id'], 'valor_proposto': float(r['valor_proposto']),
+                'valor_fmt': fmt_price(r['valor_proposto']),
+                'mensagem': r['mensagem'] or '', 'status': r['status'],
+                'criado_em': str(r['criado_em']),
+                'produto': {'id': r['produto_id'], 'titulo': r['produto_titulo'], 'foto': r['produto_foto']},
+                'outro_nome': r['outro_nome']
+            } for r in rows]
+            return ok({'propostas': result, 'total': len(result)})
+
+        # POST
+        body = get_body()
+        produto_id = int(body.get('produto_id', 0))
+        valor_raw = body.get('valor_proposto')
+        mensagem = (body.get('mensagem') or '').strip()
+
+        if not produto_id or valor_raw is None:
+            return err('produto_id e valor_proposto são obrigatórios')
+
+        valor = float(valor_raw)
+        if valor <= 0:
+            return err('Valor deve ser maior que zero')
+
+        with db.cursor() as c:
+            c.execute("SELECT usuario_id, titulo, preco, status FROM produtos WHERE id=%s", (produto_id,))
+            produto = c.fetchone()
+
+        if not produto:
+            return err('Produto não encontrado', 404)
+        if produto['usuario_id'] == uid:
+            return err('Você não pode fazer proposta para o seu próprio produto')
+        if produto['status'] != 'disponivel':
+            return err('Produto não disponível para propostas')
+
+        vendedor_id = produto['usuario_id']
+
+        with db.cursor() as c:
+            c.execute("SELECT id FROM propostas WHERE produto_id=%s AND comprador_id=%s AND status='pendente'", (produto_id, uid))
+            if c.fetchone():
+                return err('Você já tem uma proposta pendente para este produto')
+
+        with db.cursor() as c:
+            c.execute(
+                "INSERT INTO propostas (produto_id, comprador_id, vendedor_id, valor_proposto, mensagem) VALUES (%s,%s,%s,%s,%s)",
+                (produto_id, uid, vendedor_id, valor, mensagem)
+            )
+            nova_id = c.lastrowid
+
+        valor_str = fmt_price(valor)
+        preco_orig = fmt_price(float(produto['preco']))
+        notificar(db, vendedor_id, 'proposta', 'Nova Proposta!',
+                  f'Proposta de {valor_str} para "{produto["titulo"]}"',
+                  '/Templates/meus-pedidos.html?tab=propostas')
+
+        try:
+            with db.cursor() as c:
+                c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (vendedor_id,))
+                vend = c.fetchone()
+                c.execute("SELECT nome FROM usuarios WHERE id=%s", (uid,))
+                comp = c.fetchone()
+            if vend and comp:
+                corpo = email_layout('💰 Nova proposta recebida!',
+                    f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{vend['nome']}</strong>! Você recebeu uma nova proposta.</p>
+                    <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
+                      <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
+                      <p style='margin:4px 0 12px;color:#1e293b;font-weight:700;font-size:16px;'>{produto['titulo']}</p>
+                      <p style='margin:0;color:#64748b;font-size:13px;'>Preço anunciado: <strong>{preco_orig}</strong></p>
+                      <p style='margin:4px 0 0;color:#00a6a6;font-size:20px;font-weight:700;'>Proposta: {valor_str}</p>
+                      {f'<p style="margin:12px 0 0;color:#64748b;font-size:13px;font-style:italic;">"{mensagem}"</p>' if mensagem else ''}
+                    </div>
+                    <p style='color:#64748b;font-size:13px;text-align:center;margin-bottom:16px;'>Enviada por: <strong>{comp['nome']}</strong></p>
+                    <a href='http://54.242.139.170/Templates/meus-pedidos.html?tab=propostas' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Proposta</a>"""
+                )
+                send_email(vend['email'], f'Nova proposta: {produto["titulo"]} - CondConnect', corpo)
+        except Exception as ex:
+            print(f'Email proposta error: {ex}')
+
+        return ok({'id': nova_id, 'message': 'Proposta enviada com sucesso'}, 201)
+    finally:
+        db.close()
+
+
+@app.route('/propostas/item', methods=['PUT', 'OPTIONS'])
+def proposta_item():
+    uid, e = require_auth()
+    if e:
+        return e
+
+    body = get_body()
+    pid = int(body.get('proposta_id', 0))
+    acao = body.get('acao', '')
+
+    if not pid or acao not in ['aceitar', 'recusar', 'cancelar']:
+        return err('proposta_id e acao valida sao obrigatorios')
+
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("""SELECT pr.*, p.titulo as produto_titulo,
+                                uc.nome as comprador_nome, uc.email as comprador_email,
+                                uv.nome as vendedor_nome, uv.email as vendedor_email
+                         FROM propostas pr
+                         JOIN produtos p ON pr.produto_id=p.id
+                         JOIN usuarios uc ON pr.comprador_id=uc.id
+                         JOIN usuarios uv ON pr.vendedor_id=uv.id
+                         WHERE pr.id=%s AND pr.status='pendente'""", (pid,))
+            proposta = c.fetchone()
+
+        if not proposta:
+            return err('Proposta nao encontrada ou ja respondida', 404)
+
+        if acao == 'cancelar' and proposta['comprador_id'] != uid:
+            return err('Sem permissao', 403)
+        if acao in ['aceitar', 'recusar'] and proposta['vendedor_id'] != uid:
+            return err('Sem permissao', 403)
+
+        status_map = {'aceitar': 'aceita', 'recusar': 'recusada', 'cancelar': 'cancelada'}
+        novo_status = status_map[acao]
+
+        with db.cursor() as c:
+            c.execute("UPDATE propostas SET status=%s WHERE id=%s", (novo_status, pid))
+
+        valor_str = fmt_price(float(proposta['valor_proposto']))
+        titulo = proposta['produto_titulo']
+
+        if acao == 'aceitar':
+            notificar(db, proposta['comprador_id'], 'proposta', 'Proposta Aceita!',
+                      f'Sua proposta de {valor_str} para "{titulo}" foi aceita!',
+                      '/Templates/meus-pedidos.html?tab=propostas')
+            try:
+                corpo = email_layout('🎉 Sua proposta foi aceita!',
+                    f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Boa notícia, <strong>{proposta['comprador_nome']}</strong>! O vendedor aceitou sua proposta.</p>
+                    <div style='background:#dcfce7;border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid #86efac;'>
+                      <p style='margin:0;color:#15803d;font-size:13px;font-weight:600;'>✓ Proposta Aceita</p>
+                      <p style='margin:8px 0 4px;color:#1e293b;font-weight:700;font-size:16px;'>{titulo}</p>
+                      <p style='margin:0;color:#16a34a;font-size:20px;font-weight:700;'>{valor_str}</p>
+                    </div>
+                    <p style='color:#64748b;font-size:14px;text-align:center;margin-bottom:16px;'>Entre em contato com o vendedor <strong>{proposta['vendedor_nome']}</strong> para combinar os detalhes.</p>
+                    <a href='http://54.242.139.170/Templates/mensagens.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Entrar em Contato</a>"""
+                )
+                send_email(proposta['comprador_email'], f'Proposta aceita: {titulo} - CondConnect', corpo)
+            except Exception as ex:
+                print(f'Email aceite error: {ex}')
+
+        elif acao == 'recusar':
+            notificar(db, proposta['comprador_id'], 'proposta', 'Proposta Recusada',
+                      f'Sua proposta de {valor_str} para "{titulo}" foi recusada.',
+                      '/Templates/meus-pedidos.html?tab=propostas')
+            try:
+                corpo = email_layout('❌ Proposta recusada',
+                    f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'><strong>{proposta['comprador_nome']}</strong>, o vendedor não aceitou sua proposta desta vez.</p>
+                    <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
+                      <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
+                      <p style='margin:4px 0;color:#1e293b;font-weight:700;'>{titulo}</p>
+                      <p style='margin:4px 0 0;color:#dc2626;font-size:14px;'>Proposta de {valor_str} recusada.</p>
+                    </div>
+                    <a href='http://54.242.139.170/Templates/marketplace.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Ver outros produtos</a>"""
+                )
+                send_email(proposta['comprador_email'], f'Proposta recusada: {titulo} - CondConnect', corpo)
+            except Exception as ex:
+                print(f'Email recusa error: {ex}')
+
+        return ok({'message': f'Proposta {novo_status} com sucesso'})
+    finally:
+        db.close()
 
 
 if __name__ == '__main__':
