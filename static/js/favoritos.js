@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function () {
+﻿document.addEventListener('DOMContentLoaded', async function () {
     const favoritesGrid = document.getElementById('favorites-grid');
     const emptyState = document.getElementById('empty-favorites');
 
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         `).join('');
 
         try {
-            const favorites = await CondConnect.api('/favoritos/index');
+            const favorites = await CondConnect.api('/favoritos');
 
             if (favorites.length === 0) {
                 favoritesGrid.style.display = 'none';
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (emptyState) emptyState.style.display = 'none';
             favoritesGrid.style.display = 'grid';
 
-            / Atualizar cache de favoritos
+            // Atualizar cache de favoritos
             localStorage.setItem('condconnect_favorites', JSON.stringify(favorites.map(p => p.id)));
 
             favoritesGrid.innerHTML = favorites.map(produto => {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 `;
             }).join('');
 
-            / Re-render quando favorito for removido via delegação em main.js
+            // Re-render quando favorito for removido via delegação em main.js
             window.addEventListener('storage', () => renderFavorites());
 
         } catch {

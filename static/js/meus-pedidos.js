@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function () {
+﻿document.addEventListener('DOMContentLoaded', async function () {
     const ordersList = document.getElementById('orders-list');
     const emptyState = document.getElementById('empty-state');
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -68,12 +68,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 `;
             }).join('');
 
-            / Acompanhar
+            // Acompanhar
             document.querySelectorAll('.btn-track').forEach(btn => {
                 btn.addEventListener('click', () => openTracking(parseInt(btn.getAttribute('data-id'))));
             });
 
-            / Confirmar pedido (vendedor)
+            // Confirmar pedido (vendedor)
             document.querySelectorAll('.btn-confirmar').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 });
             });
 
-            / Marcar enviado (vendedor)
+            // Marcar enviado (vendedor)
             document.querySelectorAll('.btn-enviar').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 });
             });
 
-            / Confirmar recebimento (comprador)
+            // Confirmar recebimento (comprador)
             document.querySelectorAll('.btn-receber').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         modal.classList.add('active');
     }
 
-    / Tabs
+    // Tabs
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));

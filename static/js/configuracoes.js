@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', async function () {
-    / Carregar configurações
+﻿document.addEventListener('DOMContentLoaded', async function () {
+    // Carregar configurações
     async function carregarConfig() {
         try {
-            const cfg = await CondConnect.api('/configuracoes/index');
+            const cfg = await CondConnect.api('/configuracoes');
 
             const toggles = {
                 'toggle-email':     cfg.notif_email,
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch {}
     }
 
-    / Salvar configurações
+    // Salvar configurações
     const btnSave = document.getElementById('save-settings-btn');
     if (btnSave) {
         btnSave.addEventListener('click', async () => {
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (tema)   body.tema              = tema.value;
 
             try {
-                await CondConnect.api('/configuracoes/index', { method: 'PUT', body });
+                await CondConnect.api('/configuracoes', { method: 'PUT', body });
                 btnSave.classList.add('success');
                 btnSave.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Salvo!`;
                 setTimeout(() => {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    / Modal de alterar senha
+    // Modal de alterar senha
     const modals = {
         password: document.getElementById('password-modal'),
         delete: document.getElementById('delete-modal'),
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
-    / Alterar senha
+    // Alterar senha
     const passwordForm = document.getElementById('password-form');
     if (passwordForm) {
         passwordForm.addEventListener('submit', async e => {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     }
 
-    / Excluir conta
+    // Excluir conta
     const deleteForm = document.getElementById('delete-form');
     if (deleteForm) {
         deleteForm.addEventListener('submit', async e => {

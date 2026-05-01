@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     const productGrid = document.getElementById('product-grid');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const produtos = await CondConnect.api(`/produtos?${params}`);
 
-            / Sincronizar favoritos do servidor
+            // Sincronizar favoritos do servidor
             const favIds = produtos.filter(p => p.favorito).map(p => p.id);
             localStorage.setItem('condconnect_favorites', JSON.stringify(favIds));
 

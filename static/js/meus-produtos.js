@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function () {
+﻿document.addEventListener('DOMContentLoaded', async function () {
     const productsList = document.getElementById('my-products-list');
 
     const statusLabel = {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 `;
             }).join('');
 
-            / Dropdown toggles
+            // Dropdown toggles
             document.querySelectorAll('.actions-btn').forEach(btn => {
                 btn.addEventListener('click', e => {
                     e.stopPropagation();

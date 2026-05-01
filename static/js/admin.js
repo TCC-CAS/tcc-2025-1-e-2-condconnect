@@ -1,9 +1,9 @@
-document.addEventListener('DOMContentLoaded', async function () {
+﻿document.addEventListener('DOMContentLoaded', async function () {
     const adminProductList = document.getElementById('admin-product-list');
     const adminUserList = document.getElementById('admin-user-list');
     const statsContainer = document.getElementById('admin-stats');
 
-    / Carregar stats
+    // Carregar stats
     async function carregarStats() {
         if (!statsContainer) return;
         try {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch {}
     }
 
-    / Carregar produtos para moderação
+    // Carregar produtos para moderação
     async function renderAdminProducts(status = 'all') {
         if (!adminProductList) return;
         adminProductList.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b">Carregando...</p>';
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    / Carregar usuários
+    // Carregar usuários
     async function renderAdminUsers() {
         if (!adminUserList) return;
         adminUserList.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b">Carregando...</p>';
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    / Filtros de status
+    // Filtros de status
     const filterStatus = document.querySelectorAll('[data-status]');
     filterStatus.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
     });
 
-    / Tabs entre produtos e usuários
+    // Tabs entre produtos e usuários
     const tabs = document.querySelectorAll('.admin-tab');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {

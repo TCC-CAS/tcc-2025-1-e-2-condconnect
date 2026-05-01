@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     const loginForm = document.querySelector('.auth-form');
     const inputs = document.querySelectorAll('.form-control');
 
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.textContent = loading ? 'Aguarde...' : (btn.getAttribute('data-original') || btn.textContent);
     }
 
-    / LOGIN
+    // LOGIN
     const loginBtn = document.getElementById('login-btn') || document.querySelector('.auth-btn');
     if (loginBtn && loginForm && document.getElementById('password') && !document.getElementById('name')) {
         loginBtn.setAttribute('data-original', loginBtn.textContent);
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    / CADASTRO
+    // CADASTRO
     const cadastroBtn = document.getElementById('register-btn') || document.querySelector('.auth-btn');
     if (cadastroBtn && loginForm && document.getElementById('name')) {
         cadastroBtn.setAttribute('data-original', cadastroBtn.textContent);
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    / LOGOUT (link com id logout-btn)
+    // LOGOUT (link com id logout-btn)
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async function (e) {

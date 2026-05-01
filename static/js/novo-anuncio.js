@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function () {
+﻿document.addEventListener('DOMContentLoaded', async function () {
     const adForm = document.getElementById('ad-form');
     const pageTitle = document.querySelector('.page-title h1');
     const pageSubtitle = document.querySelector('.page-title p');
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const editId = urlParams.get('edit');
     let fotoUrl = '';
 
-    / Modo edição
+    // Modo edição
     if (editId) {
         if (pageTitle) pageTitle.textContent = 'Editar Anúncio';
         if (pageSubtitle) pageSubtitle.textContent = 'Atualize as informações do seu produto';
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             fotoUrl = produto.foto || '';
 
-            / Selecionar categoria
+            // Selecionar categoria
             const catSelect = document.getElementById('product-category');
             for (let i = 0; i < catSelect.options.length; i++) {
                 if (catSelect.options[i].value === produto.categoria || catSelect.options[i].text === produto.categoria) {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
 
-            / Selecionar condição
+            // Selecionar condição
             const condSelect = document.getElementById('product-condition');
             for (let i = 0; i < condSelect.options.length; i++) {
                 if (condSelect.options[i].value === produto.condicao || condSelect.options[i].text === produto.condicao) {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
 
-            / Preview da imagem existente
+            // Preview da imagem existente
             if (produto.foto && uploadArea) {
                 uploadArea.innerHTML = `<img src="${produto.foto}" style="max-height:200px;border-radius:8px;object-fit:cover;">`;
             }
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    / Upload de imagem
+    // Upload de imagem
     if (fileInput) {
         fileInput.addEventListener('change', async function () {
             const file = this.files[0];
