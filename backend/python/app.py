@@ -778,7 +778,8 @@ def carrinho():
                     },
                     'disponivel': i['status'] == 'disponivel' and i['vendedor_id'] != uid
                 })
-            return ok({'itens': result, 'total': total, 'total_fmt': f"R$ {total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')})
+            total_fmt = f"R$ {total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            return ok({'itens': result, 'total': total, 'subtotal': total, 'total_fmt': total_fmt})
 
         if request.method == 'POST':
             body = get_body()
@@ -806,7 +807,7 @@ def carrinho():
 
         if request.method == 'PUT':
             body = get_body()
-            item_id = int(body.get('id', 0))
+            item_id = int(body.get('item_id') or body.get('id') or 0)
             quantidade = int(body.get('quantidade', 1))
             if quantidade < 1:
                 return err('Quantidade inválida')
@@ -815,7 +816,7 @@ def carrinho():
             return ok({'message': 'Quantidade atualizada'})
 
         if request.method == 'DELETE':
-            item_id = request.args.get('id')
+            item_id = request.args.get('item_id') or request.args.get('id')
             with db.cursor() as c:
                 if item_id:
                     c.execute("DELETE FROM itens_carrinho WHERE id=%s AND usuario_id=%s", (item_id, uid))
