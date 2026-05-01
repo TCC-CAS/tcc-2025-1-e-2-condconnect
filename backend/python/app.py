@@ -764,12 +764,20 @@ def carrinho():
                 )
                 itens = c.fetchall()
             total = sum(float(i['preco']) * i['quantidade'] for i in itens)
-            result = [{
-                'id': i['id'], 'produto_id': i['produto_id'], 'titulo': i['titulo'],
-                'preco': float(i['preco']), 'quantidade': i['quantidade'],
-                'foto': i['foto_principal'], 'status': i['status'],
-                'disponivel': i['status'] == 'disponivel' and i['vendedor_id'] != uid
-            } for i in itens]
+            result = []
+            for i in itens:
+                preco = float(i['preco'])
+                preco_fmt = f"R$ {preco:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+                result.append({
+                    'id': i['id'], 'quantidade': i['quantidade'],
+                    'produto': {
+                        'id': i['produto_id'], 'titulo': i['titulo'],
+                        'preco': preco, 'preco_fmt': preco_fmt,
+                        'foto': i['foto_principal'], 'status': i['status'],
+                        'localizacao': ''
+                    },
+                    'disponivel': i['status'] == 'disponivel' and i['vendedor_id'] != uid
+                })
             return ok({'itens': result, 'total': total, 'total_fmt': f"R$ {total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')})
 
         if request.method == 'POST':
@@ -920,10 +928,7 @@ def conversas():
             return err('usuario_id inválido')
 
         with db.cursor() as c:
-            if produto_id:
-                c.execute("SELECT id FROM conversas WHERE ((usuario1_id=%s AND usuario2_id=%s) OR (usuario1_id=%s AND usuario2_id=%s)) AND produto_id=%s", (uid, outro_id, outro_id, uid, produto_id))
-            else:
-                c.execute("SELECT id FROM conversas WHERE (usuario1_id=%s AND usuario2_id=%s) OR (usuario1_id=%s AND usuario2_id=%s)", (uid, outro_id, outro_id, uid))
+            c.execute("SELECT id FROM conversas WHERE (usuario1_id=%s AND usuario2_id=%s) OR (usuario1_id=%s AND usuario2_id=%s)", (uid, outro_id, outro_id, uid))
             existe = c.fetchone()
 
         if existe:
