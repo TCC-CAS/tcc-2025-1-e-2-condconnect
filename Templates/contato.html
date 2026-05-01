@@ -123,7 +123,7 @@
             feedback.style.display = 'none';
 
             try {
-                await CondConnect.api('/contato.php', {
+                await CondConnect.api('/contato', {
                     method: 'POST',
                     body: { nome, email, assunto, mensagem }
                 });

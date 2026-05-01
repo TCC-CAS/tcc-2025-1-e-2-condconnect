@@ -83,7 +83,7 @@
             btn.textContent = 'Salvando...';
 
             try {
-                await CondConnect.api('/auth/redefinir-senha.php', {
+                await CondConnect.api('/auth/redefinir-senha', {
                     method: 'POST',
                     body: { token, senha }
                 });

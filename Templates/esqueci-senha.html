@@ -63,7 +63,7 @@
             errorEl.style.display = 'none';
 
             try {
-                await CondConnect.api('/auth/esqueci-senha.php', {
+                await CondConnect.api('/auth/esqueci-senha', {
                     method: 'POST',
                     body: { email }
                 });
