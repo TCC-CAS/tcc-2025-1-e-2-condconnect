@@ -141,19 +141,18 @@
 }
 
 .product-tag.blue {
-    background: rgba(0, 166, 166, 0.15);
-    color: var(--primary);
-    backdrop-filter: blur(4px);
+    background: var(--primary);
+    color: white;
 }
 
 .product-tag.green {
-    background: rgba(34, 197, 94, 0.15);
-    color: #166534;
-    backdrop-filter: blur(4px);
+    background: #16a34a;
+    color: white;
 }
 
 .product-tag.dark {
-    background: var(--foreground);
+    background: #1e293b;
+    color: white;
 }
 
 .like-btn {
