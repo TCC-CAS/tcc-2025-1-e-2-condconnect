@@ -43,8 +43,20 @@
             : parts[0][0].toUpperCase();
     }
     set('seller-location', produto.vendedor?.localizacao || '');
-    set('seller-rating', produto.vendedor?.rating?.toFixed(1) || 'N/A');
-    set('seller-sales', (produto.vendedor?.vendas || 0) + ' vendas');
+    const vendorRating = produto.vendedor?.rating || 0;
+    const vendorSales = produto.vendedor?.vendas || 0;
+    if (vendorRating > 0) {
+        set('seller-rating', vendorRating.toFixed(1));
+    } else {
+        set('seller-rating', 'Sem avaliações');
+        const star = document.getElementById('seller-rating-star');
+        if (star) star.style.display = 'none';
+        const badge = document.getElementById('seller-rating-badge');
+        if (badge) { badge.style.background = '#f1f5f9'; badge.style.border = '1px solid #e2e8f0'; }
+        const ratingSpan = document.getElementById('seller-rating');
+        if (ratingSpan) ratingSpan.style.color = '#64748b';
+    }
+    set('seller-sales', vendorSales > 0 ? vendorSales + ' venda' + (vendorSales !== 1 ? 's' : '') : 'Nenhuma venda');
 
     if (mainImage && produto.foto) mainImage.src = produto.foto;
 
