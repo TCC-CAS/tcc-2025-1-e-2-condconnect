@@ -113,6 +113,10 @@ def init_db():
                 c.execute("ALTER TABLE itens_carrinho ADD COLUMN preco_negociado DECIMAL(10,2) NULL DEFAULT NULL")
             except Exception:
                 pass  # column already exists
+            try:
+                c.execute("ALTER TABLE propostas ADD COLUMN quantidade INT NOT NULL DEFAULT 1")
+            except Exception:
+                pass  # column already exists
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -849,10 +853,12 @@ def carrinho():
             if quantidade < 1:
                 return err('Quantidade inválida')
             with db.cursor() as c:
-                c.execute("SELECT p.quantidade as estoque FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.id=%s AND ic.usuario_id=%s", (item_id, uid))
+                c.execute("SELECT p.quantidade as estoque, ic.preco_negociado FROM itens_carrinho ic JOIN produtos p ON ic.produto_id=p.id WHERE ic.id=%s AND ic.usuario_id=%s", (item_id, uid))
                 row = c.fetchone()
             if not row:
                 return err('Item não encontrado', 404)
+            if row['preco_negociado']:
+                return err('A quantidade de um item com preço negociado não pode ser alterada', 400)
             estoque = int(row['estoque'] or 0)
             if quantidade > estoque:
                 return err(f'Quantidade máxima disponível: {estoque}', 400)
@@ -1493,7 +1499,7 @@ def propostas_route():
                 'mensagem': r['mensagem'] or '', 'status': r['status'],
                 'criado_em': str(r['criado_em']),
                 'produto': {'id': r['produto_id'], 'titulo': r['produto_titulo'], 'foto': r['produto_foto']},
-                'outro_nome': r['outro_nome']
+                'outro_nome': r['outro_nome'], 'quantidade': int(r.get('quantidade') or 1)
             } for r in rows]
             return ok({'propostas': result, 'total': len(result)})
 
@@ -1502,9 +1508,12 @@ def propostas_route():
         produto_id = int(body.get('produto_id', 0))
         valor_raw = body.get('valor_proposto')
         mensagem = (body.get('mensagem') or '').strip()
+        quantidade = int(body.get('quantidade') or 1)
 
         if not produto_id or valor_raw is None:
             return err('produto_id e valor_proposto são obrigatórios')
+        if quantidade < 1:
+            return err('Quantidade deve ser pelo menos 1')
 
         valor = float(valor_raw)
         if valor <= 0:
@@ -1533,8 +1542,8 @@ def propostas_route():
 
         with db.cursor() as c:
             c.execute(
-                "INSERT INTO propostas (produto_id, comprador_id, vendedor_id, valor_proposto, mensagem) VALUES (%s,%s,%s,%s,%s)",
-                (produto_id, uid, vendedor_id, valor, mensagem)
+                "INSERT INTO propostas (produto_id, comprador_id, vendedor_id, valor_proposto, mensagem, quantidade) VALUES (%s,%s,%s,%s,%s,%s)",
+                (produto_id, uid, vendedor_id, valor, mensagem, quantidade)
             )
             nova_id = c.lastrowid
 
@@ -1557,7 +1566,7 @@ def propostas_route():
                       <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
                       <p style='margin:4px 0 12px;color:#1e293b;font-weight:700;font-size:16px;'>{produto['titulo']}</p>
                       <p style='margin:0;color:#64748b;font-size:13px;'>Preço anunciado: <strong>{preco_orig}</strong></p>
-                      <p style='margin:4px 0 0;color:#00a6a6;font-size:20px;font-weight:700;'>Proposta: {valor_str}</p>
+                      <p style='margin:4px 0 0;color:#00a6a6;font-size:20px;font-weight:700;'>Proposta: {valor_str} × {quantidade} un.</p>
                       {f'<p style="margin:12px 0 0;color:#64748b;font-size:13px;font-style:italic;">"{mensagem}"</p>' if mensagem else ''}
                     </div>
                     <p style='color:#64748b;font-size:13px;text-align:center;margin-bottom:16px;'>Enviada por: <strong>{comp['nome']}</strong></p>
@@ -1616,11 +1625,12 @@ def proposta_item():
         titulo = proposta['produto_titulo']
 
         if acao == 'aceitar':
-            # Adiciona ao carrinho do comprador com o preço negociado
+            # Adiciona ao carrinho do comprador com preço e quantidade negociados
+            qtd_proposta = int(proposta.get('quantidade') or 1)
             with db.cursor() as c:
                 c.execute("DELETE FROM itens_carrinho WHERE usuario_id=%s AND produto_id=%s", (proposta['comprador_id'], proposta['produto_id']))
-                c.execute("INSERT INTO itens_carrinho (usuario_id, produto_id, quantidade, preco_negociado) VALUES (%s,%s,1,%s)",
-                          (proposta['comprador_id'], proposta['produto_id'], proposta['valor_proposto']))
+                c.execute("INSERT INTO itens_carrinho (usuario_id, produto_id, quantidade, preco_negociado) VALUES (%s,%s,%s,%s)",
+                          (proposta['comprador_id'], proposta['produto_id'], qtd_proposta, proposta['valor_proposto']))
 
             notificar(db, proposta['comprador_id'], 'proposta', 'Proposta Aceita!',
                       f'Sua proposta de {valor_str} para "{titulo}" foi aceita! O produto foi adicionado ao seu carrinho.',

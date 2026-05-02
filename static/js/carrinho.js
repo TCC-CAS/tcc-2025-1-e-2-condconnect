@@ -38,21 +38,23 @@
             cartList.innerHTML = itens.map(item => {
                 const estoque = item.produto.estoque || 0;
                 const noMax = item.quantidade >= estoque;
+                const isNeg = item.produto.preco_negociado;
+                const qtyDisabled = isNeg || noMax;
                 return `
-                <div class="cart-item" data-id="${item.id}" data-produto-id="${item.produto.id}">
+                <div class="cart-item" data-id="${item.id}" data-produto-id="${item.produto.id}" data-negociado="${isNeg ? '1' : '0'}" data-titulo="${item.produto.titulo}" data-preco="${item.produto.preco_fmt}">
                     <img src="${item.produto.foto}" alt="${item.produto.titulo}" class="cart-item-image">
                     <div class="cart-item-details">
                         <div>
                             <h3 class="item-title">${item.produto.titulo}</h3>
                             <p class="item-subtitle">${item.produto.localizacao}</p>
-                            <div class="item-price">${item.produto.preco_fmt}${item.produto.preco_negociado ? ' <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:100px;font-weight:700;vertical-align:middle;">Negociado</span>' : ''}</div>
+                            <div class="item-price">${item.produto.preco_fmt}${isNeg ? ' <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:100px;font-weight:700;vertical-align:middle;">Negociado</span>' : ''}</div>
                             ${estoque > 0 ? `<p style="font-size:12px;color:#6b7280;margin:2px 0 0;">Estoque: ${estoque}</p>` : ''}
                         </div>
                         <div class="item-controls">
                             <div class="quantity-control">
-                                <button class="qty-btn minus" data-id="${item.id}">-</button>
+                                <button class="qty-btn minus" data-id="${item.id}" ${isNeg ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>-</button>
                                 <span class="qty-value">${item.quantidade}</span>
-                                <button class="qty-btn plus" data-id="${item.id}" data-qty="${item.quantidade}" data-estoque="${estoque}" ${noMax ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
+                                <button class="qty-btn plus" data-id="${item.id}" data-qty="${item.quantidade}" data-estoque="${estoque}" ${qtyDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>+</button>
                             </div>
                             <button class="remove-btn" data-id="${item.id}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -101,6 +103,11 @@
         document.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', async function () {
                 const id = parseInt(this.getAttribute('data-id'));
+                const cartItem = this.closest('.cart-item');
+                const isNeg = cartItem?.getAttribute('data-negociado') === '1';
+                const titulo = cartItem?.getAttribute('data-titulo') || 'este item';
+                const preco = cartItem?.getAttribute('data-preco') || '';
+                if (isNeg && !confirm(`Tem certeza que deseja remover "${titulo}" do carrinho?\n\nVocê irá perder o preço negociado de ${preco}.`)) return;
                 try {
                     await CondConnect.api(`/carrinho?item_id=${id}`, { method: 'DELETE' });
                     renderCart();

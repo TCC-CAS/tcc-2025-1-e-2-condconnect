@@ -316,8 +316,10 @@
         if (propostaErro) propostaErro.style.display = 'none';
         const v = document.getElementById('proposta-valor');
         const m = document.getElementById('proposta-mensagem');
+        const q = document.getElementById('proposta-quantidade');
         if (v) v.value = '';
         if (m) m.value = '';
+        if (q) q.value = '1';
     };
 
     if (fecharPropostaModal) fecharPropostaModal.addEventListener('click', fecharModal);
@@ -328,16 +330,22 @@
         enviarPropostaBtn.addEventListener('click', async () => {
             const valorInput = document.getElementById('proposta-valor');
             const mensagemInput = document.getElementById('proposta-mensagem');
+            const quantidadeInput = document.getElementById('proposta-quantidade');
             const valor = parseFloat(valorInput?.value);
             const mensagem = mensagemInput?.value.trim() || '';
+            const quantidade = parseInt(quantidadeInput?.value) || 1;
 
             if (!valor || valor <= 0) {
                 if (propostaErro) { propostaErro.textContent = 'Informe um valor válido.'; propostaErro.style.display = 'block'; }
                 return;
             }
+            if (quantidade < 1) {
+                if (propostaErro) { propostaErro.textContent = 'A quantidade deve ser pelo menos 1.'; propostaErro.style.display = 'block'; }
+                return;
+            }
 
             const valorFmt = valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            if (!confirm(`Tem certeza que deseja enviar uma proposta de ${valorFmt} para "${produto.titulo}"?`)) return;
+            if (!confirm(`Tem certeza que deseja enviar uma proposta de ${valorFmt} × ${quantidade} unidade(s) para "${produto.titulo}"?`)) return;
 
             enviarPropostaBtn.disabled = true;
             enviarPropostaBtn.textContent = 'Enviando...';
@@ -346,7 +354,7 @@
             try {
                 await CondConnect.api('/propostas', {
                     method: 'POST',
-                    body: { produto_id: productId, valor_proposto: valor, mensagem }
+                    body: { produto_id: productId, valor_proposto: valor, mensagem, quantidade }
                 });
                 fecharModal();
                 alert('Proposta enviada! O vendedor será notificado por e-mail.');
