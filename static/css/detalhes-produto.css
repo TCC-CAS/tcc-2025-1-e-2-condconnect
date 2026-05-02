@@ -50,6 +50,8 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .product-header h1 {
@@ -80,6 +82,7 @@
     padding: 16px;
     background: #f3f4f6;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 .seller-avatar {
@@ -95,10 +98,18 @@
     font-size: 20px;
 }
 
+.seller-details {
+    min-width: 0;
+    overflow: hidden;
+}
+
 .seller-details h4 {
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .seller-details p {
