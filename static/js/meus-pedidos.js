@@ -87,7 +87,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                                 <span style="font-weight:700;color:#1e293b;font-size:15px;">${p.produto.titulo}</span>
                                 <span style="padding:4px 12px;border-radius:100px;background:${corStatus}20;color:${corStatus};font-size:12px;font-weight:700;white-space:nowrap;">${labelStatus}</span>
                             </div>
-                            <p style="margin:0 0 4px;color:#00a6a6;font-size:18px;font-weight:700;">${p.valor_fmt} <span style="font-size:13px;color:#64748b;font-weight:400;">× ${p.quantidade || 1} un.</span></p>
+                            <p style="margin:0 0 4px;color:#00a6a6;font-size:18px;font-weight:700;">${p.valor_fmt}</p>
+                            <p style="margin:0 0 6px;color:#64748b;font-size:13px;">Quantidade: <strong style="color:#1e293b;">${p.quantidade || 1} unidade(s)</strong></p>
                             ${p.mensagem ? `<p style="margin:0 0 6px;color:#64748b;font-size:13px;font-style:italic;">"${p.mensagem}"</p>` : ''}
                             <p style="margin:0 0 10px;color:#94a3b8;font-size:12px;">${subtipo === 'recebidas' ? 'De' : 'Para'}: <strong style="color:#64748b;">${p.outro_nome}</strong> • ${new Date(p.criado_em).toLocaleDateString('pt-BR')}</p>
                             <div style="display:flex;gap:8px;flex-wrap:wrap;">${acoesBtns}</div>
