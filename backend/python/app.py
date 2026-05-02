@@ -499,6 +499,10 @@ def produto_item():
                 c.execute("SELECT url FROM imagens_produto WHERE produto_id=%s ORDER BY ordem ASC", (pid,))
                 imgs_extras = [r['url'] for r in c.fetchall()]
 
+            with db.cursor() as c:
+                c.execute("SELECT COUNT(*) as n FROM pedidos WHERE produto_id=%s AND status='entregue'", (pid,))
+                total_vendidos = c.fetchone()['n']
+
             return ok({
                 'id': p['id'], 'titulo': p['titulo'], 'descricao': p['descricao'],
                 'preco': float(p['preco']),
@@ -506,7 +510,7 @@ def produto_item():
                 'categoria': p['categoria'], 'condicao': p['condicao'],
                 'foto': p['foto_principal'], 'imagens': imgs_extras,
                 'status': p['status'],
-                'quantidade': p['quantidade'], 'criado_em': str(p['criado_em']),
+                'quantidade': p['quantidade'], 'total_vendidos': total_vendidos, 'criado_em': str(p['criado_em']),
                 'favorito': fav,
                 'vendedor': {
                     'id': p['vid'], 'nome': p['vnome'],
