@@ -196,11 +196,11 @@
                     ? '<div style="text-align:center;padding:40px;background:white;border-radius:16px;color:#64748b;">Nenhum produto disponível no momento.</div>'
                     : `<div class="products-grid">${(v.produtos || []).map(p => `
                         <a href="/Templates/detalhes-produto.html?id=${p.id}" class="product-card" style="text-decoration:none;display:block;">
-                            <div class="product-image-wrapper">
+                            <div class="product-image-container">
                                 <img src="${p.foto || '/static/assets/images/produto-placeholder.jpg'}" alt="${p.titulo}" class="product-image">
-                                <span class="product-condition">${p.condicao}</span>
                             </div>
                             <div class="product-info">
+                                <span class="product-category-tag">${p.condicao}</span>
                                 <h3 class="product-title">${p.titulo}</h3>
                                 <div class="product-price">${p.preco_fmt}</div>
                             </div>
