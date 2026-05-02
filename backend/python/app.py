@@ -391,7 +391,9 @@ def produtos():
 
             sql = f"""SELECT p.id, p.titulo, p.preco, p.categoria, p.condicao, p.foto_principal, p.status, p.criado_em,
                              u.id as vendedor_id, u.nome as vendedor_nome, u.bloco as vendedor_bloco,
-                             u.apartamento as vendedor_apto, u.rating as vendedor_rating, u.total_vendas as vendedor_vendas
+                             u.apartamento as vendedor_apto, u.rating as vendedor_rating, u.total_vendas as vendedor_vendas,
+                             (SELECT ROUND(AVG(nota),1) FROM avaliacoes WHERE produto_id=p.id) as produto_rating,
+                             (SELECT COUNT(*) FROM avaliacoes WHERE produto_id=p.id) as produto_avaliacoes
                       FROM produtos p JOIN usuarios u ON p.usuario_id=u.id
                       WHERE {' AND '.join(where)} ORDER BY p.criado_em DESC LIMIT %s"""
             params.append(limite)
@@ -415,6 +417,8 @@ def produtos():
                     'categoria': p['categoria'], 'condicao': p['condicao'],
                     'foto': p['foto_principal'], 'status': p['status'],
                     'criado_em': str(p['criado_em']), 'favorito': p['id'] in favs,
+                    'produto_rating': float(p['produto_rating']) if p['produto_rating'] else None,
+                    'produto_avaliacoes': int(p['produto_avaliacoes'] or 0),
                     'vendedor': {
                         'id': p['vendedor_id'], 'nome': p['vendedor_nome'],
                         'localizacao': f"Bloco {p['vendedor_bloco']} - Apto {p['vendedor_apto']}",
