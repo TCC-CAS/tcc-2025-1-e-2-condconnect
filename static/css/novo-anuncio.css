@@ -73,8 +73,8 @@
     gap: 12px;
     color: #6b7280;
     width: 150px;
-    /* Fixed width for the upload box as per design */
     height: 150px;
+    overflow: hidden;
 }
 
 .upload-area:hover {

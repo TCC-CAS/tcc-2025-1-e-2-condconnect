@@ -46,7 +46,7 @@
 
             // Preview da imagem existente
             if (produto.foto && uploadArea) {
-                uploadArea.innerHTML = `<img src="${produto.foto}" style="max-height:200px;border-radius:8px;object-fit:cover;">`;
+                uploadArea.innerHTML = `<img src="${produto.foto}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;">`;
             }
         } catch (err) {
             console.error('Erro ao carregar produto para edição:', err);
