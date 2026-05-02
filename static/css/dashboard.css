@@ -643,6 +643,7 @@ body.dashboard-body {
     color: var(--text-muted);
     font-weight: 600;
     margin-bottom: 8px;
+    min-height: 40px;
 }
 
 .stat-info strong {
