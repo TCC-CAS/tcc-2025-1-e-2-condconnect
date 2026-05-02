@@ -285,7 +285,7 @@
         if (me && me.id !== produto.vendedor?.id) {
             // Verificar quantas propostas já foram enviadas para este produto
             const minhasPropostas = await CondConnect.api(`/propostas?tipo=enviadas&produto_id=${productId}`).catch(() => ({ propostas: [] }));
-            const totalPropostas = minhasPropostas.propostas?.length || 0;
+            const totalPropostas = (minhasPropostas.propostas || []).filter(p => p.status === 'pendente').length;
             const limite = 3;
 
             fazerPropostaBtn.style.display = 'inline-flex';

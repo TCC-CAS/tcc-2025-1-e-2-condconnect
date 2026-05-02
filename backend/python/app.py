@@ -1533,12 +1533,9 @@ def propostas_route():
         vendedor_id = produto['usuario_id']
 
         with db.cursor() as c:
-            c.execute("SELECT COUNT(*) as n FROM propostas WHERE produto_id=%s AND comprador_id=%s", (produto_id, uid))
+            c.execute("SELECT COUNT(*) as n FROM propostas WHERE produto_id=%s AND comprador_id=%s AND status='pendente'", (produto_id, uid))
             if c.fetchone()['n'] >= 3:
-                return err('Você atingiu o limite de 3 propostas para este produto')
-            c.execute("SELECT id FROM propostas WHERE produto_id=%s AND comprador_id=%s AND status='pendente'", (produto_id, uid))
-            if c.fetchone():
-                return err('Você já tem uma proposta pendente para este produto')
+                return err('Você atingiu o limite de 3 propostas pendentes para este produto')
 
         with db.cursor() as c:
             c.execute(
