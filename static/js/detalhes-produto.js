@@ -31,6 +31,10 @@
         }
     }
     set('seller-name', produto.vendedor?.nome || '');
+    const saibaMaisLink = document.getElementById('seller-saiba-mais');
+    if (saibaMaisLink && produto.vendedor?.id) {
+        saibaMaisLink.href = `/Templates/vendedor.html?id=${produto.vendedor.id}`;
+    }
     const avatarEl = document.querySelector('.seller-avatar');
     if (avatarEl && produto.vendedor?.nome) {
         const parts = produto.vendedor.nome.trim().split(/\s+/);

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <base href="/tcc-2025-1-e-2-condconnect/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Vendedor - CondConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/marketplace.css">
+    <link rel="stylesheet" href="/static/css/accessibility.css">
+</head>
+
+<body class="dashboard-body">
+
+    <div class="sidebar-overlay"></div>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/Templates/index.html" class="sidebar-logo">
+                <img src="/static/assets/images/logo_semfundo.png" alt="CondConnect">
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/Templates/dashboard.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Dashboard</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/marketplace.html" class="nav-item active">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Marketplace</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/favoritos.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 0 0 0 0-7.78z"></path></svg>
+                <span>Favoritos</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/mensagens.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span>Mensagens</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/carrinho.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Carrinho</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/meus-produtos.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                <span>Meus Produtos</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/meus-pedidos.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span>Meus Pedidos</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="/Templates/perfil.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>Perfil</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/Templates/login.html" class="logout-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sair
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header" style="justify-content:flex-start;gap:16px;">
+            <a id="back-btn" href="javascript:history.back()" style="color:#6b7280;text-decoration:none;font-size:14px;">← Voltar</a>
+        </header>
+
+        <div id="vendor-content">
+            <div style="text-align:center;padding:60px;color:#64748b;">Carregando...</div>
+        </div>
+
+        <footer class="dashboard-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="/Templates/termos.html">Privacidade</a>
+                    <a href="/Templates/termos.html">Termos</a>
+                    <a href="/Templates/ajuda.html">Ajuda</a>
+                    <a href="/Templates/contato.html">Contato</a>
+                </div>
+                <div class="footer-copyright">© 2026 CondConnect. Todos os direitos reservados.</div>
+            </div>
+        </footer>
+    </main>
+
+    <nav class="bottom-tab-bar">
+        <a href="/Templates/dashboard.html" class="tab-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Home</span>
+        </a>
+        <a href="/Templates/marketplace.html" class="tab-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Loja</span>
+        </a>
+        <a href="/Templates/mensagens.html" class="tab-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Chat</span>
+        </a>
+        <a href="/Templates/carrinho.html" class="tab-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span>Carrinho</span>
+        </a>
+        <button class="tab-item mobile-menu-toggle" id="mobileMenuMore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+            <span>Mais</span>
+        </button>
+    </nav>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const vendorContent = document.getElementById('vendor-content');
+        const vendorId = parseInt(new URLSearchParams(window.location.search).get('id'));
+
+        if (!vendorId) {
+            vendorContent.innerHTML = '<div style="text-align:center;padding:60px;color:#dc2626;">Vendedor não encontrado.</div>';
+            return;
+        }
+
+        try {
+            const v = await CondConnect.api(`/usuarios/perfil?id=${vendorId}`);
+
+            const initials = v.nome ? v.nome.trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase() : '?';
+            const avatarHtml = v.foto_url
+                ? `<img src="${v.foto_url}" style="width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);">`
+                : `<div style="width:88px;height:88px;border-radius:50%;background:var(--primary);color:white;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;">${initials}</div>`;
+
+            const stars = Array(5).fill(0).map((_, i) => {
+                const filled = i < Math.round(v.rating);
+                return `<svg width="14" height="14" fill="${filled ? '#f59e0b' : '#e2e8f0'}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+            }).join('');
+
+            const membro_desde = new Date(v.criado_em).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            vendorContent.innerHTML = `
+                <!-- Perfil Card -->
+                <div style="background:white;border-radius:20px;padding:32px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:28px;">
+                    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
+                        ${avatarHtml}
+                        <div style="flex:1;min-width:200px;">
+                            <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 6px 0;">${v.nome}</h1>
+                            <p style="color:#64748b;font-size:14px;margin:0 0 10px 0;">
+                                📍 Bloco ${v.bloco || '—'} · Apto ${v.apartamento || '—'}
+                            </p>
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
+                                ${stars}
+                                <span style="font-size:14px;font-weight:700;color:#1e293b;margin-left:4px;">${v.rating.toFixed(1)}</span>
+                                <span style="color:#94a3b8;font-size:13px;">· Membro desde ${membro_desde}</span>
+                            </div>
+                            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                                <div style="text-align:center;">
+                                    <div style="font-size:22px;font-weight:800;color:var(--primary);">${v.total_vendas || 0}</div>
+                                    <div style="font-size:12px;color:#64748b;">Vendas</div>
+                                </div>
+                                <div style="text-align:center;">
+                                    <div style="font-size:22px;font-weight:800;color:var(--primary);">${v.total_produtos || 0}</div>
+                                    <div style="font-size:12px;color:#64748b;">Anúncios</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${v.bio ? `<p style="margin:20px 0 0;padding:16px;background:#f8fafc;border-radius:10px;font-size:14px;color:#374151;line-height:1.6;">${v.bio}</p>` : ''}
+
+                    <!-- Info grid -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:20px;">
+                        ${v.pix_key ? `
+                        <div style="padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
+                            <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Chave Pix</div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;word-break:break-all;">${v.pix_key}</div>
+                        </div>` : ''}
+                        <div style="padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
+                            <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Avaliação</div>
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">${v.rating.toFixed(1)} / 5.0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos -->
+                <h2 style="font-size:20px;font-weight:700;color:#1e293b;margin:0 0 16px 0;">
+                    Produtos à Venda <span style="font-size:14px;font-weight:400;color:#64748b;">(${(v.produtos || []).length})</span>
+                </h2>
+                ${(v.produtos || []).length === 0
+                    ? '<div style="text-align:center;padding:40px;background:white;border-radius:16px;color:#64748b;">Nenhum produto disponível no momento.</div>'
+                    : `<div class="products-grid">${(v.produtos || []).map(p => `
+                        <a href="/Templates/detalhes-produto.html?id=${p.id}" class="product-card" style="text-decoration:none;display:block;">
+                            <div class="product-image-wrapper">
+                                <img src="${p.foto || '/static/assets/images/produto-placeholder.jpg'}" alt="${p.titulo}" class="product-image">
+                                <span class="product-condition">${p.condicao}</span>
+                            </div>
+                            <div class="product-details">
+                                <h3 class="product-title">${p.titulo}</h3>
+                                <div class="product-price">${p.preco_fmt}</div>
+                            </div>
+                        </a>`).join('')}
+                    </div>`
+                }
+
+                ${v.avaliacoes?.length ? `
+                <h2 style="font-size:20px;font-weight:700;color:#1e293b;margin:28px 0 16px 0;">Avaliações</h2>
+                <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    ${v.avaliacoes.map(a => {
+                        const av_stars = Array(5).fill(0).map((_, i) =>
+                            `<svg width="12" height="12" fill="${i < a.nota ? '#f59e0b' : '#e2e8f0'}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`
+                        ).join('');
+                        return `<div style="border-bottom:1px solid #f1f5f9;padding:16px 0;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">${a.avaliador?.[0] || 'U'}</div>
+                                <div>
+                                    <span style="font-size:13px;font-weight:600;color:#1e293b;">${a.avaliador}</span>
+                                    <div style="display:flex;gap:2px;margin-top:1px;">${av_stars}</div>
+                                </div>
+                                <span style="margin-left:auto;font-size:11px;color:#94a3b8;">${new Date(a.criado_em).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            ${a.comentario ? `<p style="margin:0;font-size:13px;color:#4b5563;line-height:1.5;">${a.comentario}</p>` : ''}
+                        </div>`;
+                    }).join('')}
+                </div>` : ''}
+            `;
+        } catch (err) {
+            vendorContent.innerHTML = '<div style="text-align:center;padding:60px;color:#dc2626;">Erro ao carregar perfil do vendedor.</div>';
+        }
+
+        CondConnect.syncUserRole();
+        CondConnect.syncUserHeader();
+        CondConnect.initMobileNav();
+        CondConnect.initNotifications();
+    });
+    </script>
+    <script src="/static/js/accessibility.js" defer></script>
+</body>
+
+</html>

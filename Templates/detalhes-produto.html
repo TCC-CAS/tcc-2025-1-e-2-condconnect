@@ -198,25 +198,32 @@
                 <div class="product-price" id="detail-price"></div>
                 <div id="detail-quantity" style="font-size:13px;color:#6b7280;margin-top:-8px;margin-bottom:8px;"></div>
 
-                <div class="product-seller">
-                    <div class="seller-avatar">C</div>
-                    <div class="seller-details">
-                        <h4 id="seller-name"></h4>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                            <span style="font-size: 12px; color: #64748b;" id="seller-location"></span>
-                            <span style="width: 3px; height: 3px; background: #cbd5e1; border-radius: 50%;"></span>
-                            <div
-                                style="display: flex; align-items: center; gap: 4px; background: #fff7ed; padding: 2px 8px; border-radius: 99px; border: 1px solid #ffedd5;">
-                                <svg width="12" height="12" fill="#f59e0b" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <span style="font-size: 11px; font-weight: 700; color: #9a3412;"
-                                    id="seller-rating"></span>
+                <div class="product-seller" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+                        <div class="seller-avatar">C</div>
+                        <div class="seller-details">
+                            <h4 id="seller-name"></h4>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;flex-wrap:wrap;">
+                                <span style="font-size: 12px; color: #64748b;" id="seller-location"></span>
+                                <span style="width: 3px; height: 3px; background: #cbd5e1; border-radius: 50%;"></span>
+                                <div
+                                    style="display: flex; align-items: center; gap: 4px; background: #fff7ed; padding: 2px 8px; border-radius: 99px; border: 1px solid #ffedd5;">
+                                    <svg width="12" height="12" fill="#f59e0b" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                    <span style="font-size: 11px; font-weight: 700; color: #9a3412;"
+                                        id="seller-rating"></span>
+                                </div>
+                                <span style="font-size: 11px; color: #64748b;" id="seller-sales"></span>
                             </div>
-                            <span style="font-size: 11px; color: #64748b;" id="seller-sales"></span>
                         </div>
                     </div>
+                    <a id="seller-saiba-mais" href="#" style="flex-shrink:0;padding:8px 16px;border:2px solid var(--primary);color:var(--primary);border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all 0.2s;"
+                        onmouseover="this.style.background='var(--primary)';this.style.color='white'"
+                        onmouseout="this.style.background='';this.style.color='var(--primary)'">
+                        Saiba Mais
+                    </a>
                 </div>
 
                 <div class="product-description">

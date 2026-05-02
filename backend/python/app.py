@@ -116,7 +116,11 @@ def init_db():
             try:
                 c.execute("ALTER TABLE propostas ADD COLUMN quantidade INT NOT NULL DEFAULT 1")
             except Exception:
-                pass  # column already exists
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN pix_key VARCHAR(255) NULL DEFAULT NULL")
+            except Exception:
+                pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -436,12 +440,20 @@ def produtos():
         if not titulo or preco is None:
             return err('Título e preço são obrigatórios')
 
+        imagens_extras = body.get('imagens_extras', [])
+
         with db.cursor() as c:
             c.execute(
                 "INSERT INTO produtos (usuario_id, titulo, preco, categoria, descricao, condicao, foto_principal, quantidade) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
                 (uid, titulo, preco, categoria, descricao, condicao, foto, quantidade)
             )
             pid = c.lastrowid
+
+        if imagens_extras:
+            with db.cursor() as c:
+                for i, url in enumerate(imagens_extras):
+                    if url:
+                        c.execute("INSERT INTO imagens_produto (produto_id, url, ordem) VALUES (%s,%s,%s)", (pid, url, i))
 
         return ok({'id': pid, 'message': 'Produto criado com sucesso'}, 201)
     finally:
@@ -461,7 +473,8 @@ def produto_item():
             with db.cursor() as c:
                 c.execute(
                     """SELECT p.*, u.id as vid, u.nome as vnome, u.bloco as vbloco,
-                              u.apartamento as vapto, u.rating as vrating, u.total_vendas as vvendas, u.bio as vbio
+                              u.apartamento as vapto, u.rating as vrating, u.total_vendas as vvendas,
+                              u.bio as vbio, u.foto_url as vfoto_url, u.pix_key as vpix_key
                        FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.id=%s""",
                     (pid,)
                 )
@@ -482,18 +495,24 @@ def produto_item():
                 )
                 avs = c.fetchall()
 
+            with db.cursor() as c:
+                c.execute("SELECT url FROM imagens_produto WHERE produto_id=%s ORDER BY ordem ASC", (pid,))
+                imgs_extras = [r['url'] for r in c.fetchall()]
+
             return ok({
                 'id': p['id'], 'titulo': p['titulo'], 'descricao': p['descricao'],
                 'preco': float(p['preco']),
                 'preco_fmt': f"{float(p['preco']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                 'categoria': p['categoria'], 'condicao': p['condicao'],
-                'foto': p['foto_principal'], 'status': p['status'],
+                'foto': p['foto_principal'], 'imagens': imgs_extras,
+                'status': p['status'],
                 'quantidade': p['quantidade'], 'criado_em': str(p['criado_em']),
                 'favorito': fav,
                 'vendedor': {
                     'id': p['vid'], 'nome': p['vnome'],
                     'localizacao': f"Bloco {p['vbloco']} - Apto {p['vapto']}",
-                    'rating': float(p['vrating'] or 0), 'vendas': p['vvendas'], 'bio': p['vbio']
+                    'rating': float(p['vrating'] or 0), 'vendas': p['vvendas'], 'bio': p['vbio'],
+                    'foto_url': p['vfoto_url'], 'pix_key': p['vpix_key']
                 },
                 'avaliacoes': [{**a, 'criado_em': str(a['criado_em'])} for a in avs]
             })
@@ -521,6 +540,15 @@ def produto_item():
             valores.append(pid)
             with db.cursor() as c:
                 c.execute(f"UPDATE produtos SET {', '.join(campos)} WHERE id=%s", valores)
+
+            if 'imagens_extras' in body:
+                imagens_extras = body.get('imagens_extras', [])
+                with db.cursor() as c:
+                    c.execute("DELETE FROM imagens_produto WHERE produto_id=%s", (pid,))
+                    for i, url in enumerate(imagens_extras):
+                        if url:
+                            c.execute("INSERT INTO imagens_produto (produto_id, url, ordem) VALUES (%s,%s,%s)", (pid, url, i))
+
             return ok({'message': 'Produto atualizado'})
 
         if request.method == 'DELETE':
@@ -1181,7 +1209,7 @@ def perfil():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento FROM usuarios WHERE id=%s AND ativo=1", (uid,))
+            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento, pix_key FROM usuarios WHERE id=%s AND ativo=1", (uid,))
             user = c.fetchone()
         if not user:
             return err('Usuário não encontrado', 404)
@@ -1191,9 +1219,17 @@ def perfil():
             total_produtos = c.fetchone()['n']
             c.execute("SELECT a.nota, a.comentario, a.criado_em, u.nome as avaliador FROM avaliacoes a JOIN usuarios u ON a.avaliador_id=u.id WHERE a.avaliado_id=%s ORDER BY a.criado_em DESC LIMIT 5", (uid,))
             avaliacoes = c.fetchall()
+            c.execute("SELECT id, titulo, foto_principal, preco, condicao, criado_em FROM produtos WHERE usuario_id=%s AND status='disponivel' ORDER BY criado_em DESC", (uid,))
+            produtos_v = c.fetchall()
+
+        produtos_fmt = [{'id': p['id'], 'titulo': p['titulo'], 'foto': p['foto_principal'],
+                         'preco': float(p['preco']),
+                         'preco_fmt': fmt_price(p['preco']),
+                         'condicao': p['condicao']} for p in produtos_v]
 
         return ok({**user, 'id': int(user['id']), 'rating': float(user['rating'] or 0),
                    'total_produtos': total_produtos,
+                   'produtos': produtos_fmt,
                    'avaliacoes': [{**a, 'criado_em': str(a['criado_em'])} for a in avaliacoes]})
     finally:
         db.close()

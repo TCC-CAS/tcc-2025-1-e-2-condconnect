@@ -293,15 +293,8 @@
             <form class="ad-form" id="ad-form">
                 <div class="form-group">
                     <label class="form-label">Fotos do Produto</label>
-                    <span class="form-sublabel">Adicione fotos para atrair mais compradores</span>
-                    <input type="file" id="product-image" accept="image/jpeg,image/png,image/webp" style="display:none;">
-                    <div class="upload-area" style="cursor:pointer;" onclick="document.getElementById('product-image').click()">
-                        <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                        </svg>
-                        <span>Clique para fazer upload</span>
-                    </div>
+                    <span class="form-sublabel">Primeira foto é a principal. Adicione até 5 fotos (JPEG, PNG ou WebP, máx 5MB cada).</span>
+                    <div id="photos-grid" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"></div>
                 </div>
 
                 <div class="form-group">
