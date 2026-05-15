@@ -1016,7 +1016,7 @@ body.dashboard-body {
     .sidebar {
         left: -280px;
         transition: transform var(--transition-normal);
-        z-index: 1002;
+        z-index: 1200;
     }
 
     .sidebar.active {
@@ -1126,7 +1126,7 @@ body.dashboard-body {
     inset: 0;
     background: rgba(15, 23, 42, 0.5);
     backdrop-filter: blur(4px);
-    z-index: 1000;
+    z-index: 1150;
     opacity: 0;
     transition: opacity var(--transition-normal);
 }
