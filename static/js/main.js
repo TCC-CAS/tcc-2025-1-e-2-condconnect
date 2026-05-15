@@ -26,7 +26,7 @@ const CondConnect = {
                 localStorage.removeItem('condconnect_user');
                 const path = window.location.pathname;
                 const publicPages = ['index', 'login', 'cadastro', 'esqueci-senha', 'redefinir-senha'];
-                const isPublic = publicPages.some(p => path.includes(p)) || path.endsWith('');
+                const isPublic = publicPages.some(p => path.includes(p));
                 if (!isPublic) {
                     window.location.href = '/Templates/login.html';
                 }
