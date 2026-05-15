@@ -54,7 +54,20 @@ def get_body():
 def require_auth():
     if 'user_id' not in session:
         return None, err('Não autenticado. Faça login para continuar.', 401)
-    return session['user_id'], None
+    uid = session['user_id']
+    sv_session = session.get('session_version')
+    if sv_session is not None:
+        db = get_db()
+        try:
+            with db.cursor() as c:
+                c.execute("SELECT session_version FROM usuarios WHERE id=%s", (uid,))
+                row = c.fetchone()
+            if row and row['session_version'] != sv_session:
+                session.clear()
+                return None, err('Sessão expirada. Faça login novamente.', 401)
+        finally:
+            db.close()
+    return uid, None
 
 def require_admin():
     uid, e = require_auth()
@@ -171,13 +184,14 @@ def login():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco FROM usuarios WHERE email=%s AND ativo=1", (email,))
+            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version FROM usuarios WHERE email=%s AND ativo=1", (email,))
             user = c.fetchone()
         if not user or not check_password(senha, user['senha']):
             return err('E-mail ou senha incorretos', 401)
 
         session['user_id'] = user['id']
         session['user_role'] = user['papel']
+        session['session_version'] = user['session_version']
         return ok({
             'id': user['id'], 'nome': user['nome'], 'email': user['email'],
             'papel': user['papel'], 'foto_url': user['foto_url'],
@@ -231,6 +245,21 @@ def register():
 def logout():
     session.clear()
     return ok({'message': 'Logout realizado com sucesso'})
+
+
+@app.route('/auth/logout-all', methods=['POST', 'OPTIONS'])
+def logout_all():
+    uid, e = require_auth()
+    if e:
+        return e
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("UPDATE usuarios SET session_version = session_version + 1 WHERE id=%s", (uid,))
+        session.clear()
+        return ok({'message': 'Sessão encerrada em todos os dispositivos'})
+    finally:
+        db.close()
 
 
 @app.route('/auth/esqueci-senha', methods=['POST', 'OPTIONS'])

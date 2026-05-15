@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             e.preventDefault();
             if (!await CondConnect.showConfirm('Você será desconectado de todos os outros dispositivos.', 'Sair de outros dispositivos')) return;
             try {
-                await CondConnect.api('/auth/logout', { method: 'POST' });
+                await CondConnect.api('/auth/logout-all', { method: 'POST' });
                 CondConnect.clearUser();
                 await CondConnect.showAlert('Sessão encerrada em todos os dispositivos. Faça login novamente.', 'success');
                 window.location.href = '/Templates/login.html';
