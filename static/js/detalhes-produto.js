@@ -37,10 +37,14 @@
     }
     const avatarEl = document.querySelector('.seller-avatar');
     if (avatarEl && produto.vendedor?.nome) {
-        const parts = produto.vendedor.nome.trim().split(/\s+/);
-        avatarEl.textContent = parts.length >= 2
-            ? (parts[0][0] + parts[1][0]).toUpperCase()
-            : parts[0][0].toUpperCase();
+        if (produto.vendedor.foto_url) {
+            avatarEl.innerHTML = `<img src="${produto.vendedor.foto_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        } else {
+            const parts = produto.vendedor.nome.trim().split(/\s+/);
+            avatarEl.textContent = parts.length >= 2
+                ? (parts[0][0] + parts[1][0]).toUpperCase()
+                : parts[0][0].toUpperCase();
+        }
     }
     set('seller-location', produto.vendedor?.localizacao || '');
     // Rating do vendedor no card
