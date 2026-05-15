@@ -131,12 +131,19 @@
 
             setLoading(this, true);
             try {
-                const user = await CondConnect.api('/auth/login', {
+                const resp = await CondConnect.api('/auth/login', {
                     method: 'POST',
                     body: { email, senha },
                 });
-                CondConnect.setUser(user);
-                window.location.href = '/Templates/dashboard.html';
+                if (resp.requires_2fa) {
+                    document.getElementById('step-login').style.display = 'none';
+                    document.getElementById('step-2fa').style.display = 'block';
+                    document.getElementById('email-hint').textContent = resp.email || email;
+                    document.getElementById('codigo-2fa').focus();
+                } else {
+                    CondConnect.setUser(resp);
+                    window.location.href = '/Templates/dashboard.html';
+                }
             } catch (err) {
                 mostrarErro(err.message || 'Email ou senha incorretos');
             } finally {
@@ -144,6 +151,65 @@
             }
         });
     }
+
+    // 2FA — verificar código
+    const btn2fa = document.getElementById('btn-verificar-2fa');
+    if (btn2fa) {
+        async function verificar2fa() {
+            const codigo = document.getElementById('codigo-2fa')?.value.trim();
+            if (!codigo || codigo.length !== 6) {
+                await CondConnect.showAlert('Digite o código de 6 dígitos recebido por email.', 'warning');
+                return;
+            }
+            btn2fa.disabled = true;
+            btn2fa.textContent = 'Verificando...';
+            try {
+                const user = await CondConnect.api('/auth/verificar-2fa', {
+                    method: 'POST',
+                    body: { codigo },
+                });
+                CondConnect.setUser(user);
+                window.location.href = '/Templates/dashboard.html';
+            } catch (err) {
+                await CondConnect.showAlert(err.message || 'Código inválido ou expirado.', 'error');
+                document.getElementById('codigo-2fa').value = '';
+                document.getElementById('codigo-2fa').focus();
+            } finally {
+                btn2fa.disabled = false;
+                btn2fa.textContent = 'Verificar';
+            }
+        }
+
+        btn2fa.addEventListener('click', verificar2fa);
+
+        document.getElementById('codigo-2fa')?.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') verificar2fa();
+        });
+    }
+
+    // 2FA — reenviar código
+    document.getElementById('btn-reenviar-2fa')?.addEventListener('click', async function () {
+        this.disabled = true;
+        this.textContent = 'Enviando...';
+        try {
+            await CondConnect.api('/auth/reenviar-2fa', { method: 'POST' });
+            await CondConnect.showAlert('Novo código enviado para seu email.', 'success');
+            document.getElementById('codigo-2fa').value = '';
+            document.getElementById('codigo-2fa').focus();
+        } catch (err) {
+            await CondConnect.showAlert(err.message || 'Erro ao reenviar código.', 'error');
+        } finally {
+            this.disabled = false;
+            this.textContent = 'Reenviar código';
+        }
+    });
+
+    // 2FA — voltar ao login
+    document.getElementById('btn-voltar-login')?.addEventListener('click', function () {
+        document.getElementById('step-2fa').style.display = 'none';
+        document.getElementById('step-login').style.display = 'block';
+        document.getElementById('codigo-2fa').value = '';
+    });
 
     // CADASTRO
     const cadastroBtn = document.getElementById('register-btn') || document.querySelector('.auth-btn');
