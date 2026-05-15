@@ -5,11 +5,11 @@ const CondConnect = {
     currentUser: null,
 
     async api(endpoint, options = {}) {
-        const defaults = {
+        const config = {
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            ...options,
+            headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
         };
-        const config = { ...defaults, ...options };
         if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
             config.body = JSON.stringify(config.body);
         }

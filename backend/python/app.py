@@ -293,7 +293,7 @@ def me():
         if request.method == 'GET':
             with db.cursor() as c:
                 c.execute(
-                    "SELECT id,nome,email,telefone,apartamento,bloco,foto_url,bio,rating,total_vendas,total_compras,papel,criado_em FROM usuarios WHERE id=%s",
+                    "SELECT id,nome,email,telefone,apartamento,bloco,foto_url,bio,pix_key,rating,total_vendas,total_compras,papel,criado_em FROM usuarios WHERE id=%s",
                     (uid,)
                 )
                 user = c.fetchone()
@@ -328,10 +328,10 @@ def me():
         # PUT
         body = get_body()
         campos, valores = [], []
-        for campo in ['nome', 'telefone', 'apartamento', 'bloco', 'bio']:
+        for campo in ['nome', 'telefone', 'apartamento', 'bloco', 'bio', 'pix_key', 'foto_url']:
             if campo in body:
                 campos.append(f"{campo}=%s")
-                valores.append(body[campo].strip())
+                valores.append(body[campo].strip() if isinstance(body[campo], str) else body[campo])
 
         if 'nova_senha' in body:
             if len(body['nova_senha']) < 6:
@@ -345,7 +345,7 @@ def me():
             valores.append(hash_password(body['nova_senha']))
 
         if not campos:
-            return err('Nenhum campo para atualizar')
+            return ok({'message': 'Sem alterações'})
 
         valores.append(uid)
         with db.cursor() as c:
