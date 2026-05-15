@@ -56,17 +56,16 @@ def require_auth():
         return None, err('Não autenticado. Faça login para continuar.', 401)
     uid = session['user_id']
     sv_session = session.get('session_version')
-    if sv_session is not None:
-        db = get_db()
-        try:
-            with db.cursor() as c:
-                c.execute("SELECT session_version FROM usuarios WHERE id=%s", (uid,))
-                row = c.fetchone()
-            if row and row['session_version'] != sv_session:
-                session.clear()
-                return None, err('Sessão expirada. Faça login novamente.', 401)
-        finally:
-            db.close()
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT session_version FROM usuarios WHERE id=%s", (uid,))
+            row = c.fetchone()
+        if row and row['session_version'] != sv_session:
+            session.clear()
+            return None, err('Sessão expirada. Faça login novamente.', 401)
+    finally:
+        db.close()
     return uid, None
 
 def require_admin():
