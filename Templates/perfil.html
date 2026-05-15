@@ -280,10 +280,10 @@
                     configurações de conta.</p>
             </section>
 
-            <div class="profile-card">
+            <div class="profile-card" id="profile-card" style="visibility:hidden">
                 <div class="profile-header-section">
                     <div class="avatar-wrapper">
-                        <div class="profile-avatar-large" id="avatar-preview">G</div>
+                        <div class="profile-avatar-large" id="avatar-preview"></div>
                         <input type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" style="display:none">
                         <button type="button" class="btn-edit-avatar" onclick="document.getElementById('avatar-upload').click()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -295,8 +295,8 @@
                             </svg>
                         </button>
                     </div>
-                    <h2 class="profile-name">Gabriela Ferrari</h2>
-                    <p class="profile-email">ferrarigabriela31@gmail.com</p>
+                    <h2 class="profile-name"></h2>
+                    <p class="profile-email"></p>
                 </div>
 
                 <form id="profile-form" class="profile-form">

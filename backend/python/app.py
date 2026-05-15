@@ -39,7 +39,9 @@ def get_db():
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def ok(data=None, status=200):
-    return jsonify(data or {}), status
+    if data is None:
+        data = {}
+    return jsonify(data), status
 
 def err(msg, status=400):
     return jsonify({'error': msg}), status

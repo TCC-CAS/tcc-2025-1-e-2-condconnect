@@ -13,7 +13,8 @@
         productsList.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Carregando...</div>';
 
         try {
-            const produtos = await CondConnect.api('/produtos?meus=1');
+            const raw = await CondConnect.api('/produtos?meus=1');
+            const produtos = Array.isArray(raw) ? raw : (raw.produtos || []);
 
             if (produtos.length === 0) {
                 productsList.innerHTML = `

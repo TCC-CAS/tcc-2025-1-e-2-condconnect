@@ -1,13 +1,18 @@
 ﻿document.addEventListener('DOMContentLoaded', async function () {
     const profileForm = document.getElementById('profile-form');
 
-    function setAvatarPreview(url) {
+    function setAvatarPreview(url, nome) {
         const el = document.getElementById('avatar-preview');
         if (!el) return;
         if (url) {
             el.style.overflow = 'hidden';
             el.style.padding = '0';
+            el.style.fontSize = '';
             el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+        } else if (nome) {
+            const partes = nome.trim().split(' ');
+            const iniciais = (partes[0][0] + (partes[1]?.[0] || '')).toUpperCase();
+            el.textContent = iniciais;
         }
     }
 
@@ -51,8 +56,12 @@
             if (locationEl) locationEl.textContent = `Bloco ${user.bloco} - Apto ${user.apartamento}`;
 
             // Foto
-            if (user.foto_url) setAvatarPreview(user.foto_url);
+            setAvatarPreview(user.foto_url, user.nome);
             setHeaderAvatar(user.foto_url, user.nome);
+
+            // Revelar o card após carregar (evita flash de dados mockados)
+            const card = document.getElementById('profile-card');
+            if (card) card.style.visibility = 'visible';
 
             // Stats
             const statsMap = {
