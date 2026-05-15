@@ -137,17 +137,9 @@
                 });
                 if (resp.requires_2fa) {
                     document.getElementById('step-login').style.display = 'none';
-                    if (resp.has_phone) {
-                        document.getElementById('metodo-email-hint').textContent = resp.email_hint || '';
-                        document.getElementById('metodo-sms-hint').textContent = resp.phone_hint || '';
-                        const cardSms = document.getElementById('card-sms');
-                        if (cardSms) cardSms.style.display = 'flex';
-                        document.getElementById('step-escolha-metodo').style.display = 'block';
-                    } else {
-                        // sem telefone: enviar email direto
-                        const r = await CondConnect.api('/auth/enviar-2fa', { method: 'POST', body: { metodo: 'email' } });
-                        mostrarPasso2fa(r.metodo, r.destino);
-                    }
+                    document.getElementById('step-2fa').style.display = 'block';
+                    document.getElementById('email-hint').textContent = resp.destino || '';
+                    document.getElementById('codigo-2fa').focus();
                 } else {
                     CondConnect.setUser(resp);
                     window.location.href = '/Templates/dashboard.html';
@@ -159,53 +151,6 @@
             }
         });
     }
-
-    function mostrarPasso2fa(metodo, destino) {
-        document.getElementById('step-escolha-metodo').style.display = 'none';
-        document.getElementById('step-login').style.display = 'none';
-        document.getElementById('step-2fa').style.display = 'block';
-        document.getElementById('email-hint').textContent = destino || '';
-        const viaEl = document.getElementById('2fa-via-texto');
-        if (viaEl) viaEl.textContent = metodo === 'sms'
-            ? 'Enviamos um SMS com o código para'
-            : 'Enviamos um email com o código para';
-        document.getElementById('codigo-2fa').focus();
-    }
-
-    // Seleção de cartão de método
-    let metodoSelecionado = 'email';
-    document.querySelectorAll('[data-metodo]').forEach(card => {
-        card.addEventListener('click', function () {
-            metodoSelecionado = this.dataset.metodo;
-            document.querySelectorAll('[data-metodo]').forEach(c => {
-                c.style.border = '2px solid #e2e8f0';
-                c.style.background = '#fff';
-            });
-            this.style.border = '2px solid #00a6a6';
-            this.style.background = '#f0fafa';
-        });
-    });
-
-    // Enviar código pelo método escolhido
-    document.getElementById('btn-enviar-codigo')?.addEventListener('click', async function () {
-        this.disabled = true;
-        this.textContent = 'Enviando...';
-        try {
-            const r = await CondConnect.api('/auth/enviar-2fa', { method: 'POST', body: { metodo: metodoSelecionado } });
-            mostrarPasso2fa(r.metodo, r.destino);
-        } catch (err) {
-            await CondConnect.showAlert(err.message || 'Erro ao enviar código.', 'error');
-        } finally {
-            this.disabled = false;
-            this.textContent = 'Enviar código';
-        }
-    });
-
-    // Voltar ao login a partir da escolha
-    document.getElementById('btn-voltar-login-2')?.addEventListener('click', function () {
-        document.getElementById('step-escolha-metodo').style.display = 'none';
-        document.getElementById('step-login').style.display = 'block';
-    });
 
     // 2FA — verificar código
     const btn2fa = document.getElementById('btn-verificar-2fa');

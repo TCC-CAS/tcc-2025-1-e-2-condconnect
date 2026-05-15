@@ -211,86 +211,36 @@ def login():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version, telefone FROM usuarios WHERE email=%s AND ativo=1", (email,))
+            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version FROM usuarios WHERE email=%s AND ativo=1", (email,))
             user = c.fetchone()
         if not user or not check_password(senha, user['senha']):
             return err('E-mail ou senha incorretos', 401)
 
-        telefone = user.get('telefone') or ''
-        has_phone = bool(re.sub(r'\D', '', telefone))
-
-        em = user['email']
-        at = em.index('@')
-        email_hint = (em[0] + '***' + em[at - 1] if at > 1 else em[0] + '***') + em[at:]
-
-        phone_hint = ''
-        if has_phone:
-            d = re.sub(r'\D', '', telefone)
-            phone_hint = '****' + d[-4:] if len(d) >= 4 else telefone
-
-        session.clear()
-        session['pending_2fa_uid'] = user['id']
-        session['pending_2fa_telefone'] = telefone
-
-        return ok({'requires_2fa': True, 'has_phone': has_phone, 'email_hint': email_hint, 'phone_hint': phone_hint})
-    finally:
-        db.close()
-
-
-def _fazer_envio_2fa(uid, metodo):
-    if metodo not in ('email', 'sms'):
-        metodo = 'email'
-    db = get_db()
-    try:
-        with db.cursor() as c:
-            c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (uid,))
-            user = c.fetchone()
-        if not user:
-            return err('Usuário não encontrado', 404)
-
         codigo = str(secrets.randbelow(900000) + 100000)
         expira = datetime.now() + timedelta(minutes=10)
         with db.cursor() as c:
-            c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, uid))
+            c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, user['id']))
 
-        telefone = session.get('pending_2fa_telefone', '')
-        destino_hint = ''
+        em = user['email']
+        at = em.index('@')
+        destino = (em[0] + '***' + em[at - 1] if at > 1 else em[0] + '***') + em[at:]
 
-        if metodo == 'sms' and telefone:
-            enviado = send_sms(telefone, codigo)
-            if not enviado:
-                metodo = 'email'
-            else:
-                d = re.sub(r'\D', '', telefone)
-                destino_hint = '****' + d[-4:] if len(d) >= 4 else telefone
+        corpo = email_layout('🔐 Código de verificação',
+            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Use o código abaixo para acessar o CondConnect.</p>
+            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+            </div>
+            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>. Não compartilhe este código com ninguém.</p>"""
+        )
+        send_email(user['email'], '🔐 Seu código de verificação - CondConnect', corpo)
 
-        if metodo == 'email':
-            em = user['email']
-            at = em.index('@')
-            destino_hint = (em[0] + '***' + em[at - 1] if at > 1 else em[0] + '***') + em[at:]
-            corpo = email_layout('🔐 Código de verificação',
-                f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Use o código abaixo para acessar o CondConnect.</p>
-                <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
-                    <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
-                    <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
-                </div>
-                <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>. Não compartilhe este código com ninguém.</p>"""
-            )
-            send_email(user['email'], '🔐 Seu código de verificação - CondConnect', corpo)
+        session.clear()
+        session['pending_2fa_uid'] = user['id']
 
-        session['pending_2fa_metodo'] = metodo
-        return ok({'metodo': metodo, 'destino': destino_hint})
+        return ok({'requires_2fa': True, 'destino': destino})
     finally:
         db.close()
-
-
-@app.route('/auth/enviar-2fa', methods=['POST', 'OPTIONS'])
-def enviar_2fa():
-    uid = session.get('pending_2fa_uid')
-    if not uid:
-        return err('Sessão expirada. Faça login novamente.', 401)
-    metodo = (get_body().get('metodo') or 'email')
-    return _fazer_envio_2fa(uid, metodo)
 
 
 @app.route('/auth/register', methods=['POST', 'OPTIONS'])
@@ -386,8 +336,31 @@ def reenviar_2fa():
     if not uid:
         return err('Sessão expirada. Faça login novamente.', 401)
 
-    metodo = session.get('pending_2fa_metodo', 'email')
-    return _fazer_envio_2fa(uid, metodo)
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (uid,))
+            user = c.fetchone()
+        if not user:
+            return err('Usuário não encontrado', 404)
+
+        codigo = str(secrets.randbelow(900000) + 100000)
+        expira = datetime.now() + timedelta(minutes=10)
+        with db.cursor() as c:
+            c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, uid))
+
+        corpo = email_layout('🔐 Novo código de verificação',
+            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Aqui está seu novo código.</p>
+            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+            </div>
+            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>.</p>"""
+        )
+        send_email(user['email'], '🔐 Novo código de verificação - CondConnect', corpo)
+        return ok({'message': 'Código reenviado'})
+    finally:
+        db.close()
 
 
 @app.route('/auth/logout-all', methods=['POST', 'OPTIONS'])
