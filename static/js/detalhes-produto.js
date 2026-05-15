@@ -335,11 +335,30 @@
         }
     }
 
+    // Máscara BRL no campo de proposta
+    const propostaValorInput = document.getElementById('proposta-valor');
+    if (propostaValorInput) {
+        const aplicarMascaraProposta = (input) => {
+            const nums = input.value.replace(/\D/g, '');
+            if (!nums) { input.value = ''; return; }
+            input.value = (parseInt(nums, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        propostaValorInput.addEventListener('input', function () { aplicarMascaraProposta(this); });
+        propostaValorInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace') {
+                const nums = this.value.replace(/\D/g, '').slice(0, -1);
+                if (!nums) { this.value = ''; e.preventDefault(); return; }
+                this.value = (parseInt(nums, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                e.preventDefault();
+            }
+        });
+    }
+
     if (fazerPropostaBtn) {
         fazerPropostaBtn.addEventListener('click', () => {
             if (propostaNome) propostaNome.textContent = `Produto: ${produto.titulo} — Preço anunciado: ${produto.preco_fmt}`;
             if (propostaModal) propostaModal.style.display = 'flex';
-            document.getElementById('proposta-valor')?.focus();
+            propostaValorInput?.focus();
         });
     }
 
@@ -363,7 +382,7 @@
             const valorInput = document.getElementById('proposta-valor');
             const mensagemInput = document.getElementById('proposta-mensagem');
             const quantidadeInput = document.getElementById('proposta-quantidade');
-            const valor = parseFloat(valorInput?.value);
+            const valor = parseFloat((valorInput?.value || '').replace(/\./g, '').replace(',', '.')) || 0;
             const mensagem = mensagemInput?.value.trim() || '';
             const quantidade = parseInt(quantidadeInput?.value) || 1;
 

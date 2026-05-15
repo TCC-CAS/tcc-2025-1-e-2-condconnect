@@ -212,8 +212,9 @@ const CondConnect = {
             el.textContent = user.papel === 'admin' ? 'Administrador' : 'Membro';
         });
         document.querySelectorAll('.header-avatar').forEach(el => {
-            el.src = user.foto_url || `https:///ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
+            el.src = user.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
             el.alt = user.nome;
+            if (user.foto_url) el.style.objectFit = 'cover';
         });
         document.querySelectorAll('.header-user-initials').forEach(el => {
             const parts = user.nome.trim().split(' ');

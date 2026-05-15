@@ -5,15 +5,25 @@
         const el = document.getElementById('avatar-preview');
         if (!el) return;
         if (url) {
-            el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+            el.style.overflow = 'hidden';
+            el.style.padding = '0';
+            el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
         }
     }
 
-    // Carregar dados do usuário logado
+    function setHeaderAvatar(url, nome) {
+        document.querySelectorAll('.header-avatar').forEach(el => {
+            el.src = url || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome || '')}&background=00A6A6&color=fff`;
+        });
+    }
+
+    // Carregar dados do usuário logado (sempre busca da API para ter foto_url atualizada)
     async function carregarPerfil() {
         try {
-            const user = await CondConnect.getMe();
+            const user = await CondConnect.api('/me').catch(() => CondConnect.getMe());
             if (!user) return;
+            CondConnect.currentUser = user;
+            localStorage.setItem('condconnect_user', JSON.stringify(user));
 
             const campos = {
                 'profile-name':  user.nome,
@@ -42,6 +52,7 @@
 
             // Foto
             if (user.foto_url) setAvatarPreview(user.foto_url);
+            setHeaderAvatar(user.foto_url, user.nome);
 
             // Stats
             const statsMap = {
@@ -70,10 +81,17 @@
             formData.append('imagem', file);
             try {
                 const result = await CondConnect.api('/uploads/imagem', { method: 'POST', body: formData });
-                setAvatarPreview(result.url);
                 await CondConnect.api('/me', { method: 'PUT', body: { foto_url: result.url } });
-                CondConnect.currentUser = null;
-                localStorage.removeItem('condconnect_user');
+                setAvatarPreview(result.url);
+                setHeaderAvatar(result.url, CondConnect.currentUser?.nome);
+                // Atualiza cache local com nova foto_url
+                if (CondConnect.currentUser) CondConnect.currentUser.foto_url = result.url;
+                const cached = localStorage.getItem('condconnect_user');
+                if (cached) {
+                    const u = JSON.parse(cached);
+                    u.foto_url = result.url;
+                    localStorage.setItem('condconnect_user', JSON.stringify(u));
+                }
             } catch (err) {
                 await CondConnect.showAlert(err.message || 'Erro ao enviar foto', 'error');
             }
