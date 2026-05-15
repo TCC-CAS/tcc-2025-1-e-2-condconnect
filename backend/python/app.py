@@ -2,6 +2,9 @@ import os
 import re
 import secrets
 import bcrypt
+import urllib.request
+import urllib.parse
+import json as _json
 import pymysql
 import pymysql.cursors
 import boto3
@@ -126,6 +129,21 @@ def moderar_imagem(image_bytes):
         print(f'Rekognition error: {e}')
         return None
 
+RECAPTCHA_SECRET = '6LcuN-wsAAAAAN9Kw5TT-ewEqsdLgfEN-UWZA_AW'
+
+def verificar_recaptcha(token):
+    if not token:
+        return False
+    try:
+        data = urllib.parse.urlencode({'secret': RECAPTCHA_SECRET, 'response': token}).encode()
+        req = urllib.request.Request('https://www.google.com/recaptcha/api/siteverify', data=data)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            result = _json.loads(resp.read())
+        return result.get('success', False)
+    except Exception as e:
+        print(f'reCAPTCHA error: {e}')
+        return False
+
 def send_sms(phone, codigo):
     access_key = os.environ.get('AWS_ACCESS_KEY_ID')
     secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
@@ -207,6 +225,8 @@ def login():
     senha = body.get('senha') or ''
     if not email or not senha:
         return err('E-mail e senha são obrigatórios')
+    if not verificar_recaptcha(body.get('recaptcha_token', '')):
+        return err('Verificação de segurança falhou. Tente novamente.')
 
     db = get_db()
     try:
@@ -254,6 +274,8 @@ def register():
 
     if not all([nome, email, senha, apto, bloco]):
         return err('Todos os campos são obrigatórios')
+    if not verificar_recaptcha(body.get('recaptcha_token', '')):
+        return err('Verificação de segurança falhou. Tente novamente.')
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         return err('E-mail inválido')
     if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', senha):

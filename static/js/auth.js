@@ -129,11 +129,17 @@
                 return;
             }
 
+            const recaptchaToken = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+            if (!recaptchaToken) {
+                mostrarErro('Complete a verificação "Não sou um robô"');
+                return;
+            }
+
             setLoading(this, true);
             try {
                 const resp = await CondConnect.api('/auth/login', {
                     method: 'POST',
-                    body: { email, senha },
+                    body: { email, senha, recaptcha_token: recaptchaToken },
                 });
                 if (resp.requires_2fa) {
                     document.getElementById('step-login').style.display = 'none';
@@ -146,6 +152,7 @@
                 }
             } catch (err) {
                 mostrarErro(err.message || 'Email ou senha incorretos');
+                if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
             } finally {
                 setLoading(this, false);
             }
@@ -241,15 +248,22 @@
                 return;
             }
 
+            const recaptchaToken = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+            if (!recaptchaToken) {
+                mostrarErro('Complete a verificação "Não sou um robô"');
+                return;
+            }
+
             setLoading(cadastroBtn, true);
             try {
                 await CondConnect.api('/auth/register', {
                     method: 'POST',
-                    body: { nome, email, senha, apartamento: apto, bloco },
+                    body: { nome, email, senha, apartamento: apto, bloco, recaptcha_token: recaptchaToken },
                 });
                 window.location.href = '/Templates/login.html?cadastro=1';
             } catch (err) {
                 mostrarErro(err.message || 'Erro ao criar conta');
+                if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
             } finally {
                 setLoading(cadastroBtn, false);
             }
