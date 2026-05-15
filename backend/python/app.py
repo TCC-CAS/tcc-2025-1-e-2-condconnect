@@ -4,6 +4,8 @@ import secrets
 import bcrypt
 import pymysql
 import pymysql.cursors
+import boto3
+from botocore.exceptions import ClientError
 from datetime import datetime, timedelta
 from flask import Flask, request, session, jsonify
 from flask_cors import CORS
@@ -85,6 +87,32 @@ def fmt_id(n):
 
 def fmt_price(v):
     return f"R$ {float(v):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+def moderar_imagem(image_bytes):
+    access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region     = os.environ.get('AWS_REGION', 'us-east-1')
+    if not access_key or not secret_key:
+        return None  # credenciais não configuradas — deixa passar
+    try:
+        client = boto3.client(
+            'rekognition',
+            region_name=region,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+        )
+        response = client.detect_moderation_labels(
+            Image={'Bytes': image_bytes},
+            MinConfidence=70,
+        )
+        labels = [l['Name'] for l in response.get('ModerationLabels', [])]
+        return labels if labels else None
+    except ClientError as e:
+        print(f'Rekognition ClientError: {e}')
+        return None  # falha na API — não bloqueia o upload
+    except Exception as e:
+        print(f'Rekognition error: {e}')
+        return None
 
 @app.before_request
 def handle_options():
@@ -1300,6 +1328,10 @@ def upload_imagem():
         ext = 'webp'
     else:
         ext = 'png'
+
+    labels = moderar_imagem(data)
+    if labels:
+        return err('Imagem rejeitada: conteúdo inapropriado detectado. Por favor, envie uma imagem adequada.', 422)
 
     filename = f"{uid}_{int(datetime.now().timestamp())}_{secrets.token_hex(4)}.{ext}"
     filepath = os.path.join(UPLOAD_DIR, filename)
