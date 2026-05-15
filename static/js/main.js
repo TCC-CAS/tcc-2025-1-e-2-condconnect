@@ -340,6 +340,27 @@ const CondConnect = {
 
 // Global Init
 document.addEventListener('DOMContentLoaded', () => {
+    // População síncrona do cabeçalho a partir do cache local (sem await → sem flash)
+    try {
+        const cached = JSON.parse(localStorage.getItem('condconnect_user') || 'null');
+        if (cached) {
+            const primeiroNome = cached.nome?.split(' ')[0] || '';
+            document.querySelectorAll('.user-name').forEach(el => el.textContent = cached.nome || '');
+            document.querySelectorAll('.user-role').forEach(el => {
+                el.textContent = cached.papel === 'admin' ? 'Administrador' : 'Membro';
+            });
+            document.querySelectorAll('.header-avatar').forEach(el => {
+                el.src = cached.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(cached.nome || '')}&background=00A6A6&color=fff`;
+                if (cached.foto_url) el.style.objectFit = 'cover';
+            });
+            document.querySelectorAll('.header-user-initials').forEach(el => {
+                const p = (cached.nome || '').trim().split(' ');
+                el.textContent = (p[0][0] + (p[1]?.[0] || '')).toUpperCase();
+            });
+            document.querySelectorAll('.welcome-name').forEach(el => el.textContent = primeiroNome);
+        }
+    } catch {}
+
     CondConnect.initMobileNav();
     CondConnect.initLandingNav();
     CondConnect.syncUserRole();
