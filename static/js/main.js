@@ -370,8 +370,24 @@ const CondConnect = {
 };
 
 // Global Init
-document.addEventListener('DOMContentLoaded', () => {
-    // População síncrona do cabeçalho a partir do cache local (sem await → sem flash)
+document.addEventListener('DOMContentLoaded', async () => {
+    // Guard de autenticação: verifica sessão no servidor para páginas protegidas
+    const _path = window.location.pathname;
+    const _publicas = ['index', 'login', 'cadastro', 'esqueci-senha', 'redefinir-senha', 'termos'];
+    const _isPublica = _publicas.some(p => _path.includes(p)) || _path === '/';
+    if (!_isPublica) {
+        try {
+            const user = await CondConnect.api('/me');
+            CondConnect.currentUser = user;
+            localStorage.setItem('condconnect_user', JSON.stringify(user));
+        } catch {
+            localStorage.removeItem('condconnect_user');
+            window.location.href = '/Templates/login.html';
+            return;
+        }
+    }
+
+    // População síncrona do cabeçalho a partir do cache local (sem flash)
     try {
         const cached = JSON.parse(localStorage.getItem('condconnect_user') || 'null');
         if (cached) {
