@@ -1601,6 +1601,11 @@ def propostas_route():
         if produto['status'] != 'disponivel':
             return err('Produto não disponível para propostas')
 
+        preco_produto = float(produto['preco'])
+        valor_max = round(preco_produto * 0.70, 2)
+        if valor > valor_max:
+            return err(f'O valor máximo permitido é 70% do preço anunciado: {fmt_price(valor_max)}')
+
         vendedor_id = produto['usuario_id']
 
         with db.cursor() as c:

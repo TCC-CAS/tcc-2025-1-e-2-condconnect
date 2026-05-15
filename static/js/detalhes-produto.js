@@ -357,6 +357,10 @@
     if (fazerPropostaBtn) {
         fazerPropostaBtn.addEventListener('click', () => {
             if (propostaNome) propostaNome.textContent = `Produto: ${produto.titulo} — Preço anunciado: ${produto.preco_fmt}`;
+            const maxValor = (produto.preco || 0) * 0.70;
+            const maxFmt = maxValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const hint = document.getElementById('proposta-max-hint');
+            if (hint) hint.textContent = `Máximo permitido (70%): ${maxFmt}`;
             if (propostaModal) propostaModal.style.display = 'flex';
             propostaValorInput?.focus();
         });
@@ -388,6 +392,12 @@
 
             if (!valor || valor <= 0) {
                 if (propostaErro) { propostaErro.textContent = 'Informe um valor válido.'; propostaErro.style.display = 'block'; }
+                return;
+            }
+            const valorMax = (produto.preco || 0) * 0.70;
+            if (valor > valorMax) {
+                const maxFmt = valorMax.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                if (propostaErro) { propostaErro.textContent = `Valor acima do permitido. Máximo: ${maxFmt} (70% do preço anunciado).`; propostaErro.style.display = 'block'; }
                 return;
             }
             if (quantidade < 1) {
