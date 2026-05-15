@@ -220,6 +220,37 @@ const CondConnect = {
             const parts = user.nome.trim().split(' ');
             el.textContent = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
         });
+        this.initPedidosSubMenu(user);
+    },
+
+    initPedidosSubMenu(user) {
+        const pedidosLink = document.querySelector('a.nav-item[href*="meus-pedidos"]');
+        if (!pedidosLink) return;
+        if (document.getElementById('pedidos-sub-menu')) return;
+
+        const isOnPedidos = window.location.pathname.includes('meus-pedidos');
+        const currentTab = isOnPedidos ? (new URLSearchParams(window.location.search).get('tab') || 'compras') : '';
+
+        const subItems = [
+            { label: 'Compras',   tab: 'compras',   count: user.pedidos_ativos || 0 },
+            { label: 'Vendas',    tab: 'vendas',     count: user.vendas_ativas || 0 },
+            { label: 'Propostas', tab: 'propostas',  count: user.propostas_pendentes || 0 },
+        ];
+
+        const menu = document.createElement('div');
+        menu.id = 'pedidos-sub-menu';
+        menu.className = 'nav-sub-menu';
+        menu.innerHTML = subItems.map(({ label, tab, count }) => {
+            const isActive = isOnPedidos && currentTab === tab;
+            const badge = count > 0 ? `<span class="nav-badge">${count}</span>` : '';
+            return `<a href="/Templates/meus-pedidos.html?tab=${tab}" class="nav-sub-item${isActive ? ' active' : ''}"><span class="sub-label">${label}</span>${badge}</a>`;
+        }).join('');
+
+        pedidosLink.insertAdjacentElement('afterend', menu);
+
+        if (isOnPedidos) {
+            pedidosLink.classList.add('active');
+        }
     },
 
     showAlert(mensagem, tipo = 'info') {

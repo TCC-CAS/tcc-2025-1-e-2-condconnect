@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const modal = document.getElementById('tracking-modal');
     const closeModal = document.querySelector('.close-modal');
 
-    const PAGE_SIZE = 15;
+    const PAGE_SIZE = 10;
 
     const statusLabel = {
         aguardando: 'Aguardando',
@@ -37,8 +37,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     let currentPropostaPage = 1;
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('tab') === 'propostas') {
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'propostas') {
         currentTipo = 'propostas';
+    } else if (tabParam === 'vendas') {
+        currentTipo = 'sales';
+    } else if (tabParam === 'compras') {
+        currentTipo = 'purchases';
     }
 
     function renderPagination(total, page, onPageChangeFn) {
@@ -324,8 +329,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.addEventListener('click', e => { if (e.target === modal) modal?.classList.remove('active'); });
 
     renderOrders(currentTipo);
-    if (currentTipo === 'propostas') {
-        tabBtns.forEach(b => b.classList.toggle('active', b.dataset.type === 'propostas'));
+    if (currentTipo !== 'purchases') {
+        tabBtns.forEach(b => b.classList.toggle('active', b.dataset.type === currentTipo));
     }
     window.openTracking = openTracking;
 });
