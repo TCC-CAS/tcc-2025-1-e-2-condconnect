@@ -320,12 +320,23 @@ def me():
                     (uid, uid, uid)
                 )
                 msg_nao_lidas = c.fetchone()['n']
+                c.execute("SELECT COUNT(*) as n FROM pedidos WHERE comprador_id=%s AND status NOT IN ('entregue','cancelado')", (uid,))
+                pedidos_ativos = c.fetchone()['n']
+                c.execute("SELECT COUNT(*) as n FROM pedidos WHERE vendedor_id=%s AND status NOT IN ('entregue','cancelado')", (uid,))
+                vendas_ativas = c.fetchone()['n']
+                c.execute(
+                    "SELECT COUNT(*) as n FROM propostas p JOIN produtos pr ON p.produto_id=pr.id WHERE pr.usuario_id=%s AND p.status='pendente'",
+                    (uid,)
+                )
+                propostas_pendentes = c.fetchone()['n']
 
             return ok({**user, 'id': int(user['id']), 'rating': float(user['rating'] or 0),
                        'total_vendas': total_vendas, 'total_compras': int(user['total_compras'] or 0),
                        'total_produtos': total_produtos, 'total_favoritos': total_favoritos,
                        'total_pedidos': total_pedidos, 'faturamento': faturamento,
-                       'notif_nao_lidas': notif, 'msg_nao_lidas': msg_nao_lidas})
+                       'notif_nao_lidas': notif, 'msg_nao_lidas': msg_nao_lidas,
+                       'pedidos_ativos': int(pedidos_ativos), 'vendas_ativas': int(vendas_ativas),
+                       'propostas_pendentes': int(propostas_pendentes)})
 
         # PUT
         body = get_body()
