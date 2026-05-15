@@ -312,7 +312,7 @@ def redefinir_senha():
 
 # ── ME ────────────────────────────────────────────────────────────────────────
 
-@app.route('/me', methods=['GET', 'PUT', 'OPTIONS'])
+@app.route('/me', methods=['GET', 'PUT', 'DELETE', 'OPTIONS'])
 def me():
     uid, e = require_auth()
     if e:
@@ -365,6 +365,12 @@ def me():
                        'notif_nao_lidas': notif, 'msg_nao_lidas': msg_nao_lidas,
                        'pedidos_ativos': int(pedidos_ativos), 'vendas_ativas': int(vendas_ativas),
                        'propostas_pendentes': int(propostas_pendentes)})
+
+        if request.method == 'DELETE':
+            with db.cursor() as c:
+                c.execute("DELETE FROM usuarios WHERE id=%s", (uid,))
+            session.clear()
+            return ok({'message': 'Conta excluída com sucesso'})
 
         # PUT
         body = get_body()
@@ -1366,13 +1372,13 @@ def configuracoes():
             return ok(config)
 
         body = get_body()
-        permitidos = ['notif_mensagens', 'notif_pedidos', 'notif_avaliacoes', 'notif_sistema', 'tema', 'idioma', 'privacidade_endereco']
+        permitidos = ['notif_email', 'notif_sms', 'notif_marketing', 'tema', 'idioma', 'privacidade_endereco']
         campos, valores = [], []
         for campo in permitidos:
             if campo in body:
                 campos.append(f"{campo}=%s"); valores.append(body[campo])
         if not campos:
-            return err('Nenhum campo para atualizar')
+            return ok({'message': 'Sem alterações'})
         valores.append(uid)
         with db.cursor() as c:
             c.execute(f"UPDATE configuracoes_usuario SET {', '.join(campos)} WHERE usuario_id=%s", valores)
