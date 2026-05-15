@@ -31,7 +31,14 @@
             <form class="auth-form" id="redefinir-form">
                 <div class="form-group">
                     <label for="senha">Nova senha</label>
-                    <input type="password" id="senha" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <input type="password" id="senha" class="form-control" placeholder="Mínimo 8 caracteres" required>
+                    <div id="password-checklist" style="margin-top:8px;display:none;">
+                        <div id="chk-length" class="chk-item">✗ Mínimo 8 caracteres</div>
+                        <div id="chk-upper"  class="chk-item">✗ Letra maiúscula</div>
+                        <div id="chk-lower"  class="chk-item">✗ Letra minúscula</div>
+                        <div id="chk-number" class="chk-item">✗ Número</div>
+                        <div id="chk-symbol" class="chk-item">✗ Símbolo (!@#$...)</div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="confirmar">Confirmar nova senha</label>
@@ -55,8 +62,13 @@
         </div>
     </div>
 
+    <style>
+        .chk-item { font-size:12px; margin:3px 0; color:#94a3b8; transition:color .2s; }
+        .chk-item.ok { color:#16a34a; }
+    </style>
     <script src="/static/js/main.js?v=2"></script>
     <script>
+        const STRONG_PW = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         const token = new URLSearchParams(window.location.search).get('token');
 
         if (!token) {
@@ -64,15 +76,42 @@
             document.getElementById('invalid-token').style.display = 'block';
         }
 
+        const senhaInput = document.getElementById('senha');
+        const checklist = document.getElementById('password-checklist');
+        const rules = [
+            { id: 'chk-length', label: 'Mínimo 8 caracteres',  test: v => v.length >= 8 },
+            { id: 'chk-upper',  label: 'Letra maiúscula',       test: v => /[A-Z]/.test(v) },
+            { id: 'chk-lower',  label: 'Letra minúscula',       test: v => /[a-z]/.test(v) },
+            { id: 'chk-number', label: 'Número',                test: v => /\d/.test(v) },
+            { id: 'chk-symbol', label: 'Símbolo (!@#$...)',     test: v => /[\W_]/.test(v) },
+        ];
+        senhaInput.addEventListener('focus', () => { checklist.style.display = 'block'; });
+        senhaInput.addEventListener('input', () => {
+            const v = senhaInput.value;
+            checklist.style.display = v ? 'block' : 'none';
+            rules.forEach(r => {
+                const el = document.getElementById(r.id);
+                const ok = r.test(v);
+                el.textContent = (ok ? '✓ ' : '✗ ') + r.label;
+                el.classList.toggle('ok', ok);
+            });
+        });
+
         document.getElementById('redefinir-form').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const senha = document.getElementById('senha').value;
+            const senha = senhaInput.value;
             const confirmar = document.getElementById('confirmar').value;
             const btn = document.getElementById('submit-btn');
             const errorEl = document.getElementById('error-msg');
 
             errorEl.style.display = 'none';
 
+            if (!STRONG_PW.test(senha)) {
+                errorEl.textContent = 'A senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo.';
+                errorEl.style.display = 'block';
+                checklist.style.display = 'block';
+                return;
+            }
             if (senha !== confirmar) {
                 errorEl.textContent = 'As senhas não coincidem.';
                 errorEl.style.display = 'block';

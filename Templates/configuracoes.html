@@ -404,6 +404,23 @@
                             </svg>
                         </a>
                     </div>
+                    <div class="settings-item">
+                        <div class="item-info">
+                            <h3>Verificação em 2 etapas</h3>
+                            <p>Como você quer receber o código de acesso</p>
+                        </div>
+                        <div style="display:flex;gap:16px;align-items:center;">
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:500;color:#1e293b;">
+                                <input type="radio" name="metodo_2fa" id="radio-2fa-email" value="email" style="accent-color:#00a6a6;width:16px;height:16px;"> Email
+                            </label>
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:500;color:#1e293b;">
+                                <input type="radio" name="metodo_2fa" id="radio-2fa-sms" value="sms" style="accent-color:#00a6a6;width:16px;height:16px;"> SMS
+                            </label>
+                        </div>
+                    </div>
+                    <div id="aviso-sem-telefone" style="display:none;background:#fef3c7;color:#92400e;padding:10px 16px;border-radius:10px;font-size:13px;margin-top:-4px;">
+                        ⚠️ Cadastre um número de telefone no <a href="/Templates/perfil.html" style="color:#92400e;font-weight:600;text-decoration:underline;">perfil</a> para usar 2FA por SMS.
+                    </div>
                 </div>
             </div>
 

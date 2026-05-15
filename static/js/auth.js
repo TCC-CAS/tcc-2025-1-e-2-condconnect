@@ -138,7 +138,11 @@
                 if (resp.requires_2fa) {
                     document.getElementById('step-login').style.display = 'none';
                     document.getElementById('step-2fa').style.display = 'block';
-                    document.getElementById('email-hint').textContent = resp.email || email;
+                    document.getElementById('email-hint').textContent = resp.destino || email;
+                    const viaEl = document.getElementById('2fa-via-texto');
+                    if (viaEl) viaEl.textContent = resp.metodo === 'sms'
+                        ? 'Enviamos um SMS com o código para'
+                        : 'Enviamos um email com o código para';
                     document.getElementById('codigo-2fa').focus();
                 } else {
                     CondConnect.setUser(resp);

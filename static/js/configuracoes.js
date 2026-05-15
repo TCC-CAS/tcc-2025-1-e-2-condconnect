@@ -13,8 +13,27 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const el = document.getElementById(id);
                 if (el) el.checked = !!val;
             });
+            const metodo = cfg.metodo_2fa || 'email';
+            const radio = document.getElementById(metodo === 'sms' ? 'radio-2fa-sms' : 'radio-2fa-email');
+            if (radio) radio.checked = true;
+            atualizarAvisoTelefone(metodo);
         } catch {}
     }
+
+    function atualizarAvisoTelefone(metodo) {
+        const aviso = document.getElementById('aviso-sem-telefone');
+        if (!aviso) return;
+        if (metodo === 'sms') {
+            const user = CondConnect.currentUser || JSON.parse(localStorage.getItem('condconnect_user') || '{}');
+            aviso.style.display = user.telefone ? 'none' : 'block';
+        } else {
+            aviso.style.display = 'none';
+        }
+    }
+
+    document.querySelectorAll('input[name="metodo_2fa"]').forEach(r => {
+        r.addEventListener('change', () => atualizarAvisoTelefone(r.value));
+    });
 
     // Salvar configurações
     const btnSave = document.getElementById('save-settings-btn');
@@ -30,6 +49,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (g('toggle-notif-sms'))             body.notif_sms            = g('toggle-notif-sms').checked ? 1 : 0;
             if (g('toggle-notif-marketing'))       body.notif_marketing      = g('toggle-notif-marketing').checked ? 1 : 0;
             if (g('toggle-privacidade-endereco'))  body.privacidade_endereco = g('toggle-privacidade-endereco').checked ? 1 : 0;
+            const metodoSel = document.querySelector('input[name="metodo_2fa"]:checked');
+            if (metodoSel) body.metodo_2fa = metodoSel.value;
 
             try {
                 await CondConnect.api('/configuracoes', { method: 'PUT', body });

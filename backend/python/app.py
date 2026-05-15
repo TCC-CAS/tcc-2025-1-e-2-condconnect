@@ -126,6 +126,30 @@ def moderar_imagem(image_bytes):
         print(f'Rekognition error: {e}')
         return None
 
+def send_sms(phone, codigo):
+    access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+    secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region = os.environ.get('AWS_REGION', 'us-east-1')
+    if not access_key or not secret_key:
+        return False
+    try:
+        digits = re.sub(r'\D', '', phone or '')
+        if not digits:
+            return False
+        if not digits.startswith('55'):
+            digits = '55' + digits
+        client = boto3.client('sns', region_name=region,
+            aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+        client.publish(
+            PhoneNumber='+' + digits,
+            Message=f'CondConnect: seu codigo de verificacao e {codigo}. Valido por 10 minutos.',
+            MessageAttributes={'AWS.SNS.SMS.SMSType': {'DataType': 'String', 'StringValue': 'Transactional'}}
+        )
+        return True
+    except Exception as e:
+        print(f'SMS error: {e}')
+        return False
+
 @app.before_request
 def handle_options():
     if request.method == 'OPTIONS':
@@ -163,6 +187,10 @@ def init_db():
                 c.execute("ALTER TABLE usuarios ADD COLUMN pix_key VARCHAR(255) NULL DEFAULT NULL")
             except Exception:
                 pass
+            try:
+                c.execute("ALTER TABLE configuracoes_usuario ADD COLUMN metodo_2fa ENUM('email','sms') DEFAULT 'email'")
+            except Exception:
+                pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -183,7 +211,12 @@ def login():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version FROM usuarios WHERE email=%s AND ativo=1", (email,))
+            c.execute("""
+                SELECT u.id, u.nome, u.email, u.senha, u.papel, u.foto_url, u.apartamento, u.bloco,
+                       u.session_version, u.telefone,
+                       COALESCE((SELECT cfg.metodo_2fa FROM configuracoes_usuario cfg WHERE cfg.usuario_id=u.id LIMIT 1), 'email') as metodo_2fa
+                FROM usuarios u WHERE u.email=%s AND u.ativo=1
+            """, (email,))
             user = c.fetchone()
         if not user or not check_password(senha, user['senha']):
             return err('E-mail ou senha incorretos', 401)
@@ -193,20 +226,40 @@ def login():
         with db.cursor() as c:
             c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, user['id']))
 
+        metodo = user.get('metodo_2fa', 'email')
+        telefone = user.get('telefone') or ''
+        destino_hint = ''
+
+        if metodo == 'sms' and telefone:
+            enviado = send_sms(telefone, codigo)
+            if not enviado:
+                metodo = 'email'
+            else:
+                d = re.sub(r'\D', '', telefone)
+                destino_hint = '****' + d[-4:] if len(d) >= 4 else telefone
+        else:
+            metodo = 'email'
+
+        if metodo == 'email':
+            em = user['email']
+            at = em.index('@')
+            destino_hint = (em[0] + '***' + em[at - 1] if at > 1 else em[0] + '***') + em[at:]
+            corpo = email_layout('🔐 Código de verificação',
+                f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Use o código abaixo para acessar o CondConnect.</p>
+                <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                    <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                    <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+                </div>
+                <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>. Não compartilhe este código com ninguém.</p>"""
+            )
+            send_email(user['email'], '🔐 Seu código de verificação - CondConnect', corpo)
+
         session.clear()
         session['pending_2fa_uid'] = user['id']
+        session['pending_2fa_metodo'] = metodo
+        session['pending_2fa_telefone'] = telefone
 
-        corpo = email_layout('🔐 Código de verificação',
-            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Use o código abaixo para acessar o CondConnect.</p>
-            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
-                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
-                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
-            </div>
-            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>. Não compartilhe este código com ninguém.</p>"""
-        )
-        send_email(user['email'], '🔐 Seu código de verificação - CondConnect', corpo)
-
-        return ok({'requires_2fa': True, 'email': user['email']})
+        return ok({'requires_2fa': True, 'metodo': metodo, 'destino': destino_hint})
     finally:
         db.close()
 
@@ -304,6 +357,9 @@ def reenviar_2fa():
     if not uid:
         return err('Sessão expirada. Faça login novamente.', 401)
 
+    metodo = session.get('pending_2fa_metodo', 'email')
+    telefone = session.get('pending_2fa_telefone', '')
+
     db = get_db()
     try:
         with db.cursor() as c:
@@ -317,15 +373,22 @@ def reenviar_2fa():
         with db.cursor() as c:
             c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, uid))
 
-        corpo = email_layout('🔐 Novo código de verificação',
-            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Aqui está seu novo código.</p>
-            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
-                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
-                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
-            </div>
-            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>.</p>"""
-        )
-        send_email(user['email'], '🔐 Novo código de verificação - CondConnect', corpo)
+        if metodo == 'sms' and telefone:
+            enviado = send_sms(telefone, codigo)
+            if not enviado:
+                metodo = 'email'
+
+        if metodo == 'email':
+            corpo = email_layout('🔐 Novo código de verificação',
+                f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Aqui está seu novo código.</p>
+                <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                    <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                    <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+                </div>
+                <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>.</p>"""
+            )
+            send_email(user['email'], '🔐 Novo código de verificação - CondConnect', corpo)
+
         return ok({'message': 'Código reenviado'})
     finally:
         db.close()
@@ -399,8 +462,10 @@ def redefinir_senha():
     token = (body.get('token') or '').strip()
     senha = body.get('senha') or ''
 
-    if not token or len(senha) < 6:
+    if not token:
         return err('Dados inválidos')
+    if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', senha):
+        return err('A senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo')
 
     db = get_db()
     try:
@@ -1485,7 +1550,7 @@ def configuracoes():
             return ok(config)
 
         body = get_body()
-        permitidos = ['notif_email', 'notif_sms', 'notif_marketing', 'tema', 'idioma', 'privacidade_endereco']
+        permitidos = ['notif_email', 'notif_sms', 'notif_marketing', 'tema', 'idioma', 'privacidade_endereco', 'metodo_2fa']
         campos, valores = [], []
         for campo in permitidos:
             if campo in body:
