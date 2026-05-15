@@ -481,7 +481,8 @@ def produto_item():
                 c.execute(
                     """SELECT p.*, u.id as vid, u.nome as vnome, u.bloco as vbloco,
                               u.apartamento as vapto, u.rating as vrating, u.total_vendas as vvendas,
-                              u.bio as vbio, u.foto_url as vfoto_url, u.pix_key as vpix_key
+                              u.bio as vbio, u.foto_url as vfoto_url, u.pix_key as vpix_key,
+                              COALESCE((SELECT cu.privacidade_endereco FROM configuracoes_usuario cu WHERE cu.usuario_id=u.id LIMIT 1), 0) as privacidade_endereco
                        FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.id=%s""",
                     (pid,)
                 )
@@ -521,7 +522,7 @@ def produto_item():
                 'favorito': fav,
                 'vendedor': {
                     'id': p['vid'], 'nome': p['vnome'],
-                    'localizacao': f"Bloco {p['vbloco']} - Apto {p['vapto']}",
+                    'localizacao': 'Localização privada' if p.get('privacidade_endereco') else f"Bloco {p['vbloco']} - Apto {p['vapto']}",
                     'rating': float(p['vrating'] or 0), 'vendas': p['vvendas'], 'bio': p['vbio'],
                     'foto_url': p['vfoto_url'], 'pix_key': p['vpix_key']
                 },
@@ -931,7 +932,8 @@ def favoritos():
             with db.cursor() as c:
                 c.execute(
                     """SELECT f.produto_id, p.titulo, p.preco, p.foto_principal, p.categoria, p.condicao, p.status,
-                              u.nome as vendedor_nome, u.bloco as vendedor_bloco, u.apartamento as vendedor_apto, u.rating as vendedor_rating
+                              u.nome as vendedor_nome, u.bloco as vendedor_bloco, u.apartamento as vendedor_apto, u.rating as vendedor_rating,
+                              COALESCE((SELECT cu.privacidade_endereco FROM configuracoes_usuario cu WHERE cu.usuario_id=u.id LIMIT 1), 0) as privacidade_endereco
                        FROM favoritos f JOIN produtos p ON f.produto_id=p.id JOIN usuarios u ON p.usuario_id=u.id
                        WHERE f.usuario_id=%s ORDER BY f.criado_em DESC""",
                     (uid,)
@@ -942,7 +944,7 @@ def favoritos():
                 'preco_fmt': f"{float(f['preco']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                 'foto': f['foto_principal'], 'categoria': f['categoria'], 'condicao': f['condicao'], 'status': f['status'],
                 'vendedor': {'nome': f['vendedor_nome'],
-                             'localizacao': f"Bloco {f['vendedor_bloco']} - Apto {f['vendedor_apto']}",
+                             'localizacao': 'Localização privada' if f.get('privacidade_endereco') else f"Bloco {f['vendedor_bloco']} - Apto {f['vendedor_apto']}",
                              'rating': float(f['vendedor_rating'] or 0)}
             } for f in favs]
             return ok({'favoritos': result, 'total': len(result)})
@@ -1226,6 +1228,11 @@ def perfil():
             return err('Usuário não encontrado', 404)
 
         with db.cursor() as c:
+            c.execute("SELECT COALESCE(privacidade_endereco, 0) as privacidade_endereco FROM configuracoes_usuario WHERE usuario_id=%s", (uid,))
+            cfg = c.fetchone()
+            privado = bool(cfg['privacidade_endereco']) if cfg else False
+
+        with db.cursor() as c:
             c.execute("SELECT COUNT(*) as n FROM produtos WHERE usuario_id=%s AND status='disponivel'", (uid,))
             total_produtos = c.fetchone()['n']
             c.execute("SELECT a.nota, a.comentario, a.criado_em, u.nome as avaliador FROM avaliacoes a JOIN usuarios u ON a.avaliador_id=u.id WHERE a.avaliado_id=%s ORDER BY a.criado_em DESC LIMIT 5", (uid,))
@@ -1238,7 +1245,11 @@ def perfil():
                          'preco_fmt': fmt_price(p['preco']),
                          'condicao': p['condicao']} for p in produtos_v]
 
-        return ok({**user, 'id': int(user['id']), 'rating': float(user['rating'] or 0),
+        user_data = dict(user)
+        if privado:
+            user_data['bloco'] = None
+            user_data['apartamento'] = None
+        return ok({**user_data, 'id': int(user['id']), 'rating': float(user['rating'] or 0),
                    'total_produtos': total_produtos,
                    'produtos': produtos_fmt,
                    'avaliacoes': [{**a, 'criado_em': str(a['criado_em'])} for a in avaliacoes]})
