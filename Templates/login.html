@@ -23,28 +23,54 @@
         <h1 class="auth-title">Bem-vindo de volta!</h1>
         <p class="auth-subtitle">Entre para acessar o marketplace</p>
 
-        <form class="auth-form">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" class="form-control"
-                    placeholder="seu@email.com">
+        <!-- Passo 1: login -->
+        <div id="step-login">
+            <form class="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••">
+                </div>
+                <a href="/Templates/esqueci-senha.html" class="forgot-password">Esqueci minha senha</a>
+                <button type="button" class="auth-btn" id="login-btn">Entrar</button>
+            </form>
+            <div class="auth-footer">
+                Não tem uma conta? <a href="/Templates/cadastro.html">Cadastre-se</a><br>
+                <div style="margin-top: 12px; font-size: 11px;">
+                    <a href="/Templates/termos.html" style="color: #94a3b8; text-decoration: none;">Privacidade</a> •
+                    <a href="/Templates/termos.html" style="color: #94a3b8; text-decoration: none;">Termos de Uso</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passo 2: verificação 2FA -->
+        <div id="step-2fa" style="display:none;">
+            <div style="text-align:center;margin-bottom:24px;">
+                <div style="width:56px;height:56px;background:#f0fafa;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00a6a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </div>
+                <h2 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#1e293b;">Verificação em 2 etapas</h2>
+                <p style="margin:0;color:#64748b;font-size:14px;line-height:1.6;">Enviamos um código de 6 dígitos para<br><strong id="email-hint" style="color:#1e293b;"></strong></p>
             </div>
 
             <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" class="form-control" placeholder="••••••••">
+                <label for="codigo-2fa" style="font-weight:600;color:#1e293b;">Código de verificação</label>
+                <input type="text" id="codigo-2fa" class="form-control" placeholder="000000"
+                    maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                    style="text-align:center;font-size:28px;font-weight:700;letter-spacing:10px;">
             </div>
 
-            <a href="/Templates/esqueci-senha.html" class="forgot-password">Esqueci minha senha</a>
+            <button type="button" class="auth-btn" id="btn-verificar-2fa">Verificar</button>
 
-            <button type="button" class="auth-btn">Entrar</button>
-        </form>
-
-        <div class="auth-footer">
-            Não tem uma conta? <a href="/Templates/cadastro.html">Cadastre-se</a><br>
-            <div style="margin-top: 12px; font-size: 11px;">
-                <a href="/Templates/termos.html" style="color: #94a3b8; text-decoration: none;">Privacidade</a> •
-                <a href="/Templates/termos.html" style="color: #94a3b8; text-decoration: none;">Termos de Uso</a>
+            <div style="text-align:center;margin-top:16px;">
+                <span style="color:#64748b;font-size:14px;">Não recebeu? </span>
+                <button type="button" id="btn-reenviar-2fa" style="background:none;border:none;color:#00a6a6;font-size:14px;font-weight:600;cursor:pointer;padding:0;">Reenviar código</button>
+            </div>
+            <div style="text-align:center;margin-top:12px;">
+                <button type="button" id="btn-voltar-login" style="background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;padding:0;">← Voltar ao login</button>
             </div>
         </div>
 
