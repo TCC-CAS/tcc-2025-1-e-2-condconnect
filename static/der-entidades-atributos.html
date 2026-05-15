@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Entidades e Atributos DER — CondConnect</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 32px 40px; color: #111; }
+  h1 { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 6px; }
+  h2 { font-size: 12px; font-weight: bold; margin: 8px 0 4px; }
+  p  { font-size: 11.5px; margin: 6px 0 4px; line-height: 1.55; }
+
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 11.5px; margin-top: 4px; }
+  th { background: #1e4976; color: white; padding: 8px 10px;
+       text-align: left; font-size: 11px; border: 1px solid #163a5c; }
+  td { padding: 8px 10px; border: 1px solid #c8d8e8; vertical-align: top; line-height: 1.55; }
+  tr:nth-child(even) { background: #f0f5fa; }
+
+  .ent  { width: 140px; font-weight: bold; color: #1e4976; }
+  .attr { width: 340px; }
+
+  .fonte { font-size: 11px; font-style: italic; margin-top: 4px; }
+  .tip {
+    background: #fff8e1; border: 1px solid #f0c040; border-radius: 3px;
+    padding: 8px 12px; font-size: 10.5px; color: #7a5000;
+    margin-top: 10px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Entidades e Atributos do Modelo Entidade-Relacionamento — CondConnect</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Entidade</th>
+      <th>Atributos</th>
+      <th>Descrição da Entidade</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr>
+      <td class="ent">Usuário</td>
+      <td class="attr">Identificação do usuário, nome, e-mail, senha, URL da foto de perfil, papel (membro ou admin), chave Pix, rating e data de criação.</td>
+      <td>Representa o indivíduo cadastrado na plataforma, que pode atuar como comprador, vendedor ou administrador. O papel define o nível de acesso ao sistema.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Produto</td>
+      <td class="attr">Identificação do produto, título, descrição, categoria, preço, condição (Novo, Seminovo ou Usado), status (ativo, vendido ou inativo), data de publicação e identificação do vendedor.</td>
+      <td>Representa os itens cadastrados pelos moradores para comercialização no marketplace. Contém as informações essenciais para apresentação, busca e filtragem dos anúncios.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Imagem do Produto</td>
+      <td class="attr">Identificação da imagem, identificação do produto, URL da imagem e indicador de imagem principal.</td>
+      <td>Armazena as imagens associadas a cada produto, permitindo múltiplas fotos por anúncio. Uma das imagens é marcada como principal para exibição nas listagens do marketplace.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Pedido</td>
+      <td class="attr">Identificação do pedido, identificação do produto, identificação do comprador, identificação do vendedor, status do pedido (pendente, enviado, entregue ou cancelado), data do pedido e valor.</td>
+      <td>Representa as transações de compra e venda realizadas entre os moradores. Vincula comprador, vendedor e produto negociado, com rastreamento do ciclo de entrega pelo vendedor.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Proposta</td>
+      <td class="attr">Identificação da proposta, identificação do produto, identificação do comprador, identificação do vendedor, valor proposto, quantidade, status (pendente, aceita ou recusada) e data da proposta.</td>
+      <td>Registra as propostas de negociação enviadas pelos compradores aos vendedores, contendo o valor ofertado e a quantidade pretendida. Ao ser aceita, o preço negociado é transferido automaticamente para o carrinho do comprador.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Item do Carrinho</td>
+      <td class="attr">Identificação do item, identificação do usuário, identificação do produto e preço negociado.</td>
+      <td>Armazena os produtos adicionados ao carrinho de compras de cada usuário. O campo de preço negociado é preenchido automaticamente quando o item provém de uma proposta aceita pelo vendedor.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Avaliação</td>
+      <td class="attr">Identificação da avaliação, identificação do usuário avaliador, identificação do produto, nota (1 a 5), comentário e data da avaliação.</td>
+      <td>Permite que o comprador avalie o produto adquirido após a confirmação de entrega. Contribui para o cálculo do rating médio do produto e para a reputação geral do vendedor na plataforma.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Notificação</td>
+      <td class="attr">Identificação da notificação, identificação do usuário destinatário, título, mensagem, indicador de leitura e data de envio.</td>
+      <td>Registra as comunicações automáticas geradas pela plataforma, como avisos de nova proposta recebida, proposta aceita ou recusada e atualização de status de pedido. Exibe badge com contador de notificações não lidas no painel do usuário.</td>
+    </tr>
+
+    <tr>
+      <td class="ent">Favorito</td>
+      <td class="attr">Identificação do favorito, identificação do usuário, identificação do produto e data de adição.</td>
+      <td>Registra os produtos marcados como favoritos pelos usuários, permitindo acesso rápido a itens de interesse. Os favoritos são sincronizados entre o servidor e o armazenamento local do navegador (localStorage).</td>
+    </tr>
+
+  </tbody>
+</table>
+<p class="fonte">Fonte: Os Autores (2025).</p>
+
+<div class="tip">
+  <strong>Entidades removidas em relação à versão anterior</strong> (não implementadas no sistema):<br>
+  <strong>Condomínio</strong> — não há tabela de condomínios; a plataforma não restringe o acesso por unidade habitacional;<br>
+  <strong>Item do Pedido</strong> — o modelo implementado registra um produto por pedido diretamente na tabela <em>pedidos</em>, sem tabela intermediária;<br>
+  <strong>Mensagem</strong> — funcionalidade de mensageria não implementada (removida do escopo, RF10);<br>
+  <strong>Categoria</strong> — categorias são um campo VARCHAR livre na tabela <em>produtos</em>, sem entidade própria;<br>
+  <strong>Log do Sistema</strong> — tabela de logs de aplicação não implementada na versão atual (RNF07 previsto para versão futura).
+</div>
+
+</body>
+</html>

@@ -2,9 +2,11 @@
     const loginForm = document.querySelector('.auth-form');
     const inputs = document.querySelectorAll('.form-control');
 
+    const STRONG_PASSWORD = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
     const validators = {
         email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-        password: (val) => val.length >= 6,
+        password: (val) => STRONG_PASSWORD.test(val),
         name: (val) => val.trim().length >= 3,
         password_confirm: (val) => {
             const pass = document.getElementById('password');
@@ -19,7 +21,7 @@
             const msg = document.createElement('span');
             msg.className = 'validation-message';
             if (input.id === 'email') msg.textContent = 'Email inválido';
-            else if (input.id === 'password') msg.textContent = 'Mínimo 6 caracteres';
+            else if (input.id === 'password') msg.textContent = 'Mínimo 8 caracteres com maiúscula, número e símbolo';
             else if (input.id === 'password_confirm') msg.textContent = 'Senhas não coincidem';
             else if (input.id === 'name') msg.textContent = 'Nome muito curto';
             else msg.textContent = 'Campo obrigatório';
@@ -60,6 +62,14 @@
     function setLoading(btn, loading) {
         btn.disabled = loading;
         btn.textContent = loading ? 'Aguarde...' : (btn.getAttribute('data-original') || btn.textContent);
+    }
+
+    // Aviso de cadastro concluído
+    if (new URLSearchParams(window.location.search).get('cadastro') === '1') {
+        const aviso = document.createElement('div');
+        aviso.style.cssText = 'background:#dcfce7;color:#16a34a;padding:12px;border-radius:8px;margin-bottom:16px;font-size:14px;text-align:center;';
+        aviso.textContent = 'Conta criada com sucesso! Faça login para continuar.';
+        loginForm?.prepend(aviso);
     }
 
     // LOGIN
@@ -114,6 +124,10 @@
                 mostrarErro('Preencha todos os campos obrigatórios');
                 return;
             }
+            if (!STRONG_PASSWORD.test(senha)) {
+                mostrarErro('A senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo');
+                return;
+            }
             if (senha !== confirmSenha) {
                 mostrarErro('As senhas não coincidem');
                 return;
@@ -125,12 +139,11 @@
 
             setLoading(cadastroBtn, true);
             try {
-                const user = await CondConnect.api('/auth/register', {
+                await CondConnect.api('/auth/register', {
                     method: 'POST',
                     body: { nome, email, senha, apartamento: apto, bloco },
                 });
-                CondConnect.setUser(user);
-                window.location.href = '/Templates/dashboard.html';
+                window.location.href = '/Templates/login.html?cadastro=1';
             } catch (err) {
                 mostrarErro(err.message || 'Erro ao criar conta');
             } finally {

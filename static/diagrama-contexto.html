@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>C4 Model — Diagrama de Contexto CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .page {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 32px 40px 40px;
+    width: 960px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .diagram-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 36px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ACTORS ROW */
+  .actors-row {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin-bottom: 0;
+  }
+  .person-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 160px;
+  }
+  .person-icon-wrap {
+    background: #1a5276;
+    border-radius: 6px;
+    width: 140px;
+    padding: 16px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: white;
+  }
+  .person-icon-wrap svg { width: 36px; height: 36px; }
+  .person-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #aac4d8;
+    text-align: center;
+    font-style: italic;
+  }
+  .person-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+  }
+  .person-desc {
+    font-size: 11px;
+    color: #d6e8f5;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  /* ARROWS */
+  .arrows-to-system {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    position: relative;
+    height: 70px;
+  }
+  .arrow-col {
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .arrow-label {
+    font-size: 10px;
+    color: #555;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 130px;
+  }
+  .arrow-line {
+    width: 1.5px;
+    height: 20px;
+    background: #666;
+    position: relative;
+  }
+  .arrow-line::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #666;
+  }
+
+  /* MAIN SYSTEM */
+  .system-boundary {
+    border: 2px dashed #888;
+    border-radius: 6px;
+    padding: 16px 20px 20px;
+    margin: 0 0 0 0;
+    position: relative;
+  }
+  .boundary-label {
+    position: absolute;
+    top: -11px;
+    left: 16px;
+    background: white;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+  }
+  .system-box-wrap {
+    display: flex;
+    justify-content: center;
+  }
+  .system-box {
+    background: #1a6ea8;
+    border-radius: 6px;
+    width: 220px;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: white;
+  }
+  .system-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #a8d4f0;
+    font-style: italic;
+  }
+  .system-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+  }
+  .system-desc {
+    font-size: 11px;
+    color: #cce5f7;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* ARROWS DOWN TO EXTERNAL */
+  .arrows-to-external {
+    display: flex;
+    justify-content: space-around;
+    height: 80px;
+    padding: 0 10px;
+    margin-top: 4px;
+  }
+  .ext-arrow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .ext-arrow-label {
+    font-size: 9.5px;
+    color: #555;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 110px;
+  }
+
+  /* EXTERNAL SYSTEMS ROW */
+  .external-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+    margin-top: 0;
+    padding: 0 4px;
+  }
+  .ext-box {
+    background: #6b7a8d;
+    border-radius: 6px;
+    flex: 1;
+    padding: 12px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    min-width: 0;
+  }
+  .ext-box.highlight {
+    background: #2c5f8a;
+  }
+  .ext-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #c8d6e0;
+    font-style: italic;
+    text-align: center;
+  }
+  .ext-name {
+    font-size: 12px;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .ext-desc {
+    font-size: 9.5px;
+    color: #d4e4ef;
+    text-align: center;
+    line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="diagram-title">C4 Model — Diagrama de Contexto do Sistema CondConnect</div>
+
+  <!-- ACTORS -->
+  <div class="actors-row">
+    <div class="person-box">
+      <div class="person-icon-wrap">
+        <div class="person-label">«person»</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <div class="person-name">Morador</div>
+        <div class="person-desc">Usuário do condomínio que compra, anuncia e avalia os produtos.</div>
+      </div>
+    </div>
+    <div class="person-box">
+      <div class="person-icon-wrap">
+        <div class="person-label">«person»</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <div class="person-name">Administrador</div>
+        <div class="person-desc">Responsável pela moderação de anúncios e gestão do sistema.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROWS ACTORS → SYSTEM -->
+  <div class="arrows-to-system">
+    <div class="arrow-col">
+      <div class="arrow-label">Acessa via navegador ou dispositivo móvel</div>
+      <div class="arrow-line"></div>
+    </div>
+    <div class="arrow-col">
+      <div class="arrow-label">Acessa painel administrativo da plataforma</div>
+      <div class="arrow-line"></div>
+    </div>
+  </div>
+
+  <!-- SYSTEM BOUNDARY -->
+  <div class="system-boundary">
+    <div class="boundary-label">CondConnect Marketplace [system]</div>
+
+    <div class="system-box-wrap">
+      <div class="system-box">
+        <div class="system-label">«system»</div>
+        <div class="system-name">CondConnect</div>
+        <div class="system-desc">Marketplace exclusivo para condomínios residenciais. Backend Python/Flask + Frontend HTML/CSS/JS.</div>
+      </div>
+    </div>
+
+    <!-- ARROWS SYSTEM → EXTERNAL -->
+    <div class="arrows-to-external">
+      <div class="ext-arrow-col">
+        <div class="ext-arrow-label">Armazena e consulta dados via PyMySQL (SQL)</div>
+        <div class="arrow-line"></div>
+      </div>
+      <div class="ext-arrow-col">
+        <div class="ext-arrow-label">Hospedado e executado na instância Linux</div>
+        <div class="arrow-line"></div>
+      </div>
+      <div class="ext-arrow-col">
+        <div class="ext-arrow-label">Grava e serve imagens dos produtos (upload)</div>
+        <div class="arrow-line"></div>
+      </div>
+    </div>
+
+    <!-- EXTERNAL SYSTEMS -->
+    <div class="external-row">
+      <div class="ext-box highlight">
+        <div class="ext-label">«system»</div>
+        <div class="ext-name">Banco de Dados Relacional (MySQL)</div>
+        <div class="ext-desc">Armazena dados de usuários, produtos, pedidos, avaliações, notificações e logs. Hospedado em servidor externo.</div>
+      </div>
+      <div class="ext-box">
+        <div class="ext-label">«external system»</div>
+        <div class="ext-name">AWS Lightsail (Servidor Linux/Ubuntu)</div>
+        <div class="ext-desc">Infraestrutura de hospedagem. Executa Gunicorn + Apache como proxy reverso. Deploy via Git.</div>
+      </div>
+      <div class="ext-box">
+        <div class="ext-label">«external system»</div>
+        <div class="ext-name">Armazenamento Local de Imagens</div>
+        <div class="ext-desc">Sistema de arquivos do servidor para fotos dos produtos. Diretório /static/assets/uploads/.</div>
+      </div>
+    </div>
+
+  </div><!-- end boundary -->
+</div><!-- end page -->
+</body>
+</html>

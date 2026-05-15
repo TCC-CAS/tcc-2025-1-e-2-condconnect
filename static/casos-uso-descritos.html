@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Casos de Uso — CondConnect</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 32px 40px; color: #111; }
+  h1 { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 24px; }
+  h2 { font-size: 12px; font-weight: bold; background: #1e4976; color: white;
+       padding: 7px 12px; margin-top: 28px; margin-bottom: 0; }
+
+  table { width: 100%; border-collapse: collapse; background: white;
+          font-size: 11.5px; margin-bottom: 0; }
+  th { background: #2d5f8a; color: white; padding: 8px 10px;
+       text-align: left; font-size: 11px; border: 1px solid #1e4976; }
+  td { padding: 8px 10px; border: 1px solid #c8d8e8;
+       vertical-align: top; line-height: 1.55; }
+  tr:nth-child(even) { background: #f0f5fa; }
+
+  .id   { width: 52px;  font-weight: bold; color: #1e4976; white-space: nowrap; }
+  .name { width: 195px; font-weight: 600; }
+  .actor{ width: 140px; font-style: italic; color: #2d5f8a; }
+
+  .tip {
+    background: #fff8e1; border: 1px solid #f0c040;
+    border-radius: 3px; padding: 8px 12px;
+    font-size: 10.5px; color: #7a5000; margin-top: 18px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Especificação de Casos de Uso — CondConnect</h1>
+
+<!-- ══ MORADOR ══ -->
+<h2>Ator: Morador</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Caso de Uso</th>
+      <th>Ator Principal</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">UC01</td>
+      <td class="name">Cadastrar-se</td>
+      <td class="actor">Morador</td>
+      <td>O morador acessa a plataforma e preenche o formulário de cadastro informando nome, e-mail e senha. O e-mail deve ser único no sistema. A senha é armazenada com hash criptográfico. O papel padrão atribuído ao novo usuário é <em>membro</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">UC02</td>
+      <td class="name">Realizar login</td>
+      <td class="actor">Morador</td>
+      <td>O usuário acessa a plataforma informando e-mail e senha cadastrados. A autenticação é gerenciada via Flask-Login com sessão server-side e cookie seguro. O sistema oferece fluxo de recuperação de senha por e-mail com token temporário.</td>
+    </tr>
+    <tr>
+      <td class="id">UC03</td>
+      <td class="name">Editar perfil</td>
+      <td class="actor">Morador</td>
+      <td>O usuário autenticado pode atualizar seus dados pessoais: nome, foto de perfil e chave Pix para recebimento de pagamentos. A foto é enviada ao servidor e salva com nome único gerado por UUID.</td>
+    </tr>
+    <tr>
+      <td class="id">UC04</td>
+      <td class="name">Publicar produto</td>
+      <td class="actor">Morador</td>
+      <td>O morador cadastra um produto para venda informando título, descrição, categoria, preço, condição (Novo / Seminovo / Usado) e fazendo upload de uma ou mais imagens. O produto é publicado com status <em>ativo</em>. As imagens são armazenadas na tabela <em>imagens_produto</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">UC05</td>
+      <td class="name">Buscar / filtrar produtos</td>
+      <td class="actor">Morador</td>
+      <td>O usuário pesquisa produtos disponíveis no marketplace com filtros por categoria, condição e faixa de preço. Cada produto exibido inclui rating médio e total de avaliações calculados por subquery SQL sobre a tabela <em>avaliacoes</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">UC06</td>
+      <td class="name">Favoritar produto</td>
+      <td class="actor">Morador</td>
+      <td>O usuário adiciona ou remove produtos da sua lista de favoritos. Os favoritos são persistidos na tabela <em>favoritos</em> e sincronizados com o localStorage no frontend para exibição imediata sem nova requisição ao servidor.</td>
+    </tr>
+    <tr>
+      <td class="id">UC07</td>
+      <td class="name">Enviar e receber mensagens</td>
+      <td class="actor">Morador</td>
+      <td>O usuário pode iniciar uma conversa com o vendedor a partir da página de um produto. As mensagens são organizadas por conversa vinculada ao produto e ao par de usuários. O histórico de mensagens é persistido nas tabelas <em>conversas</em> e <em>mensagens</em>, permitindo comunicação direta entre comprador e vendedor dentro da plataforma.</td>
+    </tr>
+    <tr>
+      <td class="id">UC08</td>
+      <td class="name">Enviar proposta de compra</td>
+      <td class="actor">Morador (comprador)</td>
+      <td>O comprador envia uma proposta ao vendedor informando valor e quantidade desejada. A proposta é registrada na tabela <em>propostas</em> com status <em>pendente</em>. O vendedor recebe uma notificação interna sobre a nova proposta.</td>
+    </tr>
+    <tr>
+      <td class="id">UC09</td>
+      <td class="name">Aceitar / recusar proposta</td>
+      <td class="actor">Morador (vendedor)</td>
+      <td>O vendedor visualiza as propostas recebidas e pode aceitá-las ou recusá-las. Ao aceitar, o item é adicionado automaticamente à tabela <em>itens_carrinho</em> com o campo <em>preco_negociado</em> preenchido. O comprador recebe notificação da decisão.</td>
+    </tr>
+    <tr>
+      <td class="id">UC10</td>
+      <td class="name">Finalizar pedido</td>
+      <td class="actor">Morador (comprador)</td>
+      <td>O comprador finaliza a compra dos itens no carrinho, gerando um registro na tabela <em>pedidos</em> com status <em>pendente</em>. O vendedor atualiza o status do pedido conforme o andamento (pendente → enviado → entregue). O pagamento é realizado externamente via Pix, sem integração com gateway.</td>
+    </tr>
+    <tr>
+      <td class="id">UC11</td>
+      <td class="name">Avaliar produto</td>
+      <td class="actor">Morador (comprador)</td>
+      <td>Após a entrega, o comprador avalia o produto com nota de 1 a 5 e comentário opcional. A avaliação é registrada na tabela <em>avaliacoes</em>. O rating médio é calculado por produto via AVG() em subquery SQL e exibido na página de detalhes do produto.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ══ ADMINISTRADOR ══ -->
+<h2 style="margin-top:32px;">Ator: Administrador</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Caso de Uso</th>
+      <th>Ator Principal</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">UC12</td>
+      <td class="name">Gerenciar usuários</td>
+      <td class="actor">Administrador</td>
+      <td>O administrador acessa o painel e visualiza todos os usuários cadastrados com nome, e-mail, papel (membro / admin) e data de criação. O acesso ao painel é restrito por verificação inline do campo <em>papel = 'admin'</em> na sessão autenticada.</td>
+    </tr>
+    <tr>
+      <td class="id">UC13</td>
+      <td class="name">Bloquear usuários</td>
+      <td class="actor">Administrador</td>
+      <td>O administrador pode bloquear contas de usuários que apresentem irregularidades ou violações das regras da plataforma, impedindo o acesso do usuário ao sistema.</td>
+    </tr>
+    <tr>
+      <td class="id">UC14</td>
+      <td class="name">Gerenciar produtos</td>
+      <td class="actor">Administrador</td>
+      <td>O administrador visualiza todos os produtos cadastrados na plataforma e pode remover anúncios que violem as regras de uso, estejam duplicados ou contenham conteúdo inapropriado.</td>
+    </tr>
+    <tr>
+      <td class="id">UC15</td>
+      <td class="name">Gerenciar pedidos</td>
+      <td class="actor">Administrador</td>
+      <td>O administrador visualiza todos os pedidos realizados na plataforma com status (pendente, enviado, entregue, cancelado), valores e partes envolvidas (comprador e vendedor).</td>
+    </tr>
+    <tr>
+      <td class="id">UC16</td>
+      <td class="name">Visualizar estatísticas do painel</td>
+      <td class="actor">Administrador</td>
+      <td>O administrador acessa o dashboard com indicadores gerais da plataforma: total de usuários cadastrados, produtos ativos, pedidos realizados e receita total. Os valores são calculados via queries SQL diretas (COUNT / SUM) sobre as tabelas do banco.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tip">
+  <strong>Casos de uso do documento anterior removidos por não existirem no sistema implementado:</strong><br>
+  UC12 <em>Gerar relatórios de atividade</em> — substituído por estatísticas simples (UC16); &nbsp;
+  UC13 <em>Gerenciar notificações e comunicados globais</em> — notificações são geradas automaticamente pelo sistema; &nbsp;
+  UC14 <em>Gerenciar categorias de produtos</em> — categorias são campo VARCHAR livre, sem tabela própria; &nbsp;
+  UC15 <em>Visualizar logs do sistema</em> — tabela log_sistema não existe no banco de dados.
+</div>
+
+</body>
+</html>

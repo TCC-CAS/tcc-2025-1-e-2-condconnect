@@ -170,8 +170,8 @@ def register():
         return err('Todos os campos são obrigatórios')
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         return err('E-mail inválido')
-    if len(senha) < 6:
-        return err('A senha deve ter pelo menos 6 caracteres')
+    if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', senha):
+        return err('A senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo')
 
     db = get_db()
     try:
@@ -192,9 +192,7 @@ def register():
             c.execute("SELECT id, nome, email, papel, foto_url, apartamento, bloco FROM usuarios WHERE id=%s", (uid,))
             user = c.fetchone()
 
-        session['user_id'] = user['id']
-        session['user_role'] = user['papel']
-        return ok(user, 201)
+        return ok({'message': 'Conta criada com sucesso'}, 201)
     finally:
         db.close()
 
@@ -393,7 +391,9 @@ def produtos():
                              u.id as vendedor_id, u.nome as vendedor_nome, u.bloco as vendedor_bloco,
                              u.apartamento as vendedor_apto, u.rating as vendedor_rating, u.total_vendas as vendedor_vendas,
                              (SELECT ROUND(AVG(nota),1) FROM avaliacoes WHERE produto_id=p.id) as produto_rating,
-                             (SELECT COUNT(*) FROM avaliacoes WHERE produto_id=p.id) as produto_avaliacoes
+                             (SELECT COUNT(*) FROM avaliacoes WHERE produto_id=p.id) as produto_avaliacoes,
+                             (SELECT COUNT(*) FROM favoritos WHERE produto_id=p.id) as total_favoritos,
+                             COALESCE((SELECT cu.privacidade_endereco FROM configuracoes_usuario cu WHERE cu.usuario_id=u.id LIMIT 1), 0) as privacidade_endereco
                       FROM produtos p JOIN usuarios u ON p.usuario_id=u.id
                       WHERE {' AND '.join(where)} ORDER BY p.criado_em DESC LIMIT %s"""
             params.append(limite)
@@ -410,6 +410,8 @@ def produtos():
 
             result = []
             for p in produtos:
+                privado = bool(p.get('privacidade_endereco'))
+                localizacao = 'Localização privada' if privado else f"Bloco {p['vendedor_bloco']} - Apto {p['vendedor_apto']}"
                 result.append({
                     'id': p['id'], 'titulo': p['titulo'],
                     'preco': float(p['preco']),
@@ -419,9 +421,10 @@ def produtos():
                     'criado_em': str(p['criado_em']), 'favorito': p['id'] in favs,
                     'produto_rating': float(p['produto_rating']) if p['produto_rating'] else None,
                     'produto_avaliacoes': int(p['produto_avaliacoes'] or 0),
+                    'total_favoritos': int(p['total_favoritos'] or 0),
                     'vendedor': {
                         'id': p['vendedor_id'], 'nome': p['vendedor_nome'],
-                        'localizacao': f"Bloco {p['vendedor_bloco']} - Apto {p['vendedor_apto']}",
+                        'localizacao': localizacao,
                         'rating': float(p['vendedor_rating'] or 0),
                         'vendas': p['vendedor_vendas']
                     }
@@ -436,7 +439,7 @@ def produtos():
         titulo = (body.get('titulo') or '').strip()
         preco = body.get('preco')
         categoria = body.get('categoria', '')
-        descricao = body.get('descricao', '')
+        descricao = (body.get('descricao') or '')[:300]
         condicao = body.get('condicao', 'Usado')
         foto = body.get('foto_principal', '')
         quantidade = int(body.get('quantidade', 1))
@@ -1307,7 +1310,7 @@ def configuracoes():
             return ok(config)
 
         body = get_body()
-        permitidos = ['notif_mensagens', 'notif_pedidos', 'notif_avaliacoes', 'notif_sistema', 'tema', 'idioma']
+        permitidos = ['notif_mensagens', 'notif_pedidos', 'notif_avaliacoes', 'notif_sistema', 'tema', 'idioma', 'privacidade_endereco']
         campos, valores = [], []
         for campo in permitidos:
             if campo in body:

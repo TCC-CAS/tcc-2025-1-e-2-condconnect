@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>SWOT Analysis — CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f5ede0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .card {
+    background: #fdf6ee;
+    border: 2px solid #2a2a2a;
+    border-radius: 4px;
+    width: 960px;
+    padding: 40px 44px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* decorative circles */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(210,180,140,0.25);
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: -50px; left: -50px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(210,180,140,0.2);
+  }
+
+  .main-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: #1a1a1a;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .quadrant {
+    background: white;
+    border-radius: 4px;
+    padding: 0 20px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
+  /* TAG LABEL */
+  .tag-wrap {
+    margin-left: -1px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 9px 22px 9px 16px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: white;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%);
+    margin-top: -1px;
+  }
+  .tag.pink   { background: #f472b6; }
+  .tag.orange { background: #fb923c; }
+  .tag.blue   { background: #38bdf8; }
+  .tag.green  { background: #a3e635; color: #1a1a1a; }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  ul li {
+    font-size: 13px;
+    color: #2a2a2a;
+    line-height: 1.5;
+    padding-left: 14px;
+    position: relative;
+    text-align: justify;
+  }
+  ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #888;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="main-title">SWOT Analysis</div>
+
+  <div class="grid">
+
+    <!-- STRENGTHS -->
+    <div class="quadrant">
+      <div class="tag-wrap">
+        <span class="tag pink">Strengths</span>
+      </div>
+      <ul>
+        <li>Plataforma exclusiva para condomínios residenciais, com nicho bem definido e público delimitado;</li>
+        <li>Sistema de propostas e negociação de preço integrado entre comprador e vendedor;</li>
+        <li>Avaliações com integridade de dados: rating calculado por produto via SQL, separado da nota geral do vendedor;</li>
+        <li>Suporte a múltiplas imagens por anúncio com upload direto ao servidor;</li>
+        <li>Interface responsiva (mobile-first) sem dependência de frameworks externos;</li>
+        <li>Painel administrativo com controle de usuários, anúncios e pedidos;</li>
+        <li>Sistema de notificações internas e favoritos sincronizados com a API;</li>
+        <li>Stack enxuta e sem dependências desnecessárias, facilitando manutenção;</li>
+      </ul>
+    </div>
+
+    <!-- WEAKNESSES -->
+    <div class="quadrant">
+      <div class="tag-wrap">
+        <span class="tag orange">Weaknesses</span>
+      </div>
+      <ul>
+        <li>Ausência de gateway de pagamento integrado (PIX e boleto não processados pela plataforma);</li>
+        <li>Armazenamento de imagens em sistema de arquivos local, sem escalabilidade para alto volume;</li>
+        <li>Dependência de adesão inicial dos moradores para que o marketplace tenha volume de anúncios;</li>
+        <li>Sem autenticação social (Google, Apple) que reduziria a fricção no cadastro;</li>
+        <li>Ausência de aplicativo mobile nativo (apenas web responsiva);</li>
+      </ul>
+    </div>
+
+    <!-- THREATS -->
+    <div class="quadrant">
+      <div class="tag-wrap">
+        <span class="tag blue">Threats</span>
+      </div>
+      <ul>
+        <li>Concorrência com marketplaces consolidados (OLX, Mercado Livre, Facebook Marketplace) que já possuem base de usuários;</li>
+        <li>Resistência dos moradores à adoção de uma nova plataforma desconhecida;</li>
+        <li>Baixo engajamento caso o volume de anúncios seja insuficiente para movimentar o marketplace;</li>
+        <li>Dependência de confiança e convivência comunitária para o funcionamento saudável da plataforma;</li>
+      </ul>
+    </div>
+
+    <!-- OPPORTUNITIES -->
+    <div class="quadrant">
+      <div class="tag-wrap">
+        <span class="tag green">Opportunities</span>
+      </div>
+      <ul>
+        <li>Crescimento contínuo do comércio digital no Brasil e aumento do consumo colaborativo;</li>
+        <li>Expansão para outros condomínios e comunidades fechadas após validação do modelo;</li>
+        <li>Integração futura com sistemas de gestão condominial (boletos, reservas, assembleia);</li>
+        <li>Possibilidade de monetização via planos premium para vendedores ou destaque de anúncios;</li>
+        <li>Interesse crescente por economia circular, reuso de bens e consumo local sustentável;</li>
+        <li>Potencial de parcerias com administradoras de condomínios para distribuição da plataforma;</li>
+        <li>Integração futura com APIs de pagamento (PIX via Banco Central) para fechar o ciclo de compra;</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

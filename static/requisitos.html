@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Requisitos — CondConnect</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 32px 40px; color: #111; }
+  h1 { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 6px; }
+  h2 { font-size: 12px; font-weight: bold; margin: 36px 0 0; }
+  p  { font-size: 11.5px; margin: 8px 0 4px; line-height: 1.55; }
+
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 11.5px; margin-top: 4px; }
+  th { background: #1e4976; color: white; padding: 8px 10px;
+       text-align: left; font-size: 11px; border: 1px solid #163a5c; }
+  td { padding: 8px 10px; border: 1px solid #c8d8e8; vertical-align: top; line-height: 1.55; }
+  tr:nth-child(even) { background: #f0f5fa; }
+
+  .id    { width: 52px;  font-weight: bold; color: #1e4976; white-space: nowrap; }
+  .title { width: 210px; font-weight: 600; }
+  .small { font-size: 10.5px; color: #555; }
+
+  /* estado badge */
+  .alt  { color: #92400e; font-weight: bold; }
+  .add  { color: #166534; font-weight: bold; }
+  .rem  { color: #b91c1c; font-weight: bold; }
+
+  .fonte { font-size: 11px; font-style: italic; margin-top: 4px; }
+  .tip {
+    background: #fff8e1; border: 1px solid #f0c040; border-radius: 3px;
+    padding: 8px 12px; font-size: 10.5px; color: #7a5000;
+    margin-top: 10px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Requisitos do Sistema — CondConnect</h1>
+
+<!-- ══════════════════════════════════════════════════════
+     QUADRO 4 — REQUISITOS FUNCIONAIS
+══════════════════════════════════════════════════════ -->
+<h2>Quadro 4 – Requisitos Funcionais</h2>
+<table>
+  <thead>
+    <tr><th>ID</th><th>Título</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">RF01</td>
+      <td class="title">Cadastro de usuários</td>
+      <td>O sistema deve permitir o cadastro de usuários informando nome, e-mail único e senha. O papel padrão atribuído é <em>membro</em>. O usuário pode complementar o perfil com foto e chave Pix após o cadastro.</td>
+    </tr>
+    <tr>
+      <td class="id">RF02</td>
+      <td class="title">Autenticação / Login</td>
+      <td>O sistema deve permitir o login de usuários cadastrados mediante autenticação com e-mail e senha. Deve oferecer fluxo de recuperação de senha por e-mail com token temporário.</td>
+    </tr>
+    <tr>
+      <td class="id">RF03</td>
+      <td class="title">Cadastro de produto</td>
+      <td>O sistema deve permitir que o usuário cadastre produtos que deseja anunciar, com campos para título, descrição, categoria, preço, condição (Novo / Seminovo / Usado) e upload de múltiplas imagens. O produto é publicado com status <em>ativo</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">RF04</td>
+      <td class="title">Busca de produtos</td>
+      <td>O sistema deve disponibilizar funcionalidade de busca e filtragem de produtos, permitindo localizar anúncios por categoria, condição e faixa de preço. Cada resultado deve exibir o rating médio calculado via subquery SQL.</td>
+    </tr>
+    <tr>
+      <td class="id">RF05</td>
+      <td class="title">Edição e exclusão de anúncio</td>
+      <td>O sistema deve permitir a edição e exclusão de anúncios pelo usuário que os criou. A remoção também pode ser realizada pelo administrador em casos de violação das regras da plataforma.</td>
+    </tr>
+    <tr>
+      <td class="id">RF06</td>
+      <td class="title">Visualização de anúncio</td>
+      <td>O sistema deve permitir que o usuário visualize os detalhes de um anúncio, incluindo título, descrição, preço, condição, imagens, rating médio, total de avaliações e chave Pix do vendedor.</td>
+    </tr>
+    <tr>
+      <td class="id">RF07</td>
+      <td class="title">Carrinho e pedido</td>
+      <td>O sistema deve permitir que o comprador adicione itens ao carrinho (tabela <em>itens_carrinho</em>) e finalize a compra gerando um pedido. O vendedor atualiza o status do pedido (pendente → enviado → entregue ou cancelado). O comprador não pode comprar produtos anunciados por si mesmo.</td>
+    </tr>
+    <tr>
+      <td class="id">RF08</td>
+      <td class="title">Avaliação de produto</td>
+      <td>O sistema deve permitir que o comprador avalie o produto adquirido com nota de 1 a 5 e comentário opcional, após a confirmação de entrega. A avaliação é vinculada ao produto, não ao vendedor diretamente.</td>
+    </tr>
+    <tr>
+      <td class="id">RF09</td>
+      <td class="title">Chave Pix do vendedor</td>
+      <td>O sistema deve permitir que o vendedor cadastre e exiba sua chave Pix no perfil, para que o comprador realize o pagamento externamente. A plataforma não integra gateway de pagamento.</td>
+    </tr>
+    <tr>
+      <td class="id">RF10</td>
+      <td class="title">Mensageria interna</td>
+      <td><em>Requisito removido do escopo.</em> A funcionalidade de chat entre comprador e vendedor não foi implementada na versão atual do sistema. A negociação ocorre por meio do fluxo de propostas (RF14).</td>
+    </tr>
+    <tr>
+      <td class="id">RF11</td>
+      <td class="title">Administração e moderação</td>
+      <td>O sistema deve permitir que o administrador gerencie usuários (bloquear contas) e produtos (remover anúncios inapropriados). O acesso ao painel é restrito a usuários com papel <em>admin</em>, verificado em cada requisição.</td>
+    </tr>
+    <tr>
+      <td class="id">RF12</td>
+      <td class="title">Anúncios de empresas externas</td>
+      <td><em>Requisito removido do escopo.</em> A funcionalidade de espaço publicitário para empresas externas ao condomínio foi descartada para manter o foco do sistema no comércio entre moradores.</td>
+    </tr>
+    <tr>
+      <td class="id">RF13</td>
+      <td class="title">Favoritar produto</td>
+      <td>O sistema deve permitir que o usuário adicione e remova produtos da sua lista de favoritos. Os favoritos são persistidos na tabela <em>favoritos</em> e sincronizados com o <em>localStorage</em> no frontend.</td>
+    </tr>
+    <tr>
+      <td class="id">RF14</td>
+      <td class="title">Negociação por proposta</td>
+      <td>O sistema deve permitir que o comprador envie proposta de negociação contendo quantidade e valor ao vendedor. O vendedor aceita ou recusa. Ao aceitar, o preço negociado é registrado no campo <em>preco_negociado</em> da tabela <em>itens_carrinho</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">RF15</td>
+      <td class="title">Painel administrativo</td>
+      <td>O sistema deve disponibilizar painel administrativo restrito a usuários com papel <em>admin</em>, com gestão de usuários, moderação de produtos, visualização de pedidos e indicadores agregados (total de usuários, produtos ativos, pedidos e receita total) calculados via SQL.</td>
+    </tr>
+    <tr>
+      <td class="id">RF16</td>
+      <td class="title">Upload de imagens</td>
+      <td>O sistema deve permitir o upload de múltiplas imagens por produto via <em>multipart/form-data</em>, com geração de nome único por UUID e armazenamento no servidor. Uma das imagens deve ser marcada como principal para exibição em listagens.</td>
+    </tr>
+    <tr>
+      <td class="id">RF17</td>
+      <td class="title">Notificações internas</td>
+      <td>O sistema deve emitir notificações internas aos usuários para eventos como: proposta recebida, proposta aceita ou recusada e atualização de status de pedido. Deve exibir badge com contador de notificações não lidas e permitir marcação em lote como lidas.</td>
+    </tr>
+    <tr>
+      <td class="id">RF18</td>
+      <td class="title">Atualização de status do pedido</td>
+      <td>O sistema deve permitir que o vendedor atualize o status do pedido (pendente → enviado → entregue ou cancelado). Após o status <em>entregue</em>, o comprador fica habilitado a avaliar o produto.</td>
+    </tr>
+  </tbody>
+</table>
+<p class="fonte">Fonte: Os Autores (2025).</p>
+
+<div class="tip">
+  <strong>RF10</strong> (Mensageria interna) e <strong>RF12</strong> (Anúncios de empresas) foram mantidos na tabela com a identificação de removidos para preservar a rastreabilidade com o histórico de alterações (Quadro 5).
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     QUADRO 5 — HISTÓRICO DE ALTERAÇÕES
+══════════════════════════════════════════════════════ -->
+<h2 style="margin-top:40px;">Quadro 5 – Histórico de alterações dos requisitos funcionais</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width:46px">Id</th>
+      <th style="width:54px">Versão</th>
+      <th style="width:80px">Data</th>
+      <th>Descrição Original</th>
+      <th style="width:120px">Autor</th>
+      <th>Descrição da alteração</th>
+      <th>Justificativa</th>
+      <th style="width:72px">Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">RF01</td>
+      <td>0.1</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve permitir o cadastro de usuários, contendo informações como nome, e-mail, senha, número do apartamento e bloco.</td>
+      <td>Gabriel Henrique</td>
+      <td>Removidos os campos apartamento e bloco. Adicionados foto de perfil e chave Pix como dados complementares.</td>
+      <td>Os campos apartamento e bloco não existem no esquema de banco de dados implementado. A plataforma não é restrita a um condomínio específico.</td>
+      <td class="alt">Alterado</td>
+    </tr>
+    <tr>
+      <td class="id">RF03</td>
+      <td>0.1</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve permitir que o usuário cadastre produtos ou serviços que deseja anunciar, com campos para título, descrição, categoria, preço e imagens.</td>
+      <td>Gabriel Henrique</td>
+      <td>Alterado para cadastro apenas de produtos. Incluído campo de condição (Novo / Seminovo / Usado) e suporte a múltiplas imagens via tabela <em>imagens_produto</em>.</td>
+      <td>Ajuste de escopo: serviços foram removidos para simplificar o modelo de dados e o fluxo de negociação.</td>
+      <td class="alt">Alterado</td>
+    </tr>
+    <tr>
+      <td class="id">RF04</td>
+      <td>0.1</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve disponibilizar uma funcionalidade de busca, permitindo localizar produtos e serviços por nome, categoria ou preço.</td>
+      <td>Gabriel Henrique</td>
+      <td>Alterado para busca exclusivamente de produtos. Adicionados filtros por condição e faixa de preço. Exibição de rating médio calculado por subquery SQL.</td>
+      <td>Remoção da funcionalidade de serviços. Filtros adicionais implementados conforme necessidade identificada no desenvolvimento.</td>
+      <td class="alt">Alterado</td>
+    </tr>
+    <tr>
+      <td class="id">RF07</td>
+      <td>0.2</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve permitir a realização de pedidos e o acompanhamento do status até a conclusão da transação.</td>
+      <td>Gabriel Henrique</td>
+      <td>Incorporado fluxo de carrinho (tabela <em>itens_carrinho</em>) antes da finalização do pedido. Adicionada regra de que o comprador não pode adquirir seus próprios produtos. Ciclo de status: pendente → enviado → entregue ou cancelado.</td>
+      <td>Necessidade de suportar negociação prévia via proposta e organização dos itens antes da confirmação da compra.</td>
+      <td class="alt">Alterado</td>
+    </tr>
+    <tr>
+      <td class="id">RF08</td>
+      <td>0.1</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve permitir avaliação e comentários após a finalização da compra, promovendo reputação de vendedores e compradores.</td>
+      <td>Gabriel Henrique</td>
+      <td>Alterado para avaliação do produto (nota 1–5 + comentário) vinculada ao comprador, liberada somente após status <em>entregue</em>. A avaliação reflete o produto, não o perfil do vendedor diretamente.</td>
+      <td>O modelo de dados implementado registra avaliações por produto (tabela <em>avaliacoes</em>), não por par vendedor/comprador.</td>
+      <td class="alt">Alterado</td>
+    </tr>
+    <tr>
+      <td class="id">RF10</td>
+      <td>0.2</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve disponibilizar uma área de mensagens para que compradores e vendedores possam se comunicar dentro da plataforma.</td>
+      <td>Gabriel Henrique</td>
+      <td>Requisito removido do escopo do sistema.</td>
+      <td>A funcionalidade de mensageria não foi implementada no backend. A comunicação entre as partes ocorre por meio do fluxo de propostas (RF14), sem necessidade de chat dedicado.</td>
+      <td class="rem">Removido</td>
+    </tr>
+    <tr>
+      <td class="id">RF12</td>
+      <td>0.2</td>
+      <td>03/04/2026</td>
+      <td>O sistema deve permitir espaços na interface da plataforma para incluir anúncios de empresas que vendem produtos para condomínios.</td>
+      <td>Gabriel Henrique</td>
+      <td>Requisito removido do escopo do sistema.</td>
+      <td>Decisão de escopo: a plataforma é focada exclusivamente no comércio entre moradores, sem espaço publicitário para empresas externas.</td>
+      <td class="rem">Removido</td>
+    </tr>
+    <tr>
+      <td class="id">RF13</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: o sistema deve permitir que o usuário adicione e remova produtos da sua lista de favoritos, com persistência na tabela <em>favoritos</em> e sincronização via localStorage no frontend.</td>
+      <td>Funcionalidade identificada como necessária para melhorar a experiência do usuário e facilitar o acompanhamento de produtos de interesse.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+    <tr>
+      <td class="id">RF14</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: o sistema deve permitir que o comprador envie proposta de negociação com quantidade e valor ao vendedor, e que o vendedor aceite ou recuse, registrando o preço acordado no carrinho.</td>
+      <td>Necessidade de suportar negociação de preço antes da compra, diferenciando a plataforma de marketplaces com preço fixo.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+    <tr>
+      <td class="id">RF15</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: painel administrativo restrito ao papel <em>admin</em>, com gestão de usuários, moderação de produtos, visualização de pedidos e indicadores agregados calculados via SQL.</td>
+      <td>Necessidade de controle centralizado da plataforma pelo administrador, com visibilidade dos dados operacionais do sistema.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+    <tr>
+      <td class="id">RF16</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: upload de múltiplas imagens por produto via multipart/form-data, com nome único gerado por UUID e marcação de imagem principal.</td>
+      <td>Melhora a apresentação dos anúncios e aumenta a confiança do comprador ao visualizar o produto.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+    <tr>
+      <td class="id">RF17</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: notificações internas persistidas em banco para eventos de proposta e pedido, com badge de não lidas e marcação em lote.</td>
+      <td>Manter os usuários informados sobre atualizações relevantes sem depender de e-mail ou notificações push externas.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+    <tr>
+      <td class="id">RF18</td>
+      <td>0.3</td>
+      <td>03/04/2026</td>
+      <td>—</td>
+      <td>Gabriel Henrique</td>
+      <td>Adicionado: atualização de status do pedido pelo vendedor (pendente → enviado → entregue ou cancelado), liberando avaliação do produto após entrega confirmada.</td>
+      <td>Garantir rastreabilidade do pedido e definir o momento correto para habilitar a avaliação do produto pelo comprador.</td>
+      <td class="add">Adicionado</td>
+    </tr>
+  </tbody>
+</table>
+<p class="fonte">Fonte: Os Autores (2026).</p>
+
+
+<!-- ══════════════════════════════════════════════════════
+     QUADRO 6 — REQUISITOS NÃO FUNCIONAIS
+══════════════════════════════════════════════════════ -->
+<h2 style="margin-top:40px;">Quadro 6 – Requisitos Não Funcionais</h2>
+<table>
+  <thead>
+    <tr><th>ID</th><th>Título</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">RNF01</td>
+      <td class="title">Responsividade</td>
+      <td>O sistema deve possuir interface responsiva com abordagem mobile-first, adaptando-se a diferentes tamanhos de tela e dispositivos (computadores, tablets e smartphones), sem dependência de frameworks CSS externos.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF02</td>
+      <td class="title">Segurança e criptografia</td>
+      <td>O sistema deve garantir autenticação segura via sessão server-side (Flask-Login com cookie HttpOnly) e armazenar senhas exclusivamente como hash criptográfico (Werkzeug). Dados sensíveis não devem ser expostos em respostas da API.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF03</td>
+      <td class="title">Desempenho (tempo de resposta)</td>
+      <td>O tempo de resposta para operações comuns (login, busca, carregamento de anúncios) não deve exceder 3 segundos em condições normais de uso.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF04</td>
+      <td class="title">Concorrência / Escalabilidade</td>
+      <td>O sistema deve suportar acesso simultâneo de múltiplos usuários sem degradação perceptível de desempenho, por meio de servidor WSGI (Gunicorn) com múltiplos workers.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF05</td>
+      <td class="title">Disponibilidade</td>
+      <td>O sistema deve apresentar disponibilidade mínima de 95%, considerando janelas de manutenção programada comunicadas com antecedência aos usuários.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF06</td>
+      <td class="title">Usabilidade</td>
+      <td>A interface deve ser intuitiva e de fácil navegação, priorizando clareza visual, hierarquia de informação e consistência de padrões de interação, sem necessidade de treinamento prévio para uso básico.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF07</td>
+      <td class="title">Rastreabilidade de sessões</td>
+      <td>O sistema deve registrar logs de acesso em nível de servidor (Apache / Gunicorn), possibilitando auditoria de requisições. O rastreamento de ações críticas em nível de aplicação (banco de dados) está previsto para versões futuras do sistema.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF08</td>
+      <td class="title">Qualidade de código / Versionamento</td>
+      <td>O código deve ser desenvolvido seguindo boas práticas de programação (nomenclatura clara, separação de responsabilidades) e versionado em repositório Git, com histórico de commits rastreável.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF09</td>
+      <td class="title">Conformidade LGPD</td>
+      <td>O sistema deve observar a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018), garantindo que dados pessoais (nome, e-mail, foto, chave Pix) sejam usados apenas para o funcionamento da plataforma, com senhas nunca armazenadas em texto claro.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF10</td>
+      <td class="title">Arquitetura em camadas</td>
+      <td>O sistema deve adotar separação clara entre camada de apresentação (HTML5 / CSS3 / JavaScript ES6+), camada de lógica de negócio (Python 3 / Flask) e camada de persistência (MySQL), comunicando-se via API REST sobre HTTP/HTTPS com payloads em JSON.</td>
+    </tr>
+    <tr>
+      <td class="id">RNF11</td>
+      <td class="title">Stack tecnológica definida</td>
+      <td>O back-end deve ser desenvolvido em Python 3 com o microframework Flask, servido por Gunicorn (WSGI) com Apache HTTP Server como proxy reverso. O front-end deve ser construído em HTML5, CSS3 e JavaScript ES6+ sem frameworks externos. O banco de dados MySQL deve ser acessado via PyMySQL com DictCursor, sem ORM.</td>
+    </tr>
+  </tbody>
+</table>
+<p class="fonte">Fonte: Os Autores (2025).</p>
+
+</body>
+</html>

@@ -304,9 +304,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Descrição</label>
-                    <textarea id="product-description" class="form-textarea"
-                        placeholder="Descreva o produto, estado de conservação, motivo da venda..."></textarea>
+                    <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+                        Descrição
+                        <span id="desc-counter" style="font-size:12px;color:#94a3b8;font-weight:400;">0/300</span>
+                    </label>
+                    <textarea id="product-description" class="form-textarea" maxlength="300"
+                        placeholder="Descreva o produto, estado de conservação, motivo da venda..."
+                        oninput="document.getElementById('desc-counter').textContent=this.value.length+'/300';document.getElementById('desc-counter').style.color=this.value.length>=280?'#ef4444':'#94a3b8';"></textarea>
                 </div>
 
                 <div class="form-group">

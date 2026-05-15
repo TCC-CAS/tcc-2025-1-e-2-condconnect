@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>C4 — Diagrama de Componentes Backend CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .page {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 28px 32px 36px;
+    width: 760px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+  .diagram-title {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+
+  /* OUTER BOUNDARY */
+  .outer-boundary {
+    border: 2px dashed #888;
+    border-radius: 6px;
+    padding: 20px 20px 24px;
+    position: relative;
+    margin-top: 4px;
+  }
+  .outer-lbl {
+    position: absolute;
+    top: -11px; left: 14px;
+    background: white;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+  }
+  .container-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a3a5c;
+    margin-bottom: 2px;
+  }
+  .container-sub {
+    text-align: center;
+    font-size: 10px;
+    font-style: italic;
+    color: #666;
+    margin-bottom: 22px;
+  }
+
+  /* COMPONENTS GRID */
+  .components-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* COMPONENT BOX */
+  .comp {
+    background: #5b9bd5;
+    border-radius: 6px;
+    padding: 13px 13px 12px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .comp.dark { background: #2e6da4; }
+  .comp-tag  { font-size: 9px; font-style: italic; color: #cce0f5; font-weight: 600; }
+  .comp-name { font-size: 13px; font-weight: 800; line-height: 1.25; }
+  .comp-tech { font-size: 9px; font-style: italic; color: #b8d8f2; }
+  .comp-desc { font-size: 10px; color: #dceefa; line-height: 1.4; margin-top: 2px; }
+
+  /* ACCESS LAYER — full width */
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* SECTION LABEL */
+  .section-sep {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 2px;
+  }
+  .section-sep span {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .section-sep::before,
+  .section-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="diagram-title">Diagrama de Componentes — Backend CondConnect</div>
+
+  <div class="outer-boundary">
+    <div class="outer-lbl">API Backend [container]</div>
+    <div class="container-title">API Backend (Python / Flask)</div>
+    <div class="container-sub">[app.py — arquivo único com todas as rotas REST]</div>
+
+    <div class="components-grid">
+
+      <!-- ACESSO A DADOS — full width -->
+      <div class="section-sep"><span>Infraestrutura de dados</span></div>
+
+      <div class="comp dark full-width">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Camada de Acesso a Dados</div>
+        <div class="comp-tech">[PyMySQL / DictCursor / SQL puro — sem ORM]</div>
+        <div class="comp-desc">Executa queries SQL diretamente via PyMySQL com DictCursor (resultados como dicionário). Conexão configurada com autocommit=True. Banco MySQL externo em thyagoquintas.com.br, banco engenharia_16.</div>
+      </div>
+
+      <!-- AUTENTICAÇÃO -->
+      <div class="section-sep"><span>Segurança e usuários</span></div>
+
+      <div class="comp dark">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Autenticação e Sessões</div>
+        <div class="comp-tech">[Flask-Login / Werkzeug / Cookies]</div>
+        <div class="comp-desc">Login, logout e controle de sessão server-side via cookies seguros. Hashing de senha com Werkzeug. Rotas: /login, /logout, /cadastro, /esqueci-senha, /redefinir-senha.</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Gerenciamento de Usuários</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">CRUD de usuários, edição de perfil, foto de perfil, chave Pix e controle de papel (membro / admin). Rota: /me, /usuarios/perfil.</div>
+      </div>
+
+      <!-- PRODUTOS -->
+      <div class="section-sep"><span>Marketplace</span></div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Gerenciamento de Produtos</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">Cadastro, edição, remoção e listagem de produtos. Filtros por categoria, condição e faixa de preço. Subquery SQL para rating médio e contagem de avaliações por produto.</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Upload de Imagens</div>
+        <div class="comp-tech">[Werkzeug / uuid / Sistema de Arquivos Local]</div>
+        <div class="comp-desc">Recebe imagens via multipart/form-data, gera nome único com uuid e salva em /static/assets/uploads/ no servidor. Suporte a múltiplas fotos por produto (tabela imagens_produto).</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Favoritos</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">Adicionar e remover produtos dos favoritos do usuário. Sincronizado com localStorage no frontend. Rotas: GET/POST/DELETE /favoritos.</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Sistema de Propostas</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">Comprador envia proposta com quantidade e valor. Vendedor aceita ou recusa. Preço negociado registrado em itens_carrinho.preco_negociado. Tabela propostas.</div>
+      </div>
+
+      <!-- PEDIDOS E PÓS-VENDA -->
+      <div class="section-sep"><span>Pedidos e pós-venda</span></div>
+
+      <div class="comp dark">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Gestão de Pedidos e Carrinho</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">Adição ao carrinho (tabela itens_carrinho), finalização de compra, histórico de pedidos e atualização de status (pendente → entregue). Total de unidades vendidas via COUNT em pedidos.</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Avaliações</div>
+        <div class="comp-tech">[Módulo de Serviço]</div>
+        <div class="comp-desc">Comprador avalia produto após entrega (nota 1–5 + comentário). Média calculada por produto via subquery SQL. Distinção entre rating do produto e rating geral do vendedor.</div>
+      </div>
+
+      <div class="comp">
+        <div class="comp-tag">«component»</div>
+        <div class="comp-name">Notificações Internas</div>
+        <div class="comp-tech">[Módulo de Serviço / tabela MySQL]</div>
+        <div class="comp-desc">Notificações persistidas em tabela notificacoes no banco. Sem fila assíncrona (sem Celery/Redis). Badge com contador de não lidas. Rotas: GET/PUT /notificacoes.</div>
+      </div>
+
+    </div><!-- end grid -->
+  </div><!-- end boundary -->
+</div>
+</body>
+</html>

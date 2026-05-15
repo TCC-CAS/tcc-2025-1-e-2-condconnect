@@ -40,7 +40,13 @@
                             <h3 class="product-title">${produto.titulo}</h3>
                             <span class="product-status tag-${produto.status}">${label}</span>
                             <div class="product-price">${produto.preco_fmt}</div>
-                            <span class="product-date">Criado em ${dataFmt}</span>
+                            <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+                                <span class="product-date">Criado em ${dataFmt}</span>
+                                <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="${produto.total_favoritos > 0 ? '#ef4444' : 'none'}" stroke="${produto.total_favoritos > 0 ? '#ef4444' : '#94a3b8'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                    ${produto.total_favoritos || 0} favorito(s)
+                                </span>
+                            </div>
                         </div>
                         <div class="product-actions">
                             <button class="actions-btn" title="Opções" data-id="${produto.id}">

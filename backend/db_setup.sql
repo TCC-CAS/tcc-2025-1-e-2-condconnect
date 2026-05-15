@@ -177,6 +177,7 @@ CREATE TABLE configuracoes_usuario (
     notif_marketing TINYINT(1) DEFAULT 0,
     tema VARCHAR(20) DEFAULT 'light',
     idioma VARCHAR(10) DEFAULT 'pt-BR',
+    privacidade_endereco TINYINT(1) DEFAULT 0,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

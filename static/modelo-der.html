@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>DER — CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #dce3ea; padding: 28px; }
+  .page {
+    background: white;
+    border: 2px solid #2d3748;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<svg width="1420" height="760" xmlns="http://www.w3.org/2000/svg"
+     font-family="'Segoe UI',Arial,sans-serif">
+
+  <!-- ══ TITLE ══ -->
+  <text x="710" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1a202c">
+    Diagrama Entidade-Relacionamento (DER) — CondConnect
+  </text>
+
+  <!-- ═══════════════════════════════════════════════
+       HELPER: entity=rect, diamond=polygon,
+               attr=ellipse (filled=PK, open=regular)
+  ═══════════════════════════════════════════════ -->
+
+  <!-- ─────────────────────────────────
+       ENTITY: Produto  cx=210 cy=295
+  ───────────────────────────────── -->
+  <rect x="148" y="277" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="210" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Produto</text>
+
+  <!-- Produto attributes (left & top) -->
+  <!-- id_produto PK (filled) -->
+  <line x1="210" y1="277" x2="210" y2="195" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="210" cy="180" rx="36" ry="14" fill="#2d3748" stroke="#2d3748"/>
+  <text x="210" y="185" text-anchor="middle" font-size="10" fill="white">id_produto</text>
+
+  <!-- titulo -->
+  <line x1="185" y1="278" x2="130" y2="195" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="107" cy="185" rx="30" ry="13" fill="white" stroke="#555"/>
+  <text x="107" y="189" text-anchor="middle" font-size="10" fill="#1a202c">titulo</text>
+
+  <!-- descricao -->
+  <line x1="160" y1="285" x2="68" y2="235" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="44" cy="228" rx="34" ry="13" fill="white" stroke="#555"/>
+  <text x="44" y="232" text-anchor="middle" font-size="10" fill="#1a202c">descricao</text>
+
+  <!-- categoria -->
+  <line x1="148" y1="295" x2="48" y2="295" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="24" cy="295" rx="32" ry="13" fill="white" stroke="#555"/>
+  <text x="24" y="299" text-anchor="middle" font-size="10" fill="#1a202c">categoria</text>
+
+  <!-- preco -->
+  <line x1="155" y1="308" x2="65" y2="345" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="42" cy="352" rx="28" ry="13" fill="white" stroke="#555"/>
+  <text x="42" y="356" text-anchor="middle" font-size="10" fill="#1a202c">preco</text>
+
+  <!-- condicao -->
+  <line x1="175" y1="313" x2="120" y2="378" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="105" cy="390" rx="34" ry="13" fill="white" stroke="#555"/>
+  <text x="105" y="394" text-anchor="middle" font-size="10" fill="#1a202c">condicao</text>
+
+  <!-- status -->
+  <line x1="210" y1="313" x2="210" y2="388" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="210" cy="400" rx="28" ry="13" fill="white" stroke="#555"/>
+  <text x="210" y="404" text-anchor="middle" font-size="10" fill="#1a202c">status</text>
+
+  <!-- data_publicacao -->
+  <line x1="240" y1="277" x2="295" y2="195" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="316" cy="184" rx="42" ry="13" fill="white" stroke="#555"/>
+  <text x="316" y="188" text-anchor="middle" font-size="10" fill="#1a202c">data_publicacao</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: vende  cx=470 cy=295
+  ───────────────────────────────── -->
+  <polygon points="470,273 514,295 470,317 426,295" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="470" y="299" text-anchor="middle" font-size="11" fill="#1a202c">vende</text>
+  <!-- Produto → vende -->
+  <line x1="272" y1="295" x2="426" y2="295" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="310" y="287" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Usuario  cx=700 cy=295
+  ───────────────────────────────── -->
+  <rect x="638" y="277" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="700" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Usuario</text>
+  <!-- vende → Usuario -->
+  <line x1="514" y1="295" x2="638" y2="295" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="564" y="287" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Usuario attributes (top & right) -->
+  <!-- id_usuario PK -->
+  <line x1="700" y1="277" x2="700" y2="195" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="700" cy="180" rx="38" ry="14" fill="#2d3748" stroke="#2d3748"/>
+  <text x="700" y="185" text-anchor="middle" font-size="10" fill="white">id_usuario</text>
+
+  <!-- nome -->
+  <line x1="722" y1="278" x2="785" y2="200" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="800" cy="192" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="800" y="196" text-anchor="middle" font-size="10" fill="#1a202c">nome</text>
+
+  <!-- email -->
+  <line x1="762" y1="285" x2="858" y2="235" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="882" cy="228" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="882" y="232" text-anchor="middle" font-size="10" fill="#1a202c">email</text>
+
+  <!-- senha -->
+  <line x1="762" y1="295" x2="878" y2="295" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="904" cy="295" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="904" y="299" text-anchor="middle" font-size="10" fill="#1a202c">senha</text>
+
+  <!-- foto_url -->
+  <line x1="756" y1="307" x2="858" y2="350" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="882" cy="358" rx="32" ry="13" fill="white" stroke="#555"/>
+  <text x="882" y="362" text-anchor="middle" font-size="10" fill="#1a202c">foto_url</text>
+
+  <!-- papel -->
+  <line x1="736" y1="313" x2="800" y2="385" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="814" cy="396" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="814" y="400" text-anchor="middle" font-size="10" fill="#1a202c">papel</text>
+
+  <!-- pix_key -->
+  <line x1="700" y1="313" x2="700" y2="395" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="700" cy="408" rx="30" ry="13" fill="white" stroke="#555"/>
+  <text x="700" y="412" text-anchor="middle" font-size="10" fill="#1a202c">pix_key</text>
+
+  <!-- rating -->
+  <line x1="668" y1="312" x2="608" y2="378" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="594" cy="390" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="594" y="394" text-anchor="middle" font-size="10" fill="#1a202c">rating</text>
+
+  <!-- data_criacao -->
+  <line x1="648" y1="277" x2="574" y2="200" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="553" cy="190" rx="40" ry="13" fill="white" stroke="#555"/>
+  <text x="553" y="194" text-anchor="middle" font-size="10" fill="#1a202c">data_criacao</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: favorita  cx=960 cy=170
+  ───────────────────────────────── -->
+  <polygon points="960,148 1006,170 960,192 914,170" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="960" y="174" text-anchor="middle" font-size="11" fill="#1a202c">favorita</text>
+  <!-- Usuario → favorita -->
+  <line x1="762" y1="282" x2="914" y2="170" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="862" y="210" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Favorito  cx=1150 cy=170
+  ───────────────────────────────── -->
+  <rect x="1088" y="152" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="1150" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Favorito</text>
+  <!-- favorita → Favorito -->
+  <line x1="1006" y1="170" x2="1088" y2="170" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="1034" y="162" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Favorito attributes -->
+  <!-- id PK -->
+  <line x1="1150" y1="152" x2="1150" y2="108" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1150" cy="95" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="1150" y="99" text-anchor="middle" font-size="10" fill="white">id</text>
+
+  <!-- data_adicao -->
+  <line x1="1212" y1="162" x2="1278" y2="135" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1312" cy="128" rx="40" ry="13" fill="white" stroke="#555"/>
+  <text x="1312" y="132" text-anchor="middle" font-size="10" fill="#1a202c">data_adicao</text>
+
+  <!-- Produto → favorita -->
+  <line x1="272" y1="283" x2="914" y2="170" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="590" y="220" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: notifica  cx=960 cy=435
+  ───────────────────────────────── -->
+  <polygon points="960,413 1006,435 960,457 914,435" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="960" y="439" text-anchor="middle" font-size="11" fill="#1a202c">notifica</text>
+  <!-- Usuario → notifica -->
+  <line x1="762" y1="305" x2="914" y2="435" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="854" y="360" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Notificacao  cx=1150 cy=435
+  ───────────────────────────────── -->
+  <rect x="1082" y="417" width="136" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="1150" y="440" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Notificacao</text>
+  <!-- notifica → Notificacao -->
+  <line x1="1006" y1="435" x2="1082" y2="435" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="1030" y="427" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Notificacao attributes -->
+  <!-- id PK -->
+  <line x1="1150" y1="417" x2="1150" y2="372" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1150" cy="359" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="1150" y="363" text-anchor="middle" font-size="10" fill="white">id</text>
+
+  <!-- titulo -->
+  <line x1="1218" y1="424" x2="1300" y2="398" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1328" cy="391" rx="28" ry="13" fill="white" stroke="#555"/>
+  <text x="1328" y="395" text-anchor="middle" font-size="10" fill="#1a202c">titulo</text>
+
+  <!-- mensagem -->
+  <line x1="1218" y1="435" x2="1300" y2="435" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1334" cy="435" rx="36" ry="13" fill="white" stroke="#555"/>
+  <text x="1334" y="439" text-anchor="middle" font-size="10" fill="#1a202c">mensagem</text>
+
+  <!-- lida -->
+  <line x1="1218" y1="447" x2="1300" y2="470" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1322" cy="478" rx="22" ry="13" fill="white" stroke="#555"/>
+  <text x="1322" y="482" text-anchor="middle" font-size="10" fill="#1a202c">lida</text>
+
+  <!-- data_envio -->
+  <line x1="1188" y1="453" x2="1230" y2="510" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1242" cy="522" rx="40" ry="13" fill="white" stroke="#555"/>
+  <text x="1242" y="526" text-anchor="middle" font-size="10" fill="#1a202c">data_envio</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: possui  cx=165 cy=445
+  ───────────────────────────────── -->
+  <polygon points="165,423 209,445 165,467 121,445" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="165" y="449" text-anchor="middle" font-size="11" fill="#1a202c">possui</text>
+  <!-- Produto → possui -->
+  <line x1="170" y1="313" x2="165" y2="423" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="145" y="375" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Imagem_Produto  cx=115 cy=605
+  ───────────────────────────────── -->
+  <rect x="41" y="587" width="148" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="115" y="610" text-anchor="middle" font-size="11" font-weight="700" fill="#1a202c">Imagem_Produto</text>
+  <!-- possui → Imagem_Produto -->
+  <line x1="165" y1="467" x2="130" y2="587" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="120" y="530" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Imagem_Produto attributes -->
+  <!-- id PK -->
+  <line x1="70" y1="600" x2="30" y2="555" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="22" cy="544" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="22" y="548" text-anchor="middle" font-size="10" fill="white">id</text>
+  <!-- url_imagem -->
+  <line x1="80" y1="623" x2="50" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="42" cy="678" rx="40" ry="13" fill="white" stroke="#555"/>
+  <text x="42" y="682" text-anchor="middle" font-size="10" fill="#1a202c">url_imagem</text>
+  <!-- principal -->
+  <line x1="150" y1="623" x2="160" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="168" cy="678" rx="34" ry="13" fill="white" stroke="#555"/>
+  <text x="168" y="682" text-anchor="middle" font-size="10" fill="#1a202c">principal</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: negocia  cx=360 cy=445
+  ───────────────────────────────── -->
+  <polygon points="360,423 404,445 360,467 316,445" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="360" y="449" text-anchor="middle" font-size="11" fill="#1a202c">negocia</text>
+  <!-- Produto → negocia -->
+  <line x1="230" y1="310" x2="330" y2="430" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="262" y="375" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+  <!-- Usuario → negocia -->
+  <line x1="650" y1="308" x2="404" y2="445" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="520" y="375" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Proposta  cx=335 cy=605
+  ───────────────────────────────── -->
+  <rect x="273" y="587" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="335" y="610" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Proposta</text>
+  <!-- negocia → Proposta -->
+  <line x1="360" y1="467" x2="345" y2="587" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="325" y="530" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Proposta attributes -->
+  <!-- id PK -->
+  <line x1="285" y1="597" x2="250" y2="552" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="242" cy="541" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="242" y="545" text-anchor="middle" font-size="10" fill="white">id</text>
+  <!-- valor -->
+  <line x1="290" y1="623" x2="255" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="243" cy="678" rx="24" ry="13" fill="white" stroke="#555"/>
+  <text x="243" y="682" text-anchor="middle" font-size="10" fill="#1a202c">valor</text>
+  <!-- quantidade -->
+  <line x1="335" y1="623" x2="335" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="335" cy="678" rx="38" ry="13" fill="white" stroke="#555"/>
+  <text x="335" y="682" text-anchor="middle" font-size="10" fill="#1a202c">quantidade</text>
+  <!-- status -->
+  <line x1="370" y1="623" x2="395" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="406" cy="678" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="406" y="682" text-anchor="middle" font-size="10" fill="#1a202c">status</text>
+  <!-- data_proposta -->
+  <line x1="388" y1="597" x2="430" y2="552" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="443" cy="541" rx="44" ry="13" fill="white" stroke="#555"/>
+  <text x="443" y="545" text-anchor="middle" font-size="10" fill="#1a202c">data_proposta</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: adiciona  cx=555 cy=445
+  ───────────────────────────────── -->
+  <polygon points="555,423 599,445 555,467 511,445" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="555" y="441" text-anchor="middle" font-size="10" fill="#1a202c">adiciona</text>
+  <text x="555" y="453" text-anchor="middle" font-size="9" fill="#555">carrinho</text>
+  <!-- Produto → adiciona -->
+  <line x1="260" y1="298" x2="511" y2="443" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="370" y="360" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+  <!-- Usuario → adiciona -->
+  <line x1="642" y1="305" x2="599" y2="445" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="604" y="370" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Itens_Carrinho  cx=555 cy=605
+  ───────────────────────────────── -->
+  <rect x="481" y="587" width="148" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="555" y="610" text-anchor="middle" font-size="11" font-weight="700" fill="#1a202c">Itens_Carrinho</text>
+  <!-- adiciona → Itens_Carrinho -->
+  <line x1="555" y1="467" x2="555" y2="587" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="560" y="530" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Itens_Carrinho attributes -->
+  <!-- id PK -->
+  <line x1="490" y1="597" x2="460" y2="552" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="452" cy="541" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="452" y="545" text-anchor="middle" font-size="10" fill="white">id</text>
+  <!-- preco_negociado -->
+  <line x1="555" y1="623" x2="555" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="555" cy="679" rx="52" ry="13" fill="white" stroke="#555"/>
+  <text x="555" y="683" text-anchor="middle" font-size="10" fill="#1a202c">preco_negociado</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: realiza  cx=740 cy=445
+  ───────────────────────────────── -->
+  <polygon points="740,423 784,445 740,467 696,445" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="740" y="449" text-anchor="middle" font-size="11" fill="#1a202c">realiza</text>
+  <!-- Usuario → realiza -->
+  <line x1="700" y1="313" x2="740" y2="423" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="695" y="370" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+  <!-- Produto → realiza (through id_produto in pedidos) -->
+  <line x1="262" y1="292" x2="696" y2="443" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="456" y="345" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Pedido  cx=740 cy=605
+  ───────────────────────────────── -->
+  <rect x="678" y="587" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="740" y="610" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Pedido</text>
+  <!-- realiza → Pedido -->
+  <line x1="740" y1="467" x2="740" y2="587" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="745" y="530" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Pedido attributes -->
+  <!-- id PK -->
+  <line x1="686" y1="597" x2="650" y2="552" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="642" cy="541" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="642" y="545" text-anchor="middle" font-size="10" fill="white">id</text>
+  <!-- status -->
+  <line x1="700" y1="623" x2="668" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="655" cy="678" rx="26" ry="13" fill="white" stroke="#555"/>
+  <text x="655" y="682" text-anchor="middle" font-size="10" fill="#1a202c">status</text>
+  <!-- data_pedido -->
+  <line x1="740" y1="623" x2="740" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="740" cy="679" rx="40" ry="13" fill="white" stroke="#555"/>
+  <text x="740" y="683" text-anchor="middle" font-size="10" fill="#1a202c">data_pedido</text>
+  <!-- valor -->
+  <line x1="780" y1="623" x2="808" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="820" cy="678" rx="24" ry="13" fill="white" stroke="#555"/>
+  <text x="820" y="682" text-anchor="middle" font-size="10" fill="#1a202c">valor</text>
+
+  <!-- ─────────────────────────────────
+       DIAMOND: avalia  cx=930 cy=445
+  ───────────────────────────────── -->
+  <polygon points="930,423 974,445 930,467 886,445" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="930" y="449" text-anchor="middle" font-size="11" fill="#1a202c">avalia</text>
+  <!-- Usuario → avalia -->
+  <line x1="756" y1="310" x2="886" y2="445" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="836" y="375" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+  <!-- Produto → avalia -->
+  <line x1="262" y1="290" x2="886" y2="443" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="560" y="310" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- ─────────────────────────────────
+       ENTITY: Avaliacao  cx=940 cy=605
+  ───────────────────────────────── -->
+  <rect x="878" y="587" width="124" height="36" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="940" y="610" text-anchor="middle" font-size="12" font-weight="700" fill="#1a202c">Avaliacao</text>
+  <!-- avalia → Avaliacao -->
+  <line x1="930" y1="467" x2="938" y2="587" stroke="#2d3748" stroke-width="1.4"/>
+  <text x="942" y="530" font-size="10" font-weight="700" fill="#333">(1,n)</text>
+
+  <!-- Avaliacao attributes -->
+  <!-- id PK -->
+  <line x1="886" y1="597" x2="848" y2="552" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="840" cy="541" rx="16" ry="12" fill="#2d3748" stroke="#2d3748"/>
+  <text x="840" y="545" text-anchor="middle" font-size="10" fill="white">id</text>
+  <!-- nota -->
+  <line x1="900" y1="623" x2="870" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="858" cy="678" rx="22" ry="13" fill="white" stroke="#555"/>
+  <text x="858" y="682" text-anchor="middle" font-size="10" fill="#1a202c">nota</text>
+  <!-- comentario -->
+  <line x1="940" y1="623" x2="940" y2="666" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="940" cy="679" rx="38" ry="13" fill="white" stroke="#555"/>
+  <text x="940" y="683" text-anchor="middle" font-size="10" fill="#1a202c">comentario</text>
+  <!-- data_avaliacao -->
+  <line x1="990" y1="613" x2="1036" y2="650" stroke="#555" stroke-width="1.2"/>
+  <ellipse cx="1058" cy="662" rx="48" ry="13" fill="white" stroke="#555"/>
+  <text x="1058" y="666" text-anchor="middle" font-size="10" fill="#1a202c">data_avaliacao</text>
+
+  <!-- ─────────────────────────────────
+       LEGEND
+  ───────────────────────────────── -->
+  <rect x="1136" y="548" width="272" height="175" fill="#f8fafc" stroke="#cbd5e0" stroke-width="1" rx="3"/>
+  <text x="1272" y="566" text-anchor="middle" font-size="10" font-weight="700" fill="#444">Legenda</text>
+
+  <!-- Entity symbol -->
+  <rect x="1150" y="573" width="30" height="16" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="1192" y="585" font-size="10" fill="#333">— Entidade</text>
+
+  <!-- Relationship diamond -->
+  <polygon points="1165,599 1178,611 1165,623 1152,611" fill="white" stroke="#2d3748" stroke-width="2"/>
+  <text x="1192" y="615" font-size="10" fill="#333">— Relacionamento</text>
+
+  <!-- PK attribute -->
+  <ellipse cx="1165" cy="638" rx="17" ry="10" fill="#2d3748" stroke="#2d3748"/>
+  <text x="1192" y="642" font-size="10" fill="#333">— Atributo Chave (PK)</text>
+
+  <!-- Regular attribute -->
+  <ellipse cx="1165" cy="662" rx="17" ry="10" fill="white" stroke="#555" stroke-width="1.2"/>
+  <text x="1192" y="666" font-size="10" fill="#333">— Atributo Regular</text>
+
+  <!-- Cardinality (1,n) -->
+  <text x="1152" y="687" font-size="10" font-weight="700" fill="#2d3748">(1,n)</text>
+  <text x="1192" y="687" font-size="10" fill="#333">— Um para Muitos</text>
+
+  <!-- Cardinality (1,1) -->
+  <text x="1152" y="707" font-size="10" font-weight="700" fill="#2d3748">(1,1)</text>
+  <text x="1192" y="707" font-size="10" fill="#333">— Um para Um</text>
+
+</svg>
+</div>
+</body>
+</html>

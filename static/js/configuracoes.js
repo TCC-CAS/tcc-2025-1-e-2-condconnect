@@ -5,9 +5,10 @@
             const cfg = await CondConnect.api('/configuracoes');
 
             const toggles = {
-                'toggle-email':     cfg.notif_email,
-                'toggle-sms':       cfg.notif_sms,
-                'toggle-marketing': cfg.notif_marketing,
+                'toggle-email':               cfg.notif_email,
+                'toggle-sms':                 cfg.notif_sms,
+                'toggle-marketing':           cfg.notif_marketing,
+                'toggle-privacidade-endereco': cfg.privacidade_endereco,
             };
 
             Object.entries(toggles).forEach(([id, val]) => {
@@ -35,10 +36,12 @@
             const mkt   = document.getElementById('toggle-marketing');
             const tema  = document.getElementById('tema-select');
 
-            if (email)  body.notif_email      = email.checked ? 1 : 0;
-            if (sms)    body.notif_sms         = sms.checked ? 1 : 0;
-            if (mkt)    body.notif_marketing   = mkt.checked ? 1 : 0;
-            if (tema)   body.tema              = tema.value;
+            const privEnd = document.getElementById('toggle-privacidade-endereco');
+            if (email)   body.notif_email             = email.checked ? 1 : 0;
+            if (sms)     body.notif_sms                = sms.checked ? 1 : 0;
+            if (mkt)     body.notif_marketing           = mkt.checked ? 1 : 0;
+            if (tema)    body.tema                      = tema.value;
+            if (privEnd) body.privacidade_endereco      = privEnd.checked ? 1 : 0;
 
             try {
                 await CondConnect.api('/configuracoes', { method: 'PUT', body });

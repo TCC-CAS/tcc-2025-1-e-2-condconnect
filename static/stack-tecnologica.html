@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Stack Tecnológica — CondConnect</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 32px 40px; color: #111; }
+  h1 { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 6px; }
+  p  { font-size: 11.5px; margin: 6px 0 4px; line-height: 1.55; }
+
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 11.5px; margin-top: 4px; }
+  th { background: #1e4976; color: white; padding: 8px 10px;
+       text-align: left; font-size: 11px; border: 1px solid #163a5c; }
+  td { padding: 8px 10px; border: 1px solid #c8d8e8; vertical-align: top; line-height: 1.55; }
+  tr:nth-child(even) { background: #f0f5fa; }
+
+  /* camada badges */
+  .apres  { background: #e8f4fd; color: #1a5276; font-weight: 600; width: 160px; white-space: nowrap; }
+  .logica { background: #eaf4ea; color: #1a5c1a; font-weight: 600; width: 160px; white-space: nowrap; }
+  .persis { background: #fdf3e3; color: #7d4e00; font-weight: 600; width: 160px; white-space: nowrap; }
+  .infra  { background: #f4eafd; color: #5b1a7d; font-weight: 600; width: 160px; white-space: nowrap; }
+
+  .tech  { width: 220px; font-weight: bold; }
+  .fonte { font-size: 11px; font-style: italic; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Quadro 12 – Stack Tecnológica — CondConnect</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Camada</th>
+      <th>Tecnologia</th>
+      <th>Finalidade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="apres">Apresentação</td>
+      <td class="tech">HTML5</td>
+      <td>Estruturação semântica das páginas.</td>
+    </tr>
+    <tr>
+      <td class="apres">Apresentação</td>
+      <td class="tech">CSS3 com variáveis customizadas</td>
+      <td>Estilização visual e padronização de tema.</td>
+    </tr>
+    <tr>
+      <td class="apres">Apresentação</td>
+      <td class="tech">JavaScript ES6+ (Vanilla JS)</td>
+      <td>Interatividade e consumo da API REST via fetch API.</td>
+    </tr>
+    <tr>
+      <td class="apres">Apresentação</td>
+      <td class="tech">Google Fonts (Outfit)</td>
+      <td>Tipografia da interface.</td>
+    </tr>
+    <tr>
+      <td class="apres">Apresentação</td>
+      <td class="tech">SVG inline</td>
+      <td>Renderização de ícones sem dependência externa.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Python 3</td>
+      <td>Linguagem do back-end.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Flask</td>
+      <td>Microframework Web para API REST.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Flask-Login</td>
+      <td>Autenticação com sessões server-side e cookies seguros.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Werkzeug</td>
+      <td>Hash de senhas e utilitários de upload.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Flask-CORS</td>
+      <td>Controle de origem das requisições HTTP.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Gunicorn</td>
+      <td>Servidor WSGI de aplicação Python.</td>
+    </tr>
+    <tr>
+      <td class="logica">Lógica de negócio</td>
+      <td class="tech">Apache HTTP Server</td>
+      <td>Proxy reverso e exposição pública do back-end.</td>
+    </tr>
+    <tr>
+      <td class="persis">Persistência</td>
+      <td class="tech">MySQL</td>
+      <td>Banco de dados relacional principal.</td>
+    </tr>
+    <tr>
+      <td class="persis">Persistência</td>
+      <td class="tech">PyMySQL (DictCursor)</td>
+      <td>Driver de conexão Python ↔ MySQL com autocommit habilitado. Resultados retornados como dicionários.</td>
+    </tr>
+    <tr>
+      <td class="persis">Persistência</td>
+      <td class="tech">Sistema de arquivos local</td>
+      <td>Armazenamento das imagens dos anúncios em <em>/static/assets/uploads/</em>, com nomes únicos gerados por UUID.</td>
+    </tr>
+    <tr>
+      <td class="infra">Infraestrutura</td>
+      <td class="tech">AWS Lightsail (Ubuntu)</td>
+      <td>Hospedagem da aplicação em nuvem com instância Linux Ubuntu.</td>
+    </tr>
+    <tr>
+      <td class="infra">Infraestrutura</td>
+      <td class="tech">Git</td>
+      <td>Controle de versão e deploy via <em>git pull</em> diretamente na instância do servidor.</td>
+    </tr>
+  </tbody>
+</table>
+<p class="fonte">Fonte: Os Autores (2025).</p>
+
+</body>
+</html>

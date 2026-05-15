@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>C4 — Diagrama de Contêineres CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .page {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 28px 36px 36px;
+    width: 980px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+  .diagram-title {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 28px;
+  }
+
+  /* ── PERSONS ── */
+  .persons-row {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-bottom: 0;
+  }
+  .person-box {
+    background: #1a5276;
+    border-radius: 6px;
+    width: 148px;
+    padding: 14px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: white;
+  }
+  .person-box svg { width: 32px; height: 32px; }
+  .tag { font-size: 9px; font-style: italic; color: #a8c8e0; font-weight: 600; }
+  .pname { font-size: 13px; font-weight: 800; }
+  .pdesc { font-size: 10px; color: #cde; text-align: center; line-height: 1.35; }
+
+  /* ── GENERIC ARROW ── */
+  .arr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .arr-lbl { font-size: 9.5px; color: #555; text-align: center; max-width: 130px; line-height: 1.3; }
+  .arr-line {
+    width: 1.5px;
+    background: #666;
+    position: relative;
+  }
+  .arr-line.down::after {
+    content:'';
+    position:absolute;
+    bottom:-5px; left:50%;
+    transform:translateX(-50%);
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-top:7px solid #666;
+  }
+
+  /* ── ACTORS → SYSTEM arrows row ── */
+  .actors-arrows {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    height: 64px;
+  }
+  .actors-arrows .arr { width: 148px; justify-content: center; }
+  .actors-arrows .arr-line { height: 22px; }
+
+  /* ── SYSTEM BOUNDARY ── */
+  .boundary {
+    border: 2px dashed #888;
+    border-radius: 6px;
+    padding: 18px 20px 22px;
+    position: relative;
+  }
+  .boundary-lbl {
+    position: absolute;
+    top: -11px; left: 14px;
+    background: white;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+  }
+
+  /* ── APACHE + GUNICORN ROW (infra layer) ── */
+  .infra-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  /* ── FRONTEND ── */
+  .frontend-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  .container-box {
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    padding: 14px 12px 13px;
+    text-align: center;
+  }
+  .container-box.blue  { background: #1a6ea8; }
+  .container-box.blue2 { background: #1e5799; }
+  .container-box.gray  { background: #5a6a7a; }
+  .container-box .ctag   { font-size: 9px; font-style: italic; color: #b0d0f0; font-weight: 600; }
+  .container-box .cname  { font-size: 13px; font-weight: 800; line-height: 1.25; }
+  .container-box .ctech  { font-size: 9px; color: #b8d4ee; font-style: italic; }
+  .container-box .cdesc  { font-size: 10px; color: #d0e8f8; line-height: 1.35; }
+
+  /* ── MIDDLE SECTION: Apache proxy + Frontend ── */
+  .apache-front-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+  .apache-box { width: 180px; }
+  .frontend-box { width: 240px; }
+
+  /* horizontal arrow between apache and frontend */
+  .h-arr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 6px;
+  }
+  .h-arr-lbl { font-size: 9px; color: #555; text-align: center; max-width: 90px; line-height: 1.2; }
+  .h-arr-line {
+    height: 1.5px;
+    background: #666;
+    position: relative;
+    width: 40px;
+  }
+  .h-arr-line.right::after {
+    content:'';
+    position:absolute;
+    right:-5px; top:50%;
+    transform:translateY(-50%);
+    border-top:5px solid transparent;
+    border-bottom:5px solid transparent;
+    border-left:7px solid #666;
+  }
+
+  /* ── ARROW ROWS ── */
+  .down-arrows-row {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 20px;
+    height: 72px;
+  }
+  .down-arrows-row .arr { flex: 1; justify-content: center; }
+  .down-arrows-row .arr-line { height: 24px; }
+
+  /* ── BACKEND BOX ── */
+  .backend-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  .backend-box { width: 260px; }
+
+  /* ── BACKEND → EXTERNAL arrows ── */
+  .ext-arrows-row {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 10px;
+    height: 68px;
+  }
+  .ext-arrows-row .arr { flex: 1; justify-content: center; }
+  .ext-arrows-row .arr-line { height: 22px; }
+
+  /* ── EXTERNAL SYSTEMS ── */
+  .external-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 14px;
+    padding: 0 4px;
+  }
+  .ext-box {
+    flex: 1;
+    border-radius: 6px;
+    background: #5a6a7a;
+    color: white;
+    padding: 11px 9px 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
+  }
+  .ext-box.dark { background: #2c5272; }
+  .etag  { font-size: 9px; font-style: italic; color: #b8cfe0; font-weight: 600; }
+  .ename { font-size: 11.5px; font-weight: 800; line-height: 1.25; }
+  .edesc { font-size: 9.5px; color: #cde; line-height: 1.3; }
+
+  /* fetch arrow from frontend down (right of apache) */
+  .fetch-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="diagram-title">C4 — Diagrama de Contêineres (CondConnect)</div>
+
+  <!-- PERSONS -->
+  <div class="persons-row">
+    <div class="person-box">
+      <div class="tag">«person»</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <div class="pname">Morador</div>
+      <div class="pdesc">Usa o navegador para cadastrar, anunciar, comprar e avaliar produtos</div>
+    </div>
+    <div class="person-box">
+      <div class="tag">«person»</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <div class="pname">Administrador</div>
+      <div class="pdesc">Gerencia usuários, anúncios e a plataforma</div>
+    </div>
+  </div>
+
+  <!-- ACTORS → SYSTEM -->
+  <div class="actors-arrows">
+    <div class="arr">
+      <div class="arr-lbl">Acessa via navegador</div>
+      <div class="arr-line down" style="height:22px;"></div>
+    </div>
+    <div class="arr">
+      <div class="arr-lbl">Gerencia a plataforma</div>
+      <div class="arr-line down" style="height:22px;"></div>
+    </div>
+  </div>
+
+  <!-- SYSTEM BOUNDARY -->
+  <div class="boundary">
+    <div class="boundary-lbl">CondConnect [system]</div>
+
+    <!-- APACHE + FRONTEND side by side -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:0; margin-bottom:0;">
+
+      <!-- Apache -->
+      <div class="container-box blue2 apache-box" style="width:190px;">
+        <div class="ctag">«container»</div>
+        <div class="cname">Apache HTTP Server</div>
+        <div class="ctech">[mod_proxy / Linux]</div>
+        <div class="cdesc">Proxy reverso. Serve arquivos estáticos e encaminha requisições ao Gunicorn.</div>
+      </div>
+
+      <!-- H arrow Apache → Frontend -->
+      <div class="h-arr">
+        <div class="h-arr-lbl">Serve HTML/CSS/JS</div>
+        <div class="h-arr-line right"></div>
+      </div>
+
+      <!-- Frontend -->
+      <div class="container-box blue frontend-box" style="width:250px;">
+        <div class="ctag">«container»</div>
+        <div class="cname">Frontend (Páginas Web Estáticas)</div>
+        <div class="ctech">[HTML5 / CSS3 / Vanilla JavaScript]</div>
+        <div class="cdesc">Interface web responsiva para moradores de condomínios. Sem framework JS. Comunica com a API via fetch (HTTPS/JSON).</div>
+      </div>
+
+    </div>
+
+    <!-- Arrow Frontend → Backend -->
+    <div style="display:flex; justify-content:center; height:60px;">
+      <div class="arr" style="justify-content:center;">
+        <div class="arr-lbl">Consome API REST (HTTPS / JSON) via fetch API</div>
+        <div class="arr-line down" style="height:22px;"></div>
+      </div>
+    </div>
+
+    <!-- GUNICORN + FLASK BACKEND -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:0; margin-bottom:0;">
+
+      <!-- Gunicorn -->
+      <div class="container-box blue2" style="width:175px;">
+        <div class="ctag">«container»</div>
+        <div class="cname">Gunicorn</div>
+        <div class="ctech">[WSGI Server / Python]</div>
+        <div class="cdesc">Servidor WSGI que executa a aplicação Flask em produção.</div>
+      </div>
+
+      <!-- H arrow -->
+      <div class="h-arr">
+        <div class="h-arr-lbl">Executa aplicação</div>
+        <div class="h-arr-line right"></div>
+      </div>
+
+      <!-- Flask API -->
+      <div class="container-box blue backend-box" style="width:260px;">
+        <div class="ctag">«container»</div>
+        <div class="cname">API Backend (REST)</div>
+        <div class="ctech">[Python / Flask / Flask-Login]</div>
+        <div class="cdesc">Lógica de negócio: autenticação por sessão, produtos, pedidos, propostas, avaliações, notificações e upload de imagens.</div>
+      </div>
+
+    </div>
+
+    <!-- BACKEND → EXTERNAL arrows -->
+    <div class="ext-arrows-row">
+      <div class="arr">
+        <div class="arr-lbl">Lê e grava dados via PyMySQL (SQL)</div>
+        <div class="arr-line down" style="height:22px;"></div>
+      </div>
+      <div class="arr">
+        <div class="arr-lbl">Faz upload e download de imagens</div>
+        <div class="arr-line down" style="height:22px;"></div>
+      </div>
+    </div>
+
+    <!-- EXTERNAL SYSTEMS -->
+    <div class="external-row">
+      <div class="ext-box dark">
+        <div class="etag">«system»</div>
+        <div class="ename">Banco de Dados MySQL</div>
+        <div class="edesc">Armazena usuários, produtos, pedidos, avaliações, propostas, favoritos, notificações. Servidor externo (thyagoquintas.com.br), banco engenharia_16.</div>
+      </div>
+      <div class="ext-box">
+        <div class="etag">«container»</div>
+        <div class="ename">Armazenamento Local de Imagens</div>
+        <div class="edesc">Sistema de arquivos do servidor AWS Lightsail. Diretório /static/assets/uploads/. Nomes únicos gerados via uuid.</div>
+      </div>
+    </div>
+
+  </div><!-- end boundary -->
+</div>
+</body>
+</html>

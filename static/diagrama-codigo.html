@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>C4 Nível 4 — Diagrama de Código Backend CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    padding: 36px 20px;
+  }
+  .page {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 24px 28px 32px;
+    width: 1300px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+  .diagram-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  /* OUTER BOUNDARY */
+  .outer-boundary {
+    border: 2px dashed #888;
+    border-radius: 6px;
+    padding: 16px 16px 20px;
+    position: relative;
+    margin-top: 6px;
+  }
+  .outer-lbl { position:absolute; top:-11px; left:14px; background:white; padding:0 8px; font-size:11px; font-weight:700; color:#555; }
+  .container-title { text-align:center; font-size:14px; font-weight:800; color:#1a3a5c; margin-bottom:2px; }
+  .container-sub   { text-align:center; font-size:9.5px; font-style:italic; color:#666; margin-bottom:18px; }
+
+  /* COLUMNS LAYOUT */
+  .cols { display: flex; gap: 14px; align-items: flex-start; }
+  .col  { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ROUTE BOX (controller level) */
+  .route-box {
+    background: #2e6da4;
+    border-radius: 6px;
+    padding: 11px 10px 10px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* LOGIC BOX (inline logic level) */
+  .logic-box {
+    background: #5b9bd5;
+    border-radius: 6px;
+    padding: 11px 10px 10px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* INFRA BOX */
+  .infra-box {
+    background: #1a5276;
+    border-radius: 6px;
+    padding: 11px 10px 10px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tag  { font-size: 8.5px; font-style: italic; color: #b0d0f0; font-weight: 600; }
+  .name { font-size: 12px; font-weight: 800; line-height: 1.25; }
+  .tech { font-size: 8.5px; font-style: italic; color: #b8d8f2; }
+  .desc { font-size: 9.5px; color: #dceefa; line-height: 1.38; margin-top: 2px; }
+
+  /* ARROW between boxes */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 0;
+  }
+  .arrow-lbl { font-size: 8.5px; color: #666; text-align:center; max-width: 160px; line-height:1.2; }
+  .arrow-line {
+    width: 1.5px; height: 16px;
+    background: #888;
+    position: relative;
+  }
+  .arrow-line::after {
+    content:''; position:absolute; bottom:-5px; left:50%; transform:translateX(-50%);
+    border-left:4px solid transparent; border-right:4px solid transparent; border-top:6px solid #888;
+  }
+
+  /* SHARED INFRA ROW */
+  .infra-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .infra-row .infra-box { flex: 1; }
+
+  /* COLUMN TITLE */
+  .col-title {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+  }
+
+  /* SEPARATOR */
+  .sep {
+    height: 1px; background: #e0e8f0; margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="diagram-title">C4 — Nível 4: Diagrama de Código (Backend CondConnect)</div>
+
+  <div class="outer-boundary">
+    <div class="outer-lbl">API Backend [container]</div>
+    <div class="container-title">API Backend (Python / Flask) — app.py</div>
+    <div class="container-sub">[Arquivo único com todas as rotas REST — sem camada de serviço separada, sem ORM, sem classes de modelo]</div>
+
+    <div class="cols">
+
+      <!-- COL 1: AUTH -->
+      <div class="col">
+        <div class="col-title">Autenticação</div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Autenticação</div>
+          <div class="tech">[/login, /cadastro, /logout, /me, /esqueci-senha, /redefinir-senha]</div>
+          <div class="desc">Recebe credenciais, registra usuário e gerencia recuperação de senha.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Autentica e inicia sessão</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="logic-box">
+          <div class="tag">«lógica inline»</div>
+          <div class="name">Controle de Sessão</div>
+          <div class="tech">[Flask-Login / login_user() / logout_user()]</div>
+          <div class="desc">Login com sessão server-side via cookie seguro. Decorator @login_required protege rotas privadas.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Hash e verifica senha</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="logic-box">
+          <div class="tag">«utilitário»</div>
+          <div class="name">Hashing de Senha</div>
+          <div class="tech">[Werkzeug — generate_password_hash / check_password_hash]</div>
+          <div class="desc">Armazena senhas com hash seguro. Sem tokens JWT ou OAuth2 externo.</div>
+        </div>
+      </div>
+
+      <!-- COL 2: USUARIOS + PRODUTOS -->
+      <div class="col">
+        <div class="col-title">Usuários e Produtos</div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Usuários</div>
+          <div class="tech">[/me, /usuarios/perfil, PUT /me]</div>
+          <div class="desc">CRUD de perfil, foto de perfil, chave Pix e controle de papel (membro / admin).</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Produtos</div>
+          <div class="tech">[GET/POST /produtos, GET/PUT/DELETE /produtos/item]</div>
+          <div class="desc">Listagem com filtros por categoria, condição e preço. Subquery SQL para rating médio e total de avaliações por produto.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Upload de foto do produto</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="logic-box">
+          <div class="tag">«lógica inline»</div>
+          <div class="name">Upload de Imagens</div>
+          <div class="tech">[POST /upload — Werkzeug + uuid + filesystem local]</div>
+          <div class="desc">Recebe multipart/form-data, gera nome único com uuid, salva em /static/assets/uploads/. Múltiplas fotos via tabela imagens_produto.</div>
+        </div>
+      </div>
+
+      <!-- COL 3: NEGOCIAÇÃO -->
+      <div class="col">
+        <div class="col-title">Negociação e Pedidos</div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Propostas</div>
+          <div class="tech">[GET/POST /propostas, PUT /propostas]</div>
+          <div class="desc">Comprador envia proposta com quantidade e valor. Vendedor aceita ou recusa. Preço negociado salvo em itens_carrinho.preco_negociado.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Proposta aceita → adiciona ao carrinho</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Carrinho e Pedidos</div>
+          <div class="tech">[POST /carrinho, GET/POST /pedidos, PUT /pedidos/status]</div>
+          <div class="desc">Adiciona ao carrinho, finaliza compra e registra pedido. Vendedor atualiza status (pendente → entregue). Sem integração com gateway de pagamento externo.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Contagem de vendidos</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="logic-box">
+          <div class="tag">«lógica inline»</div>
+          <div class="name">Cálculo de Vendidos</div>
+          <div class="tech">[SQL — COUNT pedidos WHERE status='entregue']</div>
+          <div class="desc">Total de unidades vendidas calculado por query SQL na tabela pedidos. Exibido na página de detalhes do produto.</div>
+        </div>
+      </div>
+
+      <!-- COL 4: AVALIACOES + NOTIF + FAVS -->
+      <div class="col">
+        <div class="col-title">Avaliações, Notif. e Favoritos</div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Avaliações</div>
+          <div class="tech">[POST /avaliacoes, GET /avaliacoes]</div>
+          <div class="desc">Comprador avalia produto após entrega (nota 1–5 + comentário). Média por produto calculada via AVG() em subquery SQL. Distinção entre rating do produto e do vendedor.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Notificações</div>
+          <div class="tech">[GET/PUT /notificacoes]</div>
+          <div class="desc">Notificações persistidas em tabela MySQL (sem fila assíncrona, sem Celery/Redis). Badge com contador de não lidas. Marcação em lote como lidas.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas de Favoritos</div>
+          <div class="tech">[GET/POST/DELETE /favoritos]</div>
+          <div class="desc">Adiciona e remove produtos dos favoritos do usuário autenticado. Sincronizado com localStorage no frontend.</div>
+        </div>
+      </div>
+
+      <!-- COL 5: ADMIN -->
+      <div class="col">
+        <div class="col-title">Administração</div>
+
+        <div class="route-box">
+          <div class="tag">«rotas Flask»</div>
+          <div class="name">Rotas Administrativas</div>
+          <div class="tech">[/admin/usuarios, /admin/produtos, /admin/pedidos]</div>
+          <div class="desc">Acessíveis apenas para usuarios.papel = 'admin'. Gestão de usuários, moderação de anúncios e visão geral de pedidos.</div>
+        </div>
+
+        <div class="arrow">
+          <div class="arrow-lbl">Verifica papel do usuário</div>
+          <div class="arrow-line"></div>
+        </div>
+
+        <div class="logic-box">
+          <div class="tag">«lógica inline»</div>
+          <div class="name">Controle de Acesso por Papel</div>
+          <div class="tech">[current_user.papel == 'admin']</div>
+          <div class="desc">Verificação inline do campo papel na tabela usuarios. Sem biblioteca de permissões externa (sem Flask-Principal ou similar).</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="logic-box">
+          <div class="tag">«lógica inline»</div>
+          <div class="name">Estatísticas do Painel</div>
+          <div class="tech">[SQL — COUNT / SUM por tabela]</div>
+          <div class="desc">Contagem de usuários, produtos, pedidos e receita total via queries SQL diretas. Exibidas nos cards do dashboard admin.</div>
+        </div>
+      </div>
+
+    </div><!-- end cols -->
+
+    <!-- SHARED INFRA -->
+    <div style="margin-top:14px; border-top:2px dashed #b0c8e0; padding-top:14px;">
+      <div style="text-align:center; font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Infraestrutura Compartilhada — usada por todas as rotas</div>
+      <div class="infra-row">
+
+        <div class="infra-box">
+          <div class="tag">«infraestrutura»</div>
+          <div class="name">Conexão com Banco de Dados</div>
+          <div class="tech">[PyMySQL / DictCursor / autocommit=True]</div>
+          <div class="desc">Helper get_db() retorna conexão PyMySQL. Queries SQL puras via cursor.execute(). Resultados como dicionários (DictCursor). Sem ORM, sem migrations automáticas.</div>
+        </div>
+
+        <div class="infra-box">
+          <div class="tag">«infraestrutura»</div>
+          <div class="name">Gerenciamento de Sessão</div>
+          <div class="tech">[Flask-Login / user_loader / @login_required]</div>
+          <div class="desc">Sessões server-side com cookie seguro. user_loader carrega usuário do banco por ID. Rotas protegidas com decorator @login_required. Sem JWT, sem OAuth2.</div>
+        </div>
+
+        <div class="infra-box">
+          <div class="tag">«infraestrutura»</div>
+          <div class="name">CORS e Configurações</div>
+          <div class="tech">[Flask-CORS / variáveis de ambiente]</div>
+          <div class="desc">CORS habilitado para comunicação frontend ↔ backend. Credenciais do banco e secret key configuradas via variáveis de ambiente no servidor.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end boundary -->
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Regras de Negócio — CondConnect</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 32px 40px; color: #111; }
+  h1 { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 24px; }
+
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 11.5px; }
+  th { background: #1e4976; color: white; padding: 8px 10px;
+       text-align: left; font-size: 11px; border: 1px solid #163a5c; }
+  td { padding: 8px 10px; border: 1px solid #c8d8e8;
+       vertical-align: top; line-height: 1.55; }
+  tr:nth-child(even) { background: #f0f5fa; }
+
+  .id    { width: 52px;  font-weight: bold; color: #1e4976; white-space: nowrap; }
+  .title { width: 220px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Regras de Negócio — CondConnect</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Descrição da Regra de Negócio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="id">RN01</td>
+      <td class="title">Cadastro de usuário</td>
+      <td>Qualquer pessoa pode se cadastrar na plataforma informando nome, e-mail e senha. O e-mail deve ser único no sistema. O papel padrão atribuído ao novo usuário é <em>membro</em>. O papel <em>admin</em> é concedido manualmente pelo administrador da plataforma.</td>
+    </tr>
+    <tr>
+      <td class="id">RN02</td>
+      <td class="title">Unicidade e validação de e-mail</td>
+      <td>O e-mail informado no cadastro deve ser único no sistema, garantido por restrição UNIQUE na tabela <em>usuarios</em>. Tentativas de cadastro com e-mail já existente são rejeitadas pela API com mensagem de erro.</td>
+    </tr>
+    <tr>
+      <td class="id">RN03</td>
+      <td class="title">Armazenamento seguro de senhas</td>
+      <td>As senhas dos usuários são armazenadas exclusivamente na forma de hash criptográfico, gerado pela biblioteca Werkzeug (generate_password_hash). A verificação na autenticação é feita por check_password_hash, sem expor o valor original em nenhum momento.</td>
+    </tr>
+    <tr>
+      <td class="id">RN04</td>
+      <td class="title">Publicação de produtos e serviços</td>
+      <td>Qualquer usuário com papel <em>membro</em> pode publicar produtos ou serviços no marketplace, informando título, descrição, categoria, preço, condição (Novo / Seminovo / Usado) e imagens. Produtos recém-publicados recebem o status <em>ativo</em> automaticamente.</td>
+    </tr>
+    <tr>
+      <td class="id">RN05</td>
+      <td class="title">Status do produto</td>
+      <td>Um produto pode assumir três status: <em>ativo</em> (disponível para compra), <em>vendido</em> (pedido entregue confirmado) e <em>inativo</em> (desativado pelo vendedor). Apenas o próprio anunciante ou o administrador pode alterar ou remover um anúncio.</td>
+    </tr>
+    <tr>
+      <td class="id">RN06</td>
+      <td class="title">Responsabilidade do anunciante</td>
+      <td>O anunciante é responsável pela veracidade das informações publicadas (descrição, preço e imagens). O sistema registra o identificador do vendedor (id_vendedor) em cada produto para fins de rastreabilidade e responsabilização.</td>
+    </tr>
+    <tr>
+      <td class="id">RN07</td>
+      <td class="title">Avaliação de produto</td>
+      <td>Após a confirmação de entrega de um pedido, o comprador pode avaliar o produto adquirido com nota de 1 a 5 e comentário opcional. A avaliação é vinculada ao produto e ao usuário avaliador na tabela <em>avaliacoes</em>. Cada comprador avalia o produto, não o vendedor diretamente.</td>
+    </tr>
+    <tr>
+      <td class="id">RN08</td>
+      <td class="title">Cálculo de rating</td>
+      <td>O rating médio de cada produto é calculado em tempo real via AVG() em subquery SQL sobre a tabela <em>avaliacoes</em> e exibido na listagem e nos detalhes do produto. O campo <em>rating</em> na tabela <em>usuarios</em> representa a reputação geral do vendedor, derivada das avaliações de seus produtos.</td>
+    </tr>
+    <tr>
+      <td class="id">RN09</td>
+      <td class="title">Pagamentos externos via Pix</td>
+      <td>O sistema não integra gateway de pagamento. As transações financeiras são realizadas externamente entre comprador e vendedor. O campo <em>pix_key</em> no perfil do vendedor disponibiliza a chave Pix para facilitar o pagamento direto. A plataforma não retém valores nem intermedia pagamentos.</td>
+    </tr>
+    <tr>
+      <td class="id">RN10</td>
+      <td class="title">Controle de acesso por papel</td>
+      <td>O sistema define dois papéis de usuário: <em>membro</em> (morador) e <em>admin</em> (administrador). Todas as rotas administrativas (/admin/*) verificam o campo <em>papel = 'admin'</em> na sessão autenticada antes de conceder acesso. Rotas privadas são protegidas pelo decorator @login_required.</td>
+    </tr>
+    <tr>
+      <td class="id">RN11</td>
+      <td class="title">Notificações internas</td>
+      <td>O sistema gera notificações internas persistidas na tabela <em>notificacoes</em> para eventos como: proposta recebida, proposta aceita ou recusada, e atualização de status de pedido. As notificações não lidas são contabilizadas em badge exibido no painel do usuário. O sistema não realiza envio de e-mail.</td>
+    </tr>
+    <tr>
+      <td class="id">RN12</td>
+      <td class="title">Privacidade e proteção de dados (LGPD)</td>
+      <td>O tratamento de dados pessoais dos usuários (nome, e-mail, foto, chave Pix) deve observar a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018). As senhas são armazenadas exclusivamente como hash. Dados sensíveis não são expostos em respostas da API.</td>
+    </tr>
+    <tr>
+      <td class="id">RN13</td>
+      <td class="title">Negociação por proposta</td>
+      <td>O comprador pode enviar uma proposta de compra ao vendedor informando valor e quantidade. O vendedor aceita ou recusa a proposta. Ao aceitar, o item é adicionado automaticamente ao carrinho do comprador com o preço negociado registrado no campo <em>preco_negociado</em> da tabela <em>itens_carrinho</em>.</td>
+    </tr>
+    <tr>
+      <td class="id">RN14</td>
+      <td class="title">Fluxo de pedido</td>
+      <td>Um pedido é criado ao finalizar a compra dos itens no carrinho. O pedido registra comprador, vendedor, produto, valor e status. O ciclo de status é: pendente → enviado → entregue (ou cancelado). Apenas o vendedor do pedido pode atualizar seu status.</td>
+    </tr>
+    <tr>
+      <td class="id">RN15</td>
+      <td class="title">Moderação de conteúdo</td>
+      <td>O administrador pode remover produtos que violem as regras da plataforma e bloquear contas de usuários que apresentem comportamento inadequado. Todas as ações administrativas são restritas a usuários com papel <em>admin</em>, verificado a cada requisição.</td>
+    </tr>
+    <tr>
+      <td class="id">RN16</td>
+      <td class="title">Interface responsiva (mobile-first)</td>
+      <td>A interface da plataforma é desenvolvida com design responsivo e abordagem mobile-first, garantindo acesso consistente em computadores, tablets e smartphones, sem dependência de frameworks CSS externos.</td>
+    </tr>
+    <tr>
+      <td class="id">RN17</td>
+      <td class="title">Múltiplas imagens por produto</td>
+      <td>Cada produto pode ter múltiplas imagens associadas, armazenadas na tabela <em>imagens_produto</em>. Uma das imagens é marcada como principal (campo <em>principal = TRUE</em>) para exibição em listagens. As imagens são salvas no servidor com nome único gerado por UUID.</td>
+    </tr>
+    <tr>
+      <td class="id">RN18</td>
+      <td class="title">Edição e remoção de anúncios</td>
+      <td>O vendedor pode editar ou remover seus próprios anúncios a qualquer momento, desde que não haja pedidos em andamento vinculados ao produto. A remoção é permitida apenas ao próprio anunciante ou ao administrador da plataforma.</td>
+    </tr>
+    <tr>
+      <td class="id">RN19</td>
+      <td class="title">Gerenciamento de sessão</td>
+      <td>As sessões de usuário são mantidas no servidor via Flask-Login com cookie seguro (HttpOnly). O decorator @login_required protege todas as rotas que exigem autenticação. A sessão é encerrada mediante logout explícito pelo usuário.</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

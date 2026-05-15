@@ -92,7 +92,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             const produto = await CondConnect.api(`/produtos/item?id=${editId}`);
             document.getElementById('product-title').value = produto.titulo;
-            document.getElementById('product-description').value = produto.descricao || '';
+            const descEl = document.getElementById('product-description');
+            descEl.value = produto.descricao || '';
+            const counter = document.getElementById('desc-counter');
+            if (counter) counter.textContent = descEl.value.length + '/300';
             document.getElementById('product-price').value = produto.preco;
             if (document.getElementById('product-quantity')) {
                 document.getElementById('product-quantity').value = produto.quantidade ?? 1;

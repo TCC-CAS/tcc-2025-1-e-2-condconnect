@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Modelo Físico — CondConnect</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #dce3ea; padding: 28px; }
+
+  .page {
+    background: white;
+    border: 2px solid #2d3748;
+    position: relative;
+    width: 1360px;
+    height: 820px;
+    overflow: hidden;
+  }
+
+  .title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a202c;
+    padding: 7px 0 0;
+    position: relative;
+    z-index: 3;
+    letter-spacing: 0.3px;
+  }
+
+  /* SVG stays BEHIND tables */
+  .svg-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* TABLE BOXES float ABOVE SVG */
+  .t {
+    position: absolute;
+    border: 1.5px solid #4a5568;
+    background: #fff;
+    z-index: 2;
+  }
+  .th {
+    background: #b8cad8;
+    font-weight: 700;
+    font-size: 11px;
+    text-align: center;
+    padding: 5px 10px;
+    border-bottom: 1.5px solid #4a5568;
+    color: #1a202c;
+    white-space: nowrap;
+  }
+  .th.hl { background: #8fb3d0; }
+  .tb { padding: 5px 9px 6px; }
+  .r {
+    font-size: 10.5px;
+    padding: 1.8px 0;
+    color: #1a2a3a;
+    white-space: nowrap;
+  }
+  .pk { font-weight: 700; }
+  .fk { font-style: italic; color: #1a4f8a; }
+  .in { padding-left: 10px; color: #3a5a7a; font-style: italic; font-size: 10px; }
+  .sep { border-top: 1px dashed #b0bec5; margin: 4px 0 3px; }
+
+  .legend {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    font-size: 9px;
+    color: #555;
+    z-index: 3;
+    background: #f8fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 3px;
+    padding: 5px 9px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title">Modelo Físico do Banco de Dados — CondConnect (MySQL)</div>
+
+  <!-- ══════════════════════════════════════════════
+       SVG LINES  (z-index 1 — behind all tables)
+  ══════════════════════════════════════════════ -->
+  <svg class="svg-lines" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L6,3 z" fill="#666"/>
+      </marker>
+    </defs>
+
+    <!-- ── 1. produtos ──► usuarios  (id_vendedor FK) ── -->
+    <line x1="258" y1="168" x2="540" y2="168" stroke="#666" stroke-width="1.4"/>
+    <text x="383" y="161" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 2. usuarios ──► favoritos  (usuario_id FK) ── -->
+    <line x1="775" y1="98" x2="1082" y2="98" stroke="#666" stroke-width="1.4"/>
+    <text x="916" y="91" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 3. usuarios ──► notificacoes  (id_usuario FK) ── -->
+    <!-- route: right edge of usuarios → diagonal to left edge of notificacoes -->
+    <line x1="775" y1="188" x2="1082" y2="292" stroke="#666" stroke-width="1.4"/>
+    <text x="934" y="232" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 4. usuarios ──► pedidos  (comprador_id / vendedor_id FK) ── -->
+    <!-- route: bottom of usuarios → top of pedidos (short diagonal through corridor) -->
+    <line x1="660" y1="258" x2="898" y2="318" stroke="#666" stroke-width="1.4"/>
+    <text x="779" y="282" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 5. usuarios ──► avaliacoes  (usuario_id FK) ── -->
+    <!-- route: bottom → down through center gap → across bottom corridor → up into avaliacoes -->
+    <polyline points="652,258 652,556 928,556 928,582" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="792" y="549" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 6. usuarios ──► itens_carrinho  (usuario_id FK) ── -->
+    <polyline points="598,258 598,548 445,548 445,582" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="512" y="541" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 7. usuarios ──► propostas  (comprador_id / vendedor_id FK) ── -->
+    <polyline points="568,258 568,540 144,540 144,582" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="360" y="533" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 8. produtos ──► imagens_produto  (produto_id FK) vertical ── -->
+    <line x1="128" y1="284" x2="128" y2="318" stroke="#666" stroke-width="1.4"/>
+    <text x="132" y="304" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 9. produtos ──► propostas  (produto_id FK) — far-left edge corridor ── -->
+    <polyline points="30,172 10,172 10,676 30,676" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="13" y="438" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 10. produtos ──► itens_carrinho  (produto_id FK) ── -->
+    <!-- route: right → through center gap down → across to itens_carrinho top -->
+    <polyline points="258,205 402,205 402,544 438,544 438,582" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="406" y="380" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 11. produtos ──► pedidos  (produto_id FK) ── -->
+    <!-- route: right → gap → diagonal through corridor to pedidos left -->
+    <polyline points="258,120 394,120 394,295 790,372" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="575" y="325" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 12. produtos ──► avaliacoes  (produto_id FK) ── -->
+    <!-- route: right → gap → down through center → across bottom corridor → avaliacoes top -->
+    <polyline points="258,140 394,140 394,562 868,562 868,582" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="624" y="555" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+    <!-- ── 13. produtos ──► favoritos  (produto_id FK) — TOP corridor ── -->
+    <!-- route: right → gap → UP above all tables → across top → down into favoritos -->
+    <polyline points="258,84 394,84 394,40 1184,40 1184,68" fill="none" stroke="#666" stroke-width="1.4"/>
+    <text x="786" y="33" font-size="9.5" font-weight="700" fill="#333">(1,N)</text>
+
+  </svg>
+
+  <!-- ══════════════════════════════════════════════
+       TABLES  (z-index 2 — in front of SVG lines)
+  ══════════════════════════════════════════════ -->
+
+  <!-- USUARIOS (central / top-center) -->
+  <div class="t" style="left:540px;top:68px;min-width:235px;">
+    <div class="th hl">usuarios</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r">nome VARCHAR(100)</div>
+      <div class="r">email VARCHAR(100) UNIQUE</div>
+      <div class="r">senha VARCHAR(255)</div>
+      <div class="r">foto_url VARCHAR(255)</div>
+      <div class="r">papel ENUM('membro','admin')</div>
+      <div class="r">pix_key VARCHAR(100)</div>
+      <div class="r">rating DECIMAL(3,2)</div>
+      <div class="r">data_criacao DATETIME</div>
+    </div>
+  </div>
+
+  <!-- PRODUTOS (top-left) -->
+  <div class="t" style="left:28px;top:68px;min-width:230px;">
+    <div class="th">produtos</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r">titulo VARCHAR(100)</div>
+      <div class="r">descricao TEXT</div>
+      <div class="r">categoria VARCHAR(50)</div>
+      <div class="r">preco DECIMAL(10,2)</div>
+      <div class="r">condicao ENUM('Novo','Seminovo',</div>
+      <div class="r in">'Usado')</div>
+      <div class="r">status ENUM('ativo','vendido','inativo')</div>
+      <div class="r">data_publicacao DATETIME</div>
+      <div class="r fk">id_vendedor INT FK → usuarios.id</div>
+    </div>
+  </div>
+
+  <!-- FAVORITOS (top-right) -->
+  <div class="t" style="left:1082px;top:68px;min-width:212px;">
+    <div class="th">favoritos</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">usuario_id INT FK → usuarios.id</div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r">data_adicao DATETIME</div>
+    </div>
+  </div>
+
+  <!-- NOTIFICACOES (right-mid, stacked below favoritos) -->
+  <div class="t" style="left:1082px;top:210px;min-width:212px;">
+    <div class="th">notificacoes</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">id_usuario INT FK → usuarios.id</div>
+      <div class="r">titulo VARCHAR(100)</div>
+      <div class="r">mensagem VARCHAR(255)</div>
+      <div class="r">lida BOOLEAN</div>
+      <div class="r">data_envio DATETIME</div>
+    </div>
+  </div>
+
+  <!-- IMAGENS_PRODUTO (left-mid, below produtos) -->
+  <div class="t" style="left:28px;top:318px;min-width:212px;">
+    <div class="th">imagens_produto</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r">url_imagem VARCHAR(255)</div>
+      <div class="r">principal BOOLEAN</div>
+    </div>
+  </div>
+
+  <!-- PEDIDOS (right-center) -->
+  <div class="t" style="left:790px;top:318px;min-width:238px;">
+    <div class="th">pedidos</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r fk">comprador_id INT FK → usuarios.id</div>
+      <div class="r fk">vendedor_id INT FK → usuarios.id</div>
+      <div class="r">status ENUM('pendente','enviado',</div>
+      <div class="r in">'entregue','cancelado')</div>
+      <div class="r">data_pedido DATETIME</div>
+      <div class="r">valor DECIMAL(10,2)</div>
+    </div>
+  </div>
+
+  <!-- PROPOSTAS (bottom-left) -->
+  <div class="t" style="left:28px;top:582px;min-width:238px;">
+    <div class="th">propostas</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r fk">comprador_id INT FK → usuarios.id</div>
+      <div class="r fk">vendedor_id INT FK → usuarios.id</div>
+      <div class="r">valor DECIMAL(10,2)</div>
+      <div class="r">quantidade INT</div>
+      <div class="r">status ENUM('pendente','aceita',</div>
+      <div class="r in">'recusada')</div>
+      <div class="r">data_proposta DATETIME</div>
+    </div>
+  </div>
+
+  <!-- ITENS_CARRINHO (bottom-center-left) -->
+  <div class="t" style="left:328px;top:582px;min-width:228px;">
+    <div class="th">itens_carrinho</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">usuario_id INT FK → usuarios.id</div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r">preco_negociado DECIMAL(10,2)</div>
+    </div>
+  </div>
+
+  <!-- AVALIACOES (bottom-right) -->
+  <div class="t" style="left:790px;top:582px;min-width:228px;">
+    <div class="th">avaliacoes</div>
+    <div class="tb">
+      <div class="r pk">id INT PK AUTO_INCREMENT</div>
+      <div class="sep"></div>
+      <div class="r fk">produto_id INT FK → produtos.id</div>
+      <div class="r fk">usuario_id INT FK → usuarios.id</div>
+      <div class="r">nota INT (1–5)</div>
+      <div class="r">comentario TEXT</div>
+      <div class="r">data_avaliacao DATETIME</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div><strong>PK</strong> — Chave Primária</div>
+    <div><em style="color:#1a4f8a">FK</em> — Chave Estrangeira</div>
+    <div><strong>(1,N)</strong> — Um para Muitos</div>
+  </div>
+
+</div><!-- end page -->
+</body>
+</html>

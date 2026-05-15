@@ -1,0 +1,7 @@
+{
+  "name": "DER CondConnect",
+  "id": "der-condconnect-2025",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}
