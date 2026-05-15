@@ -91,12 +91,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             const produto = await CondConnect.api(`/produtos/item?id=${editId}`);
-            document.getElementById('product-title').value = produto.titulo;
+            const tituloEl = document.getElementById('product-title');
+            tituloEl.value = produto.titulo;
+            const titleCounter = document.getElementById('title-counter');
+            if (titleCounter) titleCounter.textContent = tituloEl.value.length + '/60';
             const descEl = document.getElementById('product-description');
             descEl.value = produto.descricao || '';
             const counter = document.getElementById('desc-counter');
             if (counter) counter.textContent = descEl.value.length + '/300';
-            document.getElementById('product-price').value = produto.preco;
+            document.getElementById('product-price').value = floatParaPreco(produto.preco);
             if (document.getElementById('product-quantity')) {
                 document.getElementById('product-quantity').value = produto.quantidade ?? 1;
             }
@@ -121,6 +124,35 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    // Máscara de moeda BRL
+    const precoInput = document.getElementById('product-price');
+    if (precoInput) {
+        function aplicarMascara(input) {
+            const nums = input.value.replace(/\D/g, '');
+            if (!nums) { input.value = ''; return; }
+            const centavos = parseInt(nums, 10);
+            input.value = (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        precoInput.addEventListener('input', function () { aplicarMascara(this); });
+        precoInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace') {
+                const nums = this.value.replace(/\D/g, '').slice(0, -1);
+                if (!nums) { this.value = ''; e.preventDefault(); return; }
+                const centavos = parseInt(nums, 10);
+                this.value = (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                e.preventDefault();
+            }
+        });
+    }
+
+    function precoParaFloat(val) {
+        return parseFloat(val.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    function floatParaPreco(val) {
+        return parseFloat(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     renderGrid();
 
     if (adForm) {
@@ -129,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             const titulo     = document.getElementById('product-title').value.trim();
             const descricao  = document.getElementById('product-description').value.trim();
-            const preco      = parseFloat(document.getElementById('product-price').value.replace(',', '.'));
+            const preco      = precoParaFloat(document.getElementById('product-price').value);
             const catSelect  = document.getElementById('product-category');
             const condSelect = document.getElementById('product-condition');
             const categoria  = catSelect.options[catSelect.selectedIndex].value || catSelect.options[catSelect.selectedIndex].text;

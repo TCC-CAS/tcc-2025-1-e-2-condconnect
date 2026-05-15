@@ -436,7 +436,7 @@ def produtos():
         if e:
             return e
         body = get_body()
-        titulo = (body.get('titulo') or '').strip()
+        titulo = (body.get('titulo') or '').strip()[:60]
         preco = body.get('preco')
         categoria = body.get('categoria', '')
         descricao = (body.get('descricao') or '')[:300]

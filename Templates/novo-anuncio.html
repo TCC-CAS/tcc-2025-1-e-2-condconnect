@@ -298,9 +298,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Título *</label>
+                    <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+                        Título *
+                        <span id="title-counter" style="font-size:12px;color:#94a3b8;font-weight:400;">0/60</span>
+                    </label>
                     <input type="text" id="product-title" class="form-input" placeholder="Ex: iPhone 14 Pro Max 256GB"
-                        required>
+                        maxlength="60" required
+                        oninput="document.getElementById('title-counter').textContent=this.value.length+'/60';document.getElementById('title-counter').style.color=this.value.length>=55?'#ef4444':'#94a3b8';">
                 </div>
 
                 <div class="form-group">
@@ -315,7 +319,8 @@
 
                 <div class="form-group">
                     <label class="form-label">Preço *</label>
-                    <input type="text" id="product-price" class="form-input" placeholder="R$ 0,00" required>
+                    <input type="text" id="product-price" class="form-input" placeholder="R$ 0,00"
+                        inputmode="numeric" autocomplete="off" required>
                 </div>
 
                 <div class="form-group">
