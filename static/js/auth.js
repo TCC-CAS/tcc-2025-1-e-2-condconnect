@@ -16,12 +16,53 @@
         block: (val) => val.trim() !== ''
     };
 
+    const isRegisterPage = !!document.getElementById('name');
+
+    // Checklist de senha (só na página de cadastro)
+    const passwordInput = document.getElementById('password');
+    if (isRegisterPage && passwordInput) {
+        const checklist = document.createElement('div');
+        checklist.id = 'password-checklist';
+        checklist.style.cssText = 'margin-top:8px;display:none;';
+        const rules = [
+            { id: 'chk-length', label: 'Mínimo 8 caracteres',  test: v => v.length >= 8 },
+            { id: 'chk-upper',  label: 'Letra maiúscula',       test: v => /[A-Z]/.test(v) },
+            { id: 'chk-lower',  label: 'Letra minúscula',       test: v => /[a-z]/.test(v) },
+            { id: 'chk-number', label: 'Número',                test: v => /\d/.test(v) },
+            { id: 'chk-symbol', label: 'Símbolo (!@#$...)',     test: v => /[\W_]/.test(v) },
+        ];
+        rules.forEach(r => {
+            const item = document.createElement('div');
+            item.id = r.id;
+            item.style.cssText = 'font-size:12px;margin:3px 0;display:flex;align-items:center;gap:6px;color:#94a3b8;transition:color .2s;';
+            item.innerHTML = `<span style="font-size:14px;">✗</span> ${r.label}`;
+            checklist.appendChild(item);
+        });
+        passwordInput.after(checklist);
+
+        passwordInput.addEventListener('focus', () => { checklist.style.display = 'block'; });
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            checklist.style.display = val ? 'block' : 'none';
+            rules.forEach(r => {
+                const el = document.getElementById(r.id);
+                const ok = r.test(val);
+                el.style.color = ok ? '#16a34a' : '#94a3b8';
+                el.querySelector('span').textContent = ok ? '✓' : '✗';
+                el.querySelector('span').style.color = ok ? '#16a34a' : '#ef4444';
+            });
+            passwordInput.classList.toggle('invalid', val !== '' && !STRONG_PASSWORD.test(val));
+        });
+    }
+
     inputs.forEach(input => {
+        // Pula o campo password no cadastro (tem checklist próprio)
+        if (input.id === 'password' && isRegisterPage) return;
+
         if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('validation-message')) {
             const msg = document.createElement('span');
             msg.className = 'validation-message';
             if (input.id === 'email') msg.textContent = 'Email inválido';
-            else if (input.id === 'password') msg.textContent = 'Mínimo 8 caracteres com maiúscula, número e símbolo';
             else if (input.id === 'password_confirm') msg.textContent = 'Senhas não coincidem';
             else if (input.id === 'name') msg.textContent = 'Nome muito curto';
             else msg.textContent = 'Campo obrigatório';
