@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -16,7 +16,7 @@
 
 <body class="auth-body">
 
-    <div class="auth-card" style="max-width: 500px;">
+    <div class="auth-card" style="max-width: 520px;">
         <div class="auth-logo">
             <img src="/static/assets/images/logo_comfundo.png" alt="CondConnect">
         </div>
@@ -25,6 +25,8 @@
         <p class="auth-subtitle">Preencha os dados para se cadastrar</p>
 
         <form class="auth-form">
+
+            <!-- Nome + Email -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="name">Nome Completo</label>
@@ -36,6 +38,19 @@
                 </div>
             </div>
 
+            <!-- CPF + Telefone -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cpf">CPF</label>
+                    <input type="text" id="cpf" class="form-control" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" class="form-control" placeholder="(11) 99999-9999" maxlength="15" inputmode="numeric">
+                </div>
+            </div>
+
+            <!-- Senha + Confirmar -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="password">Senha</label>
@@ -47,6 +62,7 @@
                 </div>
             </div>
 
+            <!-- Apto + Bloco -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="apto">Número do Apartamento</label>
@@ -58,6 +74,47 @@
                 </div>
             </div>
 
+            <!-- Separador endereço -->
+            <p style="font-size:13px;font-weight:600;color:#64748b;margin:8px 0 4px;letter-spacing:.3px;">ENDEREÇO</p>
+
+            <!-- CEP + Número -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cep">CEP</label>
+                    <div style="position:relative;">
+                        <input type="text" id="cep" class="form-control" placeholder="00000-000" maxlength="9" inputmode="numeric">
+                        <span id="cep-spinner" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#00a6a6;">⟳</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="numero">Número</label>
+                    <input type="text" id="numero" class="form-control" placeholder="Ex: 123">
+                </div>
+            </div>
+
+            <!-- Logradouro -->
+            <div class="form-group">
+                <label for="logradouro">Rua / Logradouro</label>
+                <input type="text" id="logradouro" class="form-control" placeholder="Preenchido automaticamente pelo CEP">
+            </div>
+
+            <!-- Bairro + Cidade + Estado -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bairro">Bairro</label>
+                    <input type="text" id="bairro" class="form-control" placeholder="Bairro">
+                </div>
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" class="form-control" placeholder="Cidade">
+                </div>
+                <div class="form-group" style="max-width:80px;">
+                    <label for="estado">UF</label>
+                    <input type="text" id="estado" class="form-control" placeholder="SP" maxlength="2">
+                </div>
+            </div>
+
+            <!-- LGPD -->
             <div class="form-group checkbox-group"
                 style="display: flex; align-items: flex-start; gap: 10px; margin-top: 10px;">
                 <input type="checkbox" id="lgpd_consent" style="margin-top: 4px;" required>

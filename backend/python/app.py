@@ -209,6 +209,38 @@ def init_db():
                 c.execute("ALTER TABLE configuracoes_usuario ADD COLUMN metodo_2fa ENUM('email','sms') DEFAULT 'email'")
             except Exception:
                 pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN cpf VARCHAR(14) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN telefone VARCHAR(15) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN cep VARCHAR(9) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN logradouro VARCHAR(255) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN numero VARCHAR(20) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN bairro VARCHAR(100) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN cidade VARCHAR(100) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN estado VARCHAR(2) NULL DEFAULT NULL")
+            except Exception:
+                pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -263,14 +295,39 @@ def login():
         db.close()
 
 
+def validar_cpf(cpf):
+    cpf = re.sub(r'\D', '', cpf)
+    if len(cpf) != 11 or re.match(r'^(\d)\1{10}$', cpf):
+        return False
+    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
+    resto = (soma * 10) % 11
+    if resto >= 10:
+        resto = 0
+    if resto != int(cpf[9]):
+        return False
+    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
+    resto = (soma * 10) % 11
+    if resto >= 10:
+        resto = 0
+    return resto == int(cpf[10])
+
+
 @app.route('/auth/register', methods=['POST', 'OPTIONS'])
 def register():
     body = get_body()
-    nome = (body.get('nome') or '').strip()
-    email = (body.get('email') or '').strip()
-    senha = body.get('senha') or ''
-    apto = (body.get('apartamento') or '').strip()
-    bloco = (body.get('bloco') or '').strip()
+    nome       = (body.get('nome') or '').strip()
+    email      = (body.get('email') or '').strip()
+    senha      = body.get('senha') or ''
+    apto       = (body.get('apartamento') or '').strip()
+    bloco      = (body.get('bloco') or '').strip()
+    cpf        = (body.get('cpf') or '').strip()
+    telefone   = (body.get('telefone') or '').strip() or None
+    cep        = (body.get('cep') or '').strip() or None
+    logradouro = (body.get('logradouro') or '').strip() or None
+    numero     = (body.get('numero') or '').strip() or None
+    bairro     = (body.get('bairro') or '').strip() or None
+    cidade     = (body.get('cidade') or '').strip() or None
+    estado     = (body.get('estado') or '').strip() or None
 
     if not all([nome, email, senha, apto, bloco]):
         return err('Todos os campos são obrigatórios')
@@ -280,6 +337,8 @@ def register():
         return err('E-mail inválido')
     if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', senha):
         return err('A senha deve ter no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo')
+    if cpf and not validar_cpf(cpf):
+        return err('CPF inválido')
 
     db = get_db()
     try:
@@ -287,18 +346,22 @@ def register():
             c.execute("SELECT id FROM usuarios WHERE email=%s", (email,))
             if c.fetchone():
                 return err('Este e-mail já está cadastrado')
+            if cpf:
+                cpf_digits = re.sub(r'\D', '', cpf)
+                c.execute("SELECT id FROM usuarios WHERE cpf=%s", (cpf_digits,))
+                if c.fetchone():
+                    return err('CPF já cadastrado')
 
             hashed = hash_password(senha)
+            cpf_store = re.sub(r'\D', '', cpf) if cpf else None
             c.execute(
-                "INSERT INTO usuarios (nome, email, senha, apartamento, bloco) VALUES (%s,%s,%s,%s,%s)",
-                (nome, email, hashed, apto, bloco)
+                """INSERT INTO usuarios
+                   (nome, email, senha, apartamento, bloco, cpf, telefone, cep, logradouro, numero, bairro, cidade, estado)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (nome, email, hashed, apto, bloco, cpf_store, telefone, cep, logradouro, numero, bairro, cidade, estado)
             )
             uid = c.lastrowid
             c.execute("INSERT INTO configuracoes_usuario (usuario_id) VALUES (%s)", (uid,))
-
-        with db.cursor() as c:
-            c.execute("SELECT id, nome, email, papel, foto_url, apartamento, bloco FROM usuarios WHERE id=%s", (uid,))
-            user = c.fetchone()
 
         return ok({'message': 'Conta criada com sucesso'}, 201)
     finally:

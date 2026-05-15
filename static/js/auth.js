@@ -13,10 +13,83 @@
             return pass && val === pass.value && val !== '';
         },
         apto: (val) => val.trim() !== '',
-        block: (val) => val.trim() !== ''
+        block: (val) => val.trim() !== '',
+        cpf: (val) => validarCPF(val),
     };
 
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/\D/g, '');
+        if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+        let sum = 0;
+        for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
+        let rest = (sum * 10) % 11;
+        if (rest >= 10) rest = 0;
+        if (rest !== parseInt(cpf[9])) return false;
+        sum = 0;
+        for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
+        rest = (sum * 10) % 11;
+        if (rest >= 10) rest = 0;
+        return rest === parseInt(cpf[10]);
+    }
+
+    function mascaraCPF(v) {
+        v = v.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        return v;
+    }
+
+    function mascaraTelefone(v) {
+        v = v.replace(/\D/g, '').slice(0, 11);
+        if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        else v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+        return v;
+    }
+
+    function mascaraCEP(v) {
+        v = v.replace(/\D/g, '').slice(0, 8);
+        v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        return v;
+    }
+
+    async function buscarCEP(cep) {
+        const digits = cep.replace(/\D/g, '');
+        if (digits.length !== 8) return;
+        const spinner = document.getElementById('cep-spinner');
+        if (spinner) spinner.style.display = 'inline';
+        try {
+            const resp = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+            const data = await resp.json();
+            if (!data.erro) {
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+                set('logradouro', data.logradouro);
+                set('bairro', data.bairro);
+                set('cidade', data.localidade);
+                set('estado', data.uf);
+                document.getElementById('numero')?.focus();
+            }
+        } catch {}
+        if (spinner) spinner.style.display = 'none';
+    }
+
     const isRegisterPage = !!document.getElementById('name');
+
+    if (isRegisterPage) {
+        document.getElementById('cpf')?.addEventListener('input', function () {
+            this.value = mascaraCPF(this.value);
+        });
+        document.getElementById('telefone')?.addEventListener('input', function () {
+            this.value = mascaraTelefone(this.value);
+        });
+        const cepInput = document.getElementById('cep');
+        if (cepInput) {
+            cepInput.addEventListener('input', function () {
+                this.value = mascaraCEP(this.value);
+                if (this.value.replace(/\D/g, '').length === 8) buscarCEP(this.value);
+            });
+        }
+    }
 
     // Checklist de senha (só na página de cadastro)
     const passwordInput = document.getElementById('password');
@@ -223,16 +296,36 @@
             e.preventDefault();
             limparErro();
 
-            const nome       = document.getElementById('name')?.value.trim();
-            const email      = document.getElementById('email')?.value.trim();
-            const senha      = document.getElementById('password')?.value;
+            const nome         = document.getElementById('name')?.value.trim();
+            const email        = document.getElementById('email')?.value.trim();
+            const senha        = document.getElementById('password')?.value;
             const confirmSenha = document.getElementById('password_confirm')?.value;
-            const apto       = document.getElementById('apto')?.value.trim();
-            const bloco      = document.getElementById('block')?.value.trim();
-            const lgpd       = document.getElementById('lgpd_consent')?.checked;
+            const apto         = document.getElementById('apto')?.value.trim();
+            const bloco        = document.getElementById('block')?.value.trim();
+            const cpf          = document.getElementById('cpf')?.value.trim();
+            const telefone     = document.getElementById('telefone')?.value.trim();
+            const cep          = document.getElementById('cep')?.value.trim();
+            const numero       = document.getElementById('numero')?.value.trim();
+            const logradouro   = document.getElementById('logradouro')?.value.trim();
+            const bairro       = document.getElementById('bairro')?.value.trim();
+            const cidade       = document.getElementById('cidade')?.value.trim();
+            const estado       = document.getElementById('estado')?.value.trim();
+            const lgpd         = document.getElementById('lgpd_consent')?.checked;
 
             if (!nome || !email || !senha || !apto || !bloco) {
                 mostrarErro('Preencha todos os campos obrigatórios');
+                return;
+            }
+            if (!cpf || !validarCPF(cpf)) {
+                mostrarErro('CPF inválido');
+                return;
+            }
+            if (!cep || cep.replace(/\D/g, '').length !== 8) {
+                mostrarErro('Informe um CEP válido');
+                return;
+            }
+            if (!numero) {
+                mostrarErro('Informe o número do endereço');
                 return;
             }
             if (!STRONG_PASSWORD.test(senha)) {
@@ -258,7 +351,7 @@
             try {
                 await CondConnect.api('/auth/register', {
                     method: 'POST',
-                    body: { nome, email, senha, apartamento: apto, bloco, recaptcha_token: recaptchaToken },
+                    body: { nome, email, senha, apartamento: apto, bloco, cpf, telefone, cep, numero, logradouro, bairro, cidade, estado, recaptcha_token: recaptchaToken },
                 });
                 window.location.href = '/Templates/login.html?cadastro=1';
             } catch (err) {
