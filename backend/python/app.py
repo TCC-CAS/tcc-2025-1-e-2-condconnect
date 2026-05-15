@@ -188,14 +188,25 @@ def login():
         if not user or not check_password(senha, user['senha']):
             return err('E-mail ou senha incorretos', 401)
 
-        session['user_id'] = user['id']
-        session['user_role'] = user['papel']
-        session['session_version'] = user['session_version']
-        return ok({
-            'id': user['id'], 'nome': user['nome'], 'email': user['email'],
-            'papel': user['papel'], 'foto_url': user['foto_url'],
-            'apartamento': user['apartamento'], 'bloco': user['bloco']
-        })
+        codigo = str(secrets.randbelow(900000) + 100000)
+        expira = datetime.now() + timedelta(minutes=10)
+        with db.cursor() as c:
+            c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, user['id']))
+
+        session.clear()
+        session['pending_2fa_uid'] = user['id']
+
+        corpo = email_layout('🔐 Código de verificação',
+            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Use o código abaixo para acessar o CondConnect.</p>
+            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+            </div>
+            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>. Não compartilhe este código com ninguém.</p>"""
+        )
+        send_email(user['email'], '🔐 Seu código de verificação - CondConnect', corpo)
+
+        return ok({'requires_2fa': True, 'email': user['email']})
     finally:
         db.close()
 
@@ -244,6 +255,80 @@ def register():
 def logout():
     session.clear()
     return ok({'message': 'Logout realizado com sucesso'})
+
+
+@app.route('/auth/verificar-2fa', methods=['POST', 'OPTIONS'])
+def verificar_2fa():
+    uid = session.get('pending_2fa_uid')
+    if not uid:
+        return err('Sessão expirada. Faça login novamente.', 401)
+
+    body = get_body()
+    codigo = (body.get('codigo') or '').strip()
+    if not codigo:
+        return err('Informe o código de verificação')
+
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT id, nome, email, papel, foto_url, apartamento, bloco, session_version, codigo_2fa, codigo_2fa_expira FROM usuarios WHERE id=%s", (uid,))
+            user = c.fetchone()
+
+        if not user:
+            return err('Usuário não encontrado', 404)
+        if not user['codigo_2fa'] or user['codigo_2fa'] != codigo:
+            return err('Código incorreto')
+        if not user['codigo_2fa_expira'] or datetime.now() > user['codigo_2fa_expira']:
+            return err('Código expirado. Faça login novamente.')
+
+        with db.cursor() as c:
+            c.execute("UPDATE usuarios SET codigo_2fa=NULL, codigo_2fa_expira=NULL WHERE id=%s", (uid,))
+
+        session.pop('pending_2fa_uid', None)
+        session['user_id'] = user['id']
+        session['user_role'] = user['papel']
+        session['session_version'] = user['session_version']
+
+        return ok({
+            'id': user['id'], 'nome': user['nome'], 'email': user['email'],
+            'papel': user['papel'], 'foto_url': user['foto_url'],
+            'apartamento': user['apartamento'], 'bloco': user['bloco']
+        })
+    finally:
+        db.close()
+
+
+@app.route('/auth/reenviar-2fa', methods=['POST', 'OPTIONS'])
+def reenviar_2fa():
+    uid = session.get('pending_2fa_uid')
+    if not uid:
+        return err('Sessão expirada. Faça login novamente.', 401)
+
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (uid,))
+            user = c.fetchone()
+        if not user:
+            return err('Usuário não encontrado', 404)
+
+        codigo = str(secrets.randbelow(900000) + 100000)
+        expira = datetime.now() + timedelta(minutes=10)
+        with db.cursor() as c:
+            c.execute("UPDATE usuarios SET codigo_2fa=%s, codigo_2fa_expira=%s WHERE id=%s", (codigo, expira, uid))
+
+        corpo = email_layout('🔐 Novo código de verificação',
+            f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{user['nome']}</strong>! Aqui está seu novo código.</p>
+            <div style='background:#f0fafa;border:2px solid #00a6a6;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;'>
+                <p style='margin:0 0 8px;color:#64748b;font-size:13px;'>Seu código de verificação</p>
+                <p style='margin:0;font-size:42px;font-weight:800;color:#00a6a6;letter-spacing:12px;'>{codigo}</p>
+            </div>
+            <p style='color:#94a3b8;font-size:13px;text-align:center;'>Válido por <strong>10 minutos</strong>.</p>"""
+        )
+        send_email(user['email'], '🔐 Novo código de verificação - CondConnect', corpo)
+        return ok({'message': 'Código reenviado'})
+    finally:
+        db.close()
 
 
 @app.route('/auth/logout-all', methods=['POST', 'OPTIONS'])
