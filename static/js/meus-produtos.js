@@ -92,12 +92,12 @@
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
-                    if (!confirm('Tem certeza que deseja excluir este anúncio?')) return;
+                    if (!await CondConnect.showConfirm('O anúncio será removido permanentemente.', 'Excluir Anúncio')) return;
                     try {
                         await CondConnect.api(`/produtos/item?id=${id}`, { method: 'DELETE' });
                         renderMyProducts();
                     } catch (err) {
-                        alert(err.message || 'Erro ao excluir produto');
+                        await CondConnect.showAlert(err.message || 'Erro ao excluir produto', 'error');
                     }
                 });
             });

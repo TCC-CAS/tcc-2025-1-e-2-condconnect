@@ -107,7 +107,7 @@
                 const isNeg = cartItem?.getAttribute('data-negociado') === '1';
                 const titulo = cartItem?.getAttribute('data-titulo') || 'este item';
                 const preco = cartItem?.getAttribute('data-preco') || '';
-                if (isNeg && !confirm(`Tem certeza que deseja remover "${titulo}" do carrinho?\n\nVocê irá perder o preço negociado de ${preco}.`)) return;
+                if (isNeg && !await CondConnect.showConfirm(`Você irá perder o preço negociado de ${preco} para "${titulo}".`, 'Remover do Carrinho')) return;
                 try {
                     await CondConnect.api(`/carrinho?item_id=${id}`, { method: 'DELETE' });
                     renderCart();
@@ -118,7 +118,7 @@
 
     if (clearCartBtn) {
         clearCartBtn.addEventListener('click', async function () {
-            if (!confirm('Deseja limpar todo o seu carrinho?')) return;
+            if (!await CondConnect.showConfirm('Todos os itens serão removidos do carrinho.', 'Limpar Carrinho')) return;
             try {
                 await CondConnect.api('/carrinho', { method: 'DELETE' });
                 renderCart();
@@ -128,15 +128,15 @@
 
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', async function () {
-            if (!confirm('Confirmar a compra?')) return;
+            if (!await CondConnect.showConfirm('Deseja finalizar a compra dos itens no carrinho?', 'Confirmar Compra')) return;
             this.disabled = true;
             this.textContent = 'Processando...';
             try {
                 await CondConnect.api('/pedidos', { method: 'POST', body: {} });
-                alert('Pedido realizado com sucesso!');
+                await CondConnect.showAlert('Pedido realizado com sucesso!', 'success');
                 window.location.href = '/Templates/meus-pedidos.html';
             } catch (err) {
-                alert(err.message || 'Erro ao finalizar compra');
+                await CondConnect.showAlert(err.message || 'Erro ao finalizar compra', 'error');
                 this.disabled = false;
                 this.textContent = 'Finalizar Compra';
             }

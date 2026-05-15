@@ -53,7 +53,7 @@
                     btnSave.innerHTML = originalText;
                 }, 3000);
             } catch (err) {
-                alert(err.message || 'Erro ao salvar configurações');
+                await CondConnect.showAlert(err.message || 'Erro ao salvar configurações', 'error');
                 btnSave.disabled = false;
                 btnSave.innerHTML = originalText;
             }
@@ -100,7 +100,7 @@
             const nova  = document.getElementById('new-password')?.value;
             const conf  = document.getElementById('confirm-password')?.value;
 
-            if (nova !== conf) { alert('As senhas não coincidem'); return; }
+            if (nova !== conf) { await CondConnect.showAlert('As senhas não coincidem', 'warning'); return; }
 
             const btn = passwordForm.querySelector('button[type="submit"]');
             btn.disabled = true;
@@ -111,7 +111,7 @@
                 btn.textContent = '✓ Senha alterada!';
                 setTimeout(() => { modals.password?.classList.remove('active'); btn.disabled = false; btn.textContent = 'Salvar'; }, 2000);
             } catch (err) {
-                alert(err.message || 'Erro ao alterar senha');
+                await CondConnect.showAlert(err.message || 'Erro ao alterar senha', 'error');
                 btn.disabled = false;
                 btn.textContent = 'Salvar';
             }
@@ -123,7 +123,7 @@
     if (deleteForm) {
         deleteForm.addEventListener('submit', async e => {
             e.preventDefault();
-            if (!confirm('Tem certeza? Esta ação é irreversível.')) return;
+            if (!await CondConnect.showConfirm('Esta ação é irreversível e não poderá ser desfeita.', 'Excluir Conta')) return;
             try {
                 await CondConnect.api('/auth/logout', { method: 'POST' });
                 CondConnect.clearUser();
@@ -135,6 +135,22 @@
     window.addEventListener('click', e => {
         Object.values(modals).forEach(m => { if (e.target === m) m?.classList.remove('active'); });
     });
+
+    // Auto-salvar toggle de privacidade ao clicar
+    const togglePriv = document.getElementById('toggle-privacidade-endereco');
+    if (togglePriv) {
+        togglePriv.addEventListener('change', async function () {
+            try {
+                await CondConnect.api('/configuracoes', {
+                    method: 'PUT',
+                    body: { privacidade_endereco: this.checked ? 1 : 0 }
+                });
+            } catch (err) {
+                await CondConnect.showAlert('Erro ao salvar privacidade. Tente novamente.', 'error');
+                this.checked = !this.checked;
+            }
+        });
+    }
 
     carregarConfig();
 });

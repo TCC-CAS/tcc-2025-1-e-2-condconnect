@@ -67,30 +67,30 @@
                     try {
                         await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'aprovar' } });
                         renderAdminProducts(status);
-                    } catch (err) { alert(err.message); }
+                    } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
                 });
             });
 
             document.querySelectorAll('.btn-rejeitar').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
-                    const motivo = prompt('Motivo da rejeição:');
+                    const motivo = await CondConnect.showInput('Motivo da rejeição:', 'Descreva o motivo...');
                     if (!motivo) return;
                     try {
                         await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'rejeitar', motivo } });
                         renderAdminProducts(status);
-                    } catch (err) { alert(err.message); }
+                    } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
                 });
             });
 
             document.querySelectorAll('.btn-remover').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
-                    if (!confirm('Tem certeza que deseja remover este anúncio permanentemente?')) return;
+                    if (!await CondConnect.showConfirm('O anúncio será removido permanentemente.', 'Remover Anúncio')) return;
                     try {
                         await CondConnect.api('/admin/produtos', { method: 'PUT', body: { produto_id: parseInt(id), acao: 'remover' } });
                         renderAdminProducts(status);
-                    } catch (err) { alert(err.message); }
+                    } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
                 });
             });
 
@@ -142,11 +142,11 @@
                 btn.addEventListener('click', async () => {
                     const id   = parseInt(btn.getAttribute('data-id'));
                     const acao = btn.getAttribute('data-acao');
-                    if (!confirm(`Confirmar ação: ${acao}?`)) return;
+                    if (!await CondConnect.showConfirm(`Deseja ${acao} este usuário?`, 'Ação Administrativa')) return;
                     try {
                         await CondConnect.api('/admin/usuarios', { method: 'PUT', body: { usuario_id: id, acao } });
                         renderAdminUsers();
-                    } catch (err) { alert(err.message); }
+                    } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
                 });
             });
 

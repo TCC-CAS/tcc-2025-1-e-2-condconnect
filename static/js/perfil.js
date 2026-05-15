@@ -75,7 +75,7 @@
                 CondConnect.currentUser = null;
                 localStorage.removeItem('condconnect_user');
             } catch (err) {
-                alert(err.message || 'Erro ao enviar foto');
+                await CondConnect.showAlert(err.message || 'Erro ao enviar foto', 'error');
             }
             this.value = '';
         });
@@ -126,7 +126,7 @@
                     }, 3000);
                 }
             } catch (err) {
-                alert(err.message || 'Erro ao salvar perfil');
+                await CondConnect.showAlert(err.message || 'Erro ao salvar perfil', 'error');
                 if (btnSave) { btnSave.disabled = false; btnSave.innerHTML = originalText; }
             }
         });

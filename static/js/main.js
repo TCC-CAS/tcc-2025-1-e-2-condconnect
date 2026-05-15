@@ -221,6 +221,82 @@ const CondConnect = {
         });
     },
 
+    showAlert(mensagem, tipo = 'info') {
+        return new Promise(resolve => {
+            if (!document.getElementById('cc-modal-anim')) {
+                const s = document.createElement('style');
+                s.id = 'cc-modal-anim';
+                s.textContent = '@keyframes ccFadeIn{from{opacity:0}to{opacity:1}} @keyframes ccSlideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}';
+                document.head.appendChild(s);
+            }
+            const cor = { success:'#16a34a', error:'#dc2626', warning:'#d97706', info:'#00a6a6' }[tipo] || '#00a6a6';
+            const icons = {
+                success: `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>`,
+                error:   `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+                warning: `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+                info:    `<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+            };
+            const ov = document.createElement('div');
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:ccFadeIn .15s ease;';
+            ov.innerHTML = `<div style="background:#fff;border-radius:20px;padding:36px 28px 28px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.18);text-align:center;animation:ccSlideUp .2s ease;">
+                <div style="margin-bottom:18px;">${icons[tipo] || icons.info}</div>
+                <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.6;font-weight:500;">${mensagem}</p>
+                <button style="background:${cor};color:#fff;border:none;border-radius:12px;padding:13px 0;font-size:15px;font-weight:700;cursor:pointer;width:100%;">OK</button>
+            </div>`;
+            document.body.appendChild(ov);
+            const fechar = () => { ov.remove(); resolve(); };
+            ov.querySelector('button').addEventListener('click', fechar);
+            ov.addEventListener('click', e => { if (e.target === ov) fechar(); });
+        });
+    },
+
+    showConfirm(mensagem, titulo = 'Confirmar') {
+        return new Promise(resolve => {
+            const ov = document.createElement('div');
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:ccFadeIn .15s ease;';
+            ov.innerHTML = `<div style="background:#fff;border-radius:20px;padding:32px 28px 24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.18);text-align:center;animation:ccSlideUp .2s ease;">
+                <div style="width:52px;height:52px;background:#f0fafa;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00a6a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <h3 style="margin:0 0 10px;color:#0f172a;font-size:17px;font-weight:700;">${titulo}</h3>
+                <p style="margin:0 0 26px;color:#475569;font-size:14px;line-height:1.6;">${mensagem}</p>
+                <div style="display:flex;gap:10px;">
+                    <button id="cc-cancel" style="flex:1;background:#f1f5f9;color:#475569;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+                    <button id="cc-ok" style="flex:1;background:#00a6a6;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Confirmar</button>
+                </div>
+            </div>`;
+            document.body.appendChild(ov);
+            ov.querySelector('#cc-ok').addEventListener('click', () => { ov.remove(); resolve(true); });
+            ov.querySelector('#cc-cancel').addEventListener('click', () => { ov.remove(); resolve(false); });
+            ov.addEventListener('click', e => { if (e.target === ov) { ov.remove(); resolve(false); } });
+        });
+    },
+
+    showInput(mensagem, placeholder = '') {
+        return new Promise(resolve => {
+            const ov = document.createElement('div');
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;animation:ccFadeIn .15s ease;';
+            ov.innerHTML = `<div style="background:#fff;border-radius:20px;padding:32px 28px 24px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.18);animation:ccSlideUp .2s ease;">
+                <p style="margin:0 0 16px;color:#1e293b;font-size:15px;font-weight:600;">${mensagem}</p>
+                <input id="cc-inp" type="text" placeholder="${placeholder}" style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;font-family:inherit;margin-bottom:20px;">
+                <div style="display:flex;gap:10px;">
+                    <button id="cc-cancel" style="flex:1;background:#f1f5f9;color:#475569;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+                    <button id="cc-ok" style="flex:1;background:#00a6a6;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Enviar</button>
+                </div>
+            </div>`;
+            document.body.appendChild(ov);
+            const inp = ov.querySelector('#cc-inp');
+            inp.focus();
+            inp.addEventListener('focus', () => inp.style.borderColor = '#00a6a6');
+            inp.addEventListener('blur',  () => inp.style.borderColor = '#e2e8f0');
+            const ok = () => { ov.remove(); resolve(inp.value.trim() || null); };
+            ov.querySelector('#cc-ok').addEventListener('click', ok);
+            ov.querySelector('#cc-cancel').addEventListener('click', () => { ov.remove(); resolve(null); });
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') ok(); });
+            ov.addEventListener('click', e => { if (e.target === ov) { ov.remove(); resolve(null); } });
+        });
+    },
+
     formatarPreco(preco) {
         return 'R$ ' + parseFloat(preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     },

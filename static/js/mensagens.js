@@ -66,7 +66,7 @@
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const cid = parseInt(btn.getAttribute('data-conv-id'));
-                if (!confirm('Apagar esta conversa? As mensagens serão perdidas.')) return;
+                if (!await CondConnect.showConfirm('As mensagens serão perdidas permanentemente.', 'Apagar Conversa')) return;
                 try {
                     await CondConnect.api(`/conversas?id=${cid}`, { method: 'DELETE' });
                     allConvs = allConvs.filter(c => c.id !== cid);

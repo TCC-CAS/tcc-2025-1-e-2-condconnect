@@ -137,12 +137,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const id = btn.getAttribute('data-id');
                 const valor = btn.getAttribute('data-valor');
                 const titulo = btn.getAttribute('data-titulo');
-                if (!confirm(`Tem certeza que deseja ACEITAR a proposta de ${valor} para "${titulo}"?\n\nO comprador será notificado por e-mail.`)) return;
+                if (!await CondConnect.showConfirm(`Aceitar proposta de ${valor} para "${titulo}"? O comprador será notificado por e-mail.`, 'Aceitar Proposta')) return;
                 btn.disabled = true; btn.textContent = 'Aceitando...';
                 try {
                     await CondConnect.api('/propostas/item', { method: 'PUT', body: { proposta_id: parseInt(id), acao: 'aceitar' } });
                     renderPropostas(propostaSubtipo);
-                } catch (err) { alert(err.message || 'Erro'); btn.disabled = false; btn.textContent = 'Aceitar'; }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); btn.disabled = false; btn.textContent = 'Aceitar'; }
             });
         });
 
@@ -151,24 +151,24 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const id = btn.getAttribute('data-id');
                 const valor = btn.getAttribute('data-valor');
                 const titulo = btn.getAttribute('data-titulo');
-                if (!confirm(`Tem certeza que deseja RECUSAR a proposta de ${valor} para "${titulo}"?`)) return;
+                if (!await CondConnect.showConfirm(`Recusar a proposta de ${valor} para "${titulo}"?`, 'Recusar Proposta')) return;
                 btn.disabled = true; btn.textContent = 'Recusando...';
                 try {
                     await CondConnect.api('/propostas/item', { method: 'PUT', body: { proposta_id: parseInt(id), acao: 'recusar' } });
                     renderPropostas(propostaSubtipo);
-                } catch (err) { alert(err.message || 'Erro'); btn.disabled = false; btn.textContent = 'Recusar'; }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); btn.disabled = false; btn.textContent = 'Recusar'; }
             });
         });
 
         document.querySelectorAll('.btn-cancelar-proposta').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-                if (!confirm('Tem certeza que deseja cancelar esta proposta?')) return;
+                if (!await CondConnect.showConfirm('Tem certeza que deseja cancelar esta proposta?', 'Cancelar Proposta')) return;
                 btn.disabled = true; btn.textContent = 'Cancelando...';
                 try {
                     await CondConnect.api('/propostas/item', { method: 'PUT', body: { proposta_id: parseInt(id), acao: 'cancelar' } });
                     renderPropostas(propostaSubtipo);
-                } catch (err) { alert(err.message || 'Erro'); btn.disabled = false; btn.textContent = 'Cancelar'; }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); btn.disabled = false; btn.textContent = 'Cancelar'; }
             });
         });
     }
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 try {
                     await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'confirmado' } });
                     renderOrders(tipo);
-                } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = 'Confirmar Pedido'; }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); btn.disabled = false; btn.textContent = 'Confirmar Pedido'; }
             });
         });
 
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 try {
                     await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'enviado' } });
                     renderOrders(tipo);
-                } catch (err) { alert(err.message); }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
             });
         });
 
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 try {
                     await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
                     renderOrders(tipo);
-                } catch (err) { alert(err.message); }
+                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
             });
         });
     }

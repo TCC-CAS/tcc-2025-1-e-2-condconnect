@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 photoUrls[slotIndex] = result.url;
                 renderGrid();
             } catch (err) {
-                alert(err.message || 'Erro ao enviar imagem');
+                await CondConnect.showAlert(err.message || 'Erro ao enviar imagem', 'error');
             } finally {
                 input.remove();
             }
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const quantidade = Math.max(1, parseInt(document.getElementById('product-quantity')?.value || '1'));
 
             if (!titulo || isNaN(preco) || !categoria) {
-                alert('Preencha título, preço e categoria');
+                await CondConnect.showAlert('Preencha título, preço e categoria', 'warning');
                 return;
             }
 
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
                 window.location.href = '/Templates/meus-produtos.html';
             } catch (err) {
-                alert(err.message || 'Erro ao salvar produto');
+                await CondConnect.showAlert(err.message || 'Erro ao salvar produto', 'error');
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = editId ? 'Salvar Alterações' : 'Publicar Anúncio'; }
             }
         });

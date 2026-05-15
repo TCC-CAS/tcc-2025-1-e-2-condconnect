@@ -166,7 +166,7 @@
                     this.disabled = false;
                 }, 2000);
             } catch (err) {
-                alert(err.message || 'Erro ao adicionar ao carrinho');
+                await CondConnect.showAlert(err.message || 'Erro ao adicionar ao carrinho', 'error');
                 this.innerHTML = originalContent;
                 this.disabled = false;
             }
@@ -186,7 +186,7 @@
                 window.location.href = `/Templates/mensagens.html?conversa=${result.id}`;
             } catch (err) {
                 if (err.status === 401) window.location.href = '/Templates/login.html';
-                else alert(err.message || 'Erro ao iniciar conversa');
+                else await CondConnect.showAlert(err.message || 'Erro ao iniciar conversa', 'error');
             }
         });
     }
@@ -195,16 +195,16 @@
     const reportBtn = document.querySelector('[data-action="report"], .btn-report');
     if (reportBtn) {
         reportBtn.addEventListener('click', async () => {
-            const motivo = prompt('Motivo da denúncia:');
+            const motivo = await CondConnect.showInput('Qual o motivo da denúncia?', 'Descreva o problema...');
             if (!motivo) return;
             try {
                 await CondConnect.api('/relatorios', {
                     method: 'POST',
                     body: { tipo: 'produto', alvo_id: productId, motivo },
                 });
-                alert('Denúncia registrada. Obrigado!');
+                await CondConnect.showAlert('Denúncia registrada. Obrigado!', 'success');
             } catch (err) {
-                alert(err.message || 'Erro ao registrar denúncia');
+                await CondConnect.showAlert(err.message || 'Erro ao registrar denúncia', 'error');
             }
         });
     }
@@ -280,7 +280,7 @@
                     publishBtn.addEventListener('click', async () => {
                         const texto = commentArea.value.trim();
                         if (!texto || !selectedRating) {
-                            alert('Selecione uma nota e escreva um comentário');
+                            await CondConnect.showAlert('Selecione uma nota e escreva um comentário', 'warning');
                             return;
                         }
                         publishBtn.disabled = true;
@@ -292,7 +292,7 @@
                             });
                             formSection.innerHTML = `<p style="color:#16a34a;font-weight:600;padding:16px;background:#dcfce7;border-radius:10px;">✓ Avaliação enviada com sucesso! Obrigado.</p>`;
                         } catch (err) {
-                            alert(err.message || 'Erro ao enviar avaliação');
+                            await CondConnect.showAlert(err.message || 'Erro ao enviar avaliação', 'error');
                             publishBtn.disabled = false;
                             publishBtn.textContent = 'Publicar Avaliação';
                         }
@@ -377,7 +377,7 @@
             }
 
             const valorFmt = valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            if (!confirm(`Tem certeza que deseja enviar uma proposta de ${valorFmt} × ${quantidade} unidade(s) para "${produto.titulo}"?`)) return;
+            if (!await CondConnect.showConfirm(`Enviar proposta de ${valorFmt} × ${quantidade} unidade(s) para "${produto.titulo}"?`, 'Confirmar Proposta')) return;
 
             enviarPropostaBtn.disabled = true;
             enviarPropostaBtn.textContent = 'Enviando...';
@@ -389,7 +389,7 @@
                     body: { produto_id: productId, valor_proposto: valor, mensagem, quantidade }
                 });
                 fecharModal();
-                alert('Proposta enviada! O vendedor será notificado por e-mail.');
+                await CondConnect.showAlert('Proposta enviada! O vendedor será notificado por e-mail.', 'success');
             } catch (err) {
                 if (propostaErro) { propostaErro.textContent = err.message || 'Erro ao enviar proposta.'; propostaErro.style.display = 'block'; }
             } finally {
