@@ -1,6 +1,14 @@
 ﻿document.addEventListener('DOMContentLoaded', async function () {
     const profileForm = document.getElementById('profile-form');
 
+    function setAvatarPreview(url) {
+        const el = document.getElementById('avatar-preview');
+        if (!el) return;
+        if (url) {
+            el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+        }
+    }
+
     // Carregar dados do usuário logado
     async function carregarPerfil() {
         try {
@@ -14,6 +22,7 @@
                 'profile-apto':  user.apartamento || '',
                 'profile-bloco': user.bloco || '',
                 'profile-bio':   user.bio || '',
+                'profile-pix':   user.pix_key || '',
             };
 
             Object.entries(campos).forEach(([id, val]) => {
@@ -32,8 +41,7 @@
             if (locationEl) locationEl.textContent = `Bloco ${user.bloco} - Apto ${user.apartamento}`;
 
             // Foto
-            const fotoEl = document.querySelector('.profile-avatar img, .avatar-img');
-            if (fotoEl && user.foto_url) fotoEl.src = user.foto_url;
+            if (user.foto_url) setAvatarPreview(user.foto_url);
 
             // Stats
             const statsMap = {
@@ -52,6 +60,27 @@
         }
     }
 
+    // Avatar upload
+    const avatarInput = document.getElementById('avatar-upload');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', async function () {
+            const file = this.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('imagem', file);
+            try {
+                const result = await CondConnect.api('/uploads/imagem', { method: 'POST', body: formData });
+                setAvatarPreview(result.url);
+                await CondConnect.api('/me', { method: 'PUT', body: { foto_url: result.url } });
+                CondConnect.currentUser = null;
+                localStorage.removeItem('condconnect_user');
+            } catch (err) {
+                alert(err.message || 'Erro ao enviar foto');
+            }
+            this.value = '';
+        });
+    }
+
     if (profileForm) {
         profileForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -64,11 +93,11 @@
             }
 
             const body = {};
-            ['profile-name', 'profile-phone', 'profile-apto', 'profile-bloco', 'profile-bio'].forEach(id => {
+            ['profile-name', 'profile-phone', 'profile-apto', 'profile-bloco', 'profile-bio', 'profile-pix'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     const campo = id.replace('profile-', '');
-                    const mapa = { name: 'nome', phone: 'telefone', apto: 'apartamento', bloco: 'bloco', bio: 'bio' };
+                    const mapa = { name: 'nome', phone: 'telefone', apto: 'apartamento', bloco: 'bloco', bio: 'bio', pix: 'pix_key' };
                     body[mapa[campo] || campo] = el.value.trim();
                 }
             });
@@ -83,7 +112,6 @@
 
             try {
                 await CondConnect.api('/me', { method: 'PUT', body });
-                // Atualizar cache
                 CondConnect.currentUser = null;
                 localStorage.removeItem('condconnect_user');
                 await CondConnect.getMe();
