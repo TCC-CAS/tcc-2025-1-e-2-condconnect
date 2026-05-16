@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } },
+                        x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(0) + 'k' : 'R$' + v } },
                         y: { grid: { display: false } }
                     }
                 }

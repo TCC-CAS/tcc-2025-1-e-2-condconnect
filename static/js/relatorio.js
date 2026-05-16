@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } },
+                        x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
                         y: { grid: { display: false } }
                     }
                 }
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
                         x: { grid: { display: false } }
                     }
                 }
