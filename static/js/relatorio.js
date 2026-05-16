@@ -1,5 +1,83 @@
+let _relData = null;
+let _relInsumos = null;
+
+function exportarExcel() {
+    if (!_relData) return alert('Carregue o relatório antes de exportar.');
+    const wb = XLSX.utils.book_new();
+    const f = _relData.financeiro;
+
+    // Aba 1: Visão Financeira
+    const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : '—';
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ['Indicador', 'Valor'],
+        ['Faturamento Total', f.faturamento],
+        ['Ticket Médio', f.ticket_medio],
+        ['Total de Pedidos', f.total_pedidos],
+        ['Lucro Estimado', f.has_custo ? f.lucro_liquido : '—'],
+        ['Margem (%)', f.has_custo ? margem : '—'],
+    ]), 'Financeiro');
+
+    // Aba 2: Produtos
+    const prodRows = [['Produto', 'Categoria', 'Pedidos', 'Unidades', 'Receita (R$)', 'Margem (%)', 'Visualizações']];
+    (_relData.produtos || []).forEach(p => {
+        prodRows.push([p.titulo, p.categoria, p.total_vendas, p.unidades, p.receita, p.margem_pct ?? '—', p.visualizacoes]);
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(prodRows), 'Produtos');
+
+    // Aba 3: Clientes
+    const cl = _relData.clientes;
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ['Indicador', 'Valor'],
+        ['Total de Compradores', cl.total],
+        ['LTV Médio (R$)', cl.ltv],
+        ['Novos', cl.novos],
+        ['Recorrentes', cl.recorrentes],
+        ['% Novos', cl.pct_novos],
+        ['% Recorrentes', cl.pct_recorrentes],
+    ]), 'Clientes');
+
+    // Aba 4: Funil de Conversão
+    const funil = _relData.funil;
+    const txFav = funil.views > 0 ? ((funil.favoritos / funil.views) * 100).toFixed(1) : 0;
+    const txPed = funil.views > 0 ? ((funil.pedidos_iniciados / funil.views) * 100).toFixed(1) : 0;
+    const txFin = funil.pedidos_iniciados > 0 ? ((funil.pedidos_entregues / funil.pedidos_iniciados) * 100).toFixed(1) : 0;
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ['Etapa', 'Quantidade', 'Taxa (%)'],
+        ['Visualizações', funil.views, '—'],
+        ['Favoritos', funil.favoritos, txFav],
+        ['Pedidos Iniciados', funil.pedidos_iniciados, txPed],
+        ['Pedidos Entregues', funil.pedidos_entregues, txFin],
+    ]), 'Funil');
+
+    // Aba 5: Vendas por Dia da Semana
+    const diasRows = [['Dia', 'Pedidos']];
+    (_relData.temporal.por_dia_semana || []).forEach(d => diasRows.push([d.dia, d.pedidos]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(diasRows), 'Por Dia da Semana');
+
+    // Aba 6: Evolução Mensal
+    const mesRows = [['Mês', 'Receita (R$)', 'Pedidos']];
+    (_relData.temporal.por_mes || []).forEach(m => mesRows.push([m.mes, m.receita, m.pedidos ?? '']));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mesRows), 'Evolução Mensal');
+
+    // Aba 7: Insumos (se disponível)
+    if (_relInsumos && _relInsumos.length > 0) {
+        const total = _relInsumos.reduce((s, i) => s + i.custo, 0);
+        const insRows = [['Insumo', 'Quantidade', 'Unidade', 'Custo (R$)', '% do Total']];
+        _relInsumos.forEach(i => {
+            const pct = total > 0 ? ((i.custo / total) * 100).toFixed(1) : 0;
+            insRows.push([i.nome, i.quantidade, i.unidade, i.custo, pct]);
+        });
+        insRows.push(['TOTAL', '', '', total, '100']);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(insRows), 'Insumos');
+    }
+
+    const agora = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `relatorio-condconnect-${agora}.xlsx`);
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     const charts = {};
+    const CORES_INSUMOS = ['#00a6a6','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#10b981','#f97316','#06b6d4','#84cc16','#ec4899'];
 
     function brl(v) {
         return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -12,7 +90,94 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (charts[id]) { charts[id].destroy(); delete charts[id]; }
     }
 
+    // Carregar lista de produtos para o filtro
+    async function carregarProdutos() {
+        try {
+            const produtos = await CondConnect.api('/me/produtos-lista');
+            const sel = document.getElementById('rel-produto');
+            if (!sel) return;
+            produtos.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.titulo.length > 30 ? p.titulo.slice(0, 30) + '…' : p.titulo;
+                sel.appendChild(opt);
+            });
+        } catch {}
+    }
+
+    async function carregarInsumos(produto_id) {
+        const section = document.getElementById('insumos-section');
+        if (!section) return;
+        if (!produto_id) { section.style.display = 'none'; _relInsumos = null; return; }
+
+        try {
+            const insumos = await CondConnect.api(`/me/insumos/${produto_id}`);
+            if (!insumos || insumos.length === 0) { section.style.display = 'none'; return; }
+
+            section.style.display = 'block';
+            _relInsumos = insumos;
+            const total = insumos.reduce((s, i) => s + i.custo, 0);
+            set('insumos-total', brl(total));
+
+            // Tabela
+            const tbody = document.getElementById('tabela-insumos-body');
+            if (tbody) {
+                tbody.innerHTML = insumos.map(ins => {
+                    const pct = total > 0 ? ((ins.custo / total) * 100).toFixed(1) : 0;
+                    return `<tr>
+                        <td><strong>${ins.nome}</strong></td>
+                        <td>${ins.quantidade} ${ins.unidade}</td>
+                        <td>${brl(ins.custo)}</td>
+                        <td>${pct}%</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Margem
+            const prodSel = document.getElementById('rel-produto');
+            const prodId = prodSel?.value;
+            const produtos = await CondConnect.api('/me/produtos-lista');
+            const prod = produtos.find(p => String(p.id) === String(prodId));
+            if (prod && prod.custo) {
+                const preco = prod.preco || 0;
+                // We don't have price here easily, skip for now — show cost only
+            }
+
+            // Gráfico de pizza
+            destroy('r-ins');
+            const ctxIns = document.getElementById('chart-r-insumos');
+            if (ctxIns) {
+                charts['r-ins'] = new Chart(ctxIns, {
+                    type: 'doughnut',
+                    data: {
+                        labels: insumos.map(i => i.nome),
+                        datasets: [{
+                            data: insumos.map(i => i.custo),
+                            backgroundColor: CORES_INSUMOS.slice(0, insumos.length),
+                            borderWidth: 2,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } },
+                            tooltip: { callbacks: { label: ctx => ` ${brl(ctx.parsed)} (${((ctx.parsed/total)*100).toFixed(1)}%)` } }
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Erro insumos:', err);
+            const section = document.getElementById('insumos-section');
+            if (section) section.style.display = 'none';
+        }
+    }
+
     function render(data) {
+        _relData = data;
         const f = data.financeiro;
         const cl = data.clientes;
         const funil = data.funil;
@@ -49,6 +214,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
@@ -107,6 +273,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     cutout: '65%',
                     plugins: {
                         legend: { position: 'bottom', labels: { font: { size: 12 } } }
@@ -134,6 +301,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { color: '#f1f5f9' } },
@@ -184,6 +352,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { precision: 0 } },
@@ -217,6 +386,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
@@ -229,31 +399,40 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    async function carregarRelatorio(dias) {
+    async function carregarRelatorio(dias, produto_id) {
         const loading = document.getElementById('rel-loading');
         const content = document.getElementById('rel-content');
         if (loading) loading.style.display = 'block';
         if (content) content.style.display = 'none';
 
         try {
-            const data = await CondConnect.api(`/me/analytics?dias=${dias}`);
+            const url = `/me/analytics?dias=${dias}${produto_id ? '&produto_id=' + produto_id : ''}`;
+            const data = await CondConnect.api(url);
             const sub = document.getElementById('rel-subtitulo');
             if (sub) {
                 const agora = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-                sub.textContent = `Gerado em ${agora} · últimos ${dias} dias`;
+                const filtroTxt = produto_id ? ' · produto filtrado' : '';
+                sub.textContent = `Gerado em ${agora} · últimos ${dias} dias${filtroTxt}`;
             }
             if (loading) loading.style.display = 'none';
             if (content) content.style.display = 'block';
             render(data);
+            await carregarInsumos(produto_id);
         } catch (err) {
             if (loading) loading.textContent = 'Erro ao carregar relatório. Verifique sua conexão.';
         }
     }
 
     const periodoSel = document.getElementById('rel-periodo');
+    const produtoSel = document.getElementById('rel-produto');
+
     if (periodoSel) {
-        periodoSel.addEventListener('change', () => carregarRelatorio(periodoSel.value));
+        periodoSel.addEventListener('change', () => carregarRelatorio(periodoSel.value, produtoSel?.value || ''));
+    }
+    if (produtoSel) {
+        produtoSel.addEventListener('change', () => carregarRelatorio(periodoSel?.value || 30, produtoSel.value));
     }
 
+    await carregarProdutos();
     await carregarRelatorio(30);
 });

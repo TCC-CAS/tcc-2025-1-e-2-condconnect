@@ -249,6 +249,17 @@ def init_db():
                 c.execute("ALTER TABLE produtos ADD COLUMN visualizacoes INT NOT NULL DEFAULT 0")
             except Exception:
                 pass
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS produto_insumos (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    produto_id INT NOT NULL,
+                    nome VARCHAR(100) NOT NULL,
+                    quantidade DECIMAL(10,3) NOT NULL DEFAULT 1,
+                    unidade VARCHAR(20) NOT NULL DEFAULT 'un',
+                    custo DECIMAL(10,2) NOT NULL DEFAULT 0,
+                    FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
+                )
+            """)
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -301,6 +312,25 @@ def login():
         return ok({'requires_2fa': True, 'destino': destino})
     finally:
         db.close()
+
+
+def salvar_insumos(db, produto_id, insumos):
+    with db.cursor() as c:
+        c.execute("DELETE FROM produto_insumos WHERE produto_id=%s", (produto_id,))
+        total_custo = 0
+        for item in insumos:
+            nome  = str(item.get('nome', '')).strip()[:100]
+            qtd   = float(item.get('quantidade', 1) or 1)
+            unid  = str(item.get('unidade', 'un')).strip()[:20]
+            custo = float(item.get('custo', 0) or 0)
+            if not nome:
+                continue
+            c.execute("INSERT INTO produto_insumos (produto_id, nome, quantidade, unidade, custo) VALUES (%s,%s,%s,%s,%s)",
+                      (produto_id, nome, qtd, unid, custo))
+            total_custo += custo
+        if insumos:
+            c.execute("UPDATE produtos SET custo=%s WHERE id=%s", (total_custo, produto_id))
+    return total_custo
 
 
 def validar_cpf(cpf):
@@ -652,28 +682,33 @@ def me_analytics():
         return e
 
     dias = min(int(request.args.get('dias', 30)), 365)
+    produto_id = request.args.get('produto_id')
+    produto_id = int(produto_id) if produto_id and produto_id.isdigit() else None
     data_inicio = datetime.now() - timedelta(days=dias)
 
     db = get_db()
     try:
+        filtro_produto = "AND pe.produto_id=%s" if produto_id else ""
+        params_produto = (produto_id,) if produto_id else ()
+
         # Visão financeira
         with db.cursor() as c:
-            c.execute("""
+            c.execute(f"""
                 SELECT COUNT(*) as total_pedidos,
                        COALESCE(SUM(preco_total), 0) as faturamento,
                        COALESCE(AVG(preco_total), 0) as ticket_medio
-                FROM pedidos WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s
-            """, (uid, data_inicio))
+                FROM pedidos pe WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s {filtro_produto}
+            """, (uid, data_inicio) + params_produto)
             financeiro = c.fetchone()
 
         with db.cursor() as c:
-            c.execute("""
+            c.execute(f"""
                 SELECT COALESCE(SUM(pe.preco_total - (COALESCE(pr.custo, 0) * pe.quantidade)), 0) as lucro,
                        COALESCE(SUM(pe.preco_total), 0) as fat_com_custo
                 FROM pedidos pe JOIN produtos pr ON pe.produto_id=pr.id
                 WHERE pe.vendedor_id=%s AND pe.status='entregue' AND pe.criado_em >= %s
-                  AND pr.custo IS NOT NULL AND pr.custo > 0
-            """, (uid, data_inicio))
+                  AND pr.custo IS NOT NULL AND pr.custo > 0 {filtro_produto}
+            """, (uid, data_inicio) + params_produto)
             custo_row = c.fetchone()
 
         # Performance de produtos (top 10 por receita)
@@ -699,11 +734,11 @@ def me_analytics():
 
         # Comportamento de clientes
         with db.cursor() as c:
-            c.execute("""
-                SELECT comprador_id, COUNT(*) as pedidos
-                FROM pedidos WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s
-                GROUP BY comprador_id
-            """, (uid, data_inicio))
+            c.execute(f"""
+                SELECT pe.comprador_id, COUNT(*) as pedidos
+                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' AND pe.criado_em >= %s {filtro_produto}
+                GROUP BY pe.comprador_id
+            """, (uid, data_inicio) + params_produto)
             compradores = c.fetchall()
 
         total_compradores = len(compradores)
@@ -711,10 +746,10 @@ def me_analytics():
         novos = total_compradores - recorrentes
 
         with db.cursor() as c:
-            c.execute("""
-                SELECT COUNT(DISTINCT comprador_id) as n, COALESCE(SUM(preco_total),0) as fat
-                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
-            """, (uid,))
+            c.execute(f"""
+                SELECT COUNT(DISTINCT pe.comprador_id) as n, COALESCE(SUM(pe.preco_total),0) as fat
+                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' {filtro_produto}
+            """, (uid,) + params_produto)
             ltv_row = c.fetchone()
         ltv = float(ltv_row['fat']) / ltv_row['n'] if ltv_row['n'] else 0
 
@@ -740,11 +775,11 @@ def me_analytics():
 
         # Temporal: vendas por dia da semana (MySQL: 1=Dom...7=Sáb)
         with db.cursor() as c:
-            c.execute("""
-                SELECT DAYOFWEEK(criado_em) as dow, COUNT(*) as pedidos, COALESCE(SUM(preco_total),0) as receita
-                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
+            c.execute(f"""
+                SELECT DAYOFWEEK(pe.criado_em) as dow, COUNT(*) as pedidos, COALESCE(SUM(pe.preco_total),0) as receita
+                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' {filtro_produto}
                 GROUP BY dow ORDER BY dow
-            """, (uid,))
+            """, (uid,) + params_produto)
             por_dow = {r['dow']: r for r in c.fetchall()}
 
         nomes_dow = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -756,13 +791,13 @@ def me_analytics():
 
         # Temporal: últimos 6 meses
         with db.cursor() as c:
-            c.execute("""
-                SELECT DATE_FORMAT(criado_em,'%%Y-%%m') as mes,
-                       COALESCE(SUM(preco_total),0) as receita, COUNT(*) as pedidos
-                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
-                  AND criado_em >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            c.execute(f"""
+                SELECT DATE_FORMAT(pe.criado_em,'%%Y-%%m') as mes,
+                       COALESCE(SUM(pe.preco_total),0) as receita, COUNT(*) as pedidos
+                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= DATE_SUB(NOW(), INTERVAL 6 MONTH) {filtro_produto}
                 GROUP BY mes ORDER BY mes
-            """, (uid,))
+            """, (uid,) + params_produto)
             por_mes = [{'mes': r['mes'], 'receita': float(r['receita']), 'pedidos': int(r['pedidos'])}
                        for r in c.fetchall()]
 
@@ -805,7 +840,44 @@ def me_analytics():
                 'por_mes': por_mes,
             },
             'periodo_dias': dias,
+            'produto_id_filtro': produto_id,
         })
+    finally:
+        db.close()
+
+
+@app.route('/me/produtos-lista', methods=['GET', 'OPTIONS'])
+def me_produtos_lista():
+    uid, e = require_auth()
+    if e:
+        return e
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT id, titulo, custo FROM produtos WHERE usuario_id=%s AND status != 'rejeitado' ORDER BY titulo", (uid,))
+            rows = c.fetchall()
+        return ok([{'id': r['id'], 'titulo': r['titulo'], 'custo': float(r['custo']) if r['custo'] else None} for r in rows])
+    finally:
+        db.close()
+
+
+@app.route('/me/insumos/<int:produto_id>', methods=['GET', 'OPTIONS'])
+def me_insumos(produto_id):
+    uid, e = require_auth()
+    if e:
+        return e
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT usuario_id FROM produtos WHERE id=%s", (produto_id,))
+            p = c.fetchone()
+        if not p or p['usuario_id'] != uid:
+            return err('Produto não encontrado', 404)
+        with db.cursor() as c:
+            c.execute("SELECT id, nome, quantidade, unidade, custo FROM produto_insumos WHERE produto_id=%s ORDER BY id", (produto_id,))
+            insumos = [{'id': r['id'], 'nome': r['nome'], 'quantidade': float(r['quantidade']),
+                        'unidade': r['unidade'], 'custo': float(r['custo'])} for r in c.fetchall()]
+        return ok(insumos)
     finally:
         db.close()
 
@@ -918,6 +990,10 @@ def produtos():
                     if url:
                         c.execute("INSERT INTO imagens_produto (produto_id, url, ordem) VALUES (%s,%s,%s)", (pid, url, i))
 
+        insumos = body.get('insumos', [])
+        if insumos:
+            salvar_insumos(db, pid, insumos)
+
         return ok({'id': pid, 'message': 'Produto criado com sucesso'}, 201)
     finally:
         db.close()
@@ -970,11 +1046,17 @@ def produto_item():
                 c.execute("SELECT COUNT(*) as n FROM pedidos WHERE produto_id=%s AND status='entregue'", (pid,))
                 total_vendidos = c.fetchone()['n']
 
+            with db.cursor() as c:
+                c.execute("SELECT id, nome, quantidade, unidade, custo FROM produto_insumos WHERE produto_id=%s ORDER BY id", (pid,))
+                insumos = [{'id': r['id'], 'nome': r['nome'], 'quantidade': float(r['quantidade']),
+                            'unidade': r['unidade'], 'custo': float(r['custo'])} for r in c.fetchall()]
+
             return ok({
                 'id': p['id'], 'titulo': p['titulo'], 'descricao': p['descricao'],
                 'preco': float(p['preco']),
                 'preco_fmt': f"{float(p['preco']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                 'custo': float(p['custo']) if p.get('custo') else None,
+                'insumos': insumos,
                 'categoria': p['categoria'], 'condicao': p['condicao'],
                 'foto': p['foto_principal'], 'imagens': imgs_extras,
                 'status': p['status'],
@@ -1024,6 +1106,9 @@ def produto_item():
                     for i, url in enumerate(imagens_extras):
                         if url:
                             c.execute("INSERT INTO imagens_produto (produto_id, url, ordem) VALUES (%s,%s,%s)", (pid, url, i))
+
+            if 'insumos' in body:
+                salvar_insumos(db, pid, body['insumos'])
 
             return ok({'message': 'Produto atualizado'})
 

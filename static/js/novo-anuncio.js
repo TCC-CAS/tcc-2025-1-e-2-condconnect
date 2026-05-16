@@ -100,7 +100,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             const counter = document.getElementById('desc-counter');
             if (counter) counter.textContent = descEl.value.length + '/300';
             document.getElementById('product-price').value = floatParaPreco(produto.preco);
-            if (produto.custo && document.getElementById('product-cost')) {
+            if (produto.insumos && produto.insumos.length > 0) {
+                produto.insumos.forEach(ins => addInsumoRow(ins));
+            } else if (produto.custo && document.getElementById('product-cost')) {
                 document.getElementById('product-cost').value = floatParaPreco(produto.custo);
             }
             if (document.getElementById('product-quantity')) {
@@ -160,6 +162,81 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     renderGrid();
 
+    // ── Insumos ──────────────────────────────────────────────────────────────
+    const insumosList = document.getElementById('insumos-list');
+    const addInsumoBtn = document.getElementById('add-insumo-btn');
+    const custoTotalDiv = document.getElementById('custo-total-insumos');
+    const custoTotalValor = document.getElementById('custo-total-valor');
+    const costInput = document.getElementById('product-cost');
+    const UNIDADES = ['un', 'g', 'kg', 'ml', 'L', 'm', 'm²', 'cm', 'par', 'rolo', 'pacote'];
+
+    function calcularTotalInsumos() {
+        if (!insumosList) return;
+        const rows = insumosList.querySelectorAll('.insumo-row');
+        let total = 0;
+        rows.forEach(row => {
+            const custo = parseFloat(row.querySelector('.ins-custo')?.value.replace(/\./g, '').replace(',', '.')) || 0;
+            total += custo;
+        });
+        if (rows.length > 0) {
+            if (custoTotalDiv) custoTotalDiv.style.display = 'flex';
+            if (custoTotalValor) custoTotalValor.textContent = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (costInput) {
+                costInput.value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                costInput.readOnly = true;
+                costInput.style.background = '#f1f5f9';
+                costInput.style.color = '#64748b';
+            }
+        } else {
+            if (custoTotalDiv) custoTotalDiv.style.display = 'none';
+            if (costInput) {
+                costInput.readOnly = false;
+                costInput.style.background = 'white';
+                costInput.style.color = '';
+            }
+        }
+    }
+
+    function addInsumoRow(data = {}) {
+        if (!insumosList) return;
+        const row = document.createElement('div');
+        row.className = 'insumo-row';
+        row.style.cssText = 'display:grid;grid-template-columns:2fr 1fr 80px 1fr 32px;gap:8px;align-items:center;background:white;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;';
+
+        const selectOpts = UNIDADES.map(u => `<option value="${u}" ${u === (data.unidade || 'un') ? 'selected' : ''}>${u}</option>`).join('');
+        const custoVal = data.custo ? data.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+
+        row.innerHTML = `
+            <input type="text" class="ins-nome form-input" placeholder="Ex: Leite Moça" value="${data.nome || ''}" style="font-size:13px;padding:8px 10px;">
+            <input type="number" class="ins-qtd form-input" placeholder="Qtd" value="${data.quantidade || ''}" min="0" step="any" style="font-size:13px;padding:8px 10px;">
+            <select class="ins-unid form-input" style="font-size:13px;padding:8px 6px;">${selectOpts}</select>
+            <input type="text" class="ins-custo form-input" placeholder="R$ custo" value="${custoVal}" inputmode="numeric" style="font-size:13px;padding:8px 10px;">
+            <button type="button" class="ins-remove" style="background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:0;line-height:1;">×</button>
+        `;
+
+        bindMoeda(row.querySelector('.ins-custo'));
+        row.querySelector('.ins-custo').addEventListener('input', calcularTotalInsumos);
+        row.querySelector('.ins-remove').addEventListener('click', () => {
+            row.remove();
+            calcularTotalInsumos();
+        });
+
+        insumosList.appendChild(row);
+        calcularTotalInsumos();
+    }
+
+    if (addInsumoBtn) addInsumoBtn.addEventListener('click', () => addInsumoRow());
+
+    function getInsumos() {
+        if (!insumosList) return [];
+        return Array.from(insumosList.querySelectorAll('.insumo-row')).map(row => ({
+            nome: row.querySelector('.ins-nome')?.value.trim() || '',
+            quantidade: parseFloat(row.querySelector('.ins-qtd')?.value) || 1,
+            unidade: row.querySelector('.ins-unid')?.value || 'un',
+            custo: parseFloat(row.querySelector('.ins-custo')?.value.replace(/\./g, '').replace(',', '.')) || 0,
+        })).filter(r => r.nome);
+    }
+
     if (adForm) {
         adForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -185,7 +262,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
 
-            const body = { titulo, descricao, preco, custo, categoria, condicao, quantidade, foto_principal: fotoUrl, imagens_extras };
+            const insumos = getInsumos();
+            const body = { titulo, descricao, preco, custo, insumos, categoria, condicao, quantidade, foto_principal: fotoUrl, imagens_extras };
 
             try {
                 if (editId) {
