@@ -241,6 +241,14 @@ def init_db():
                 c.execute("ALTER TABLE usuarios ADD COLUMN estado VARCHAR(2) NULL DEFAULT NULL")
             except Exception:
                 pass
+            try:
+                c.execute("ALTER TABLE produtos ADD COLUMN custo DECIMAL(10,2) NULL DEFAULT NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE produtos ADD COLUMN visualizacoes INT NOT NULL DEFAULT 0")
+            except Exception:
+                pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -635,6 +643,173 @@ def me():
         db.close()
 
 
+# ── ANALYTICS ────────────────────────────────────────────────────────────────
+
+@app.route('/me/analytics', methods=['GET', 'OPTIONS'])
+def me_analytics():
+    uid, e = require_auth()
+    if e:
+        return e
+
+    dias = min(int(request.args.get('dias', 30)), 365)
+    data_inicio = datetime.now() - timedelta(days=dias)
+
+    db = get_db()
+    try:
+        # Visão financeira
+        with db.cursor() as c:
+            c.execute("""
+                SELECT COUNT(*) as total_pedidos,
+                       COALESCE(SUM(preco_total), 0) as faturamento,
+                       COALESCE(AVG(preco_total), 0) as ticket_medio
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s
+            """, (uid, data_inicio))
+            financeiro = c.fetchone()
+
+        with db.cursor() as c:
+            c.execute("""
+                SELECT COALESCE(SUM(pe.preco_total - (COALESCE(pr.custo, 0) * pe.quantidade)), 0) as lucro,
+                       COALESCE(SUM(pe.preco_total), 0) as fat_com_custo
+                FROM pedidos pe JOIN produtos pr ON pe.produto_id=pr.id
+                WHERE pe.vendedor_id=%s AND pe.status='entregue' AND pe.criado_em >= %s
+                  AND pr.custo IS NOT NULL AND pr.custo > 0
+            """, (uid, data_inicio))
+            custo_row = c.fetchone()
+
+        # Performance de produtos (top 10 por receita)
+        with db.cursor() as c:
+            c.execute("""
+                SELECT pr.id, pr.titulo, pr.categoria, pr.preco, pr.custo, pr.visualizacoes,
+                       COUNT(pe.id) as total_vendas,
+                       COALESCE(SUM(pe.quantidade), 0) as unidades,
+                       COALESCE(SUM(pe.preco_total), 0) as receita
+                FROM produtos pr
+                LEFT JOIN pedidos pe ON pe.produto_id=pr.id AND pe.status='entregue' AND pe.criado_em >= %s
+                WHERE pr.usuario_id=%s
+                GROUP BY pr.id ORDER BY receita DESC LIMIT 10
+            """, (data_inicio, uid))
+            produtos_perf = c.fetchall()
+
+        with db.cursor() as c:
+            c.execute("""
+                SELECT COUNT(*) as n FROM produtos WHERE usuario_id=%s AND status='disponivel'
+                AND id NOT IN (SELECT DISTINCT produto_id FROM pedidos WHERE status='entregue')
+            """, (uid,))
+            encalhados = int(c.fetchone()['n'])
+
+        # Comportamento de clientes
+        with db.cursor() as c:
+            c.execute("""
+                SELECT comprador_id, COUNT(*) as pedidos
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s
+                GROUP BY comprador_id
+            """, (uid, data_inicio))
+            compradores = c.fetchall()
+
+        total_compradores = len(compradores)
+        recorrentes = sum(1 for r in compradores if r['pedidos'] > 1)
+        novos = total_compradores - recorrentes
+
+        with db.cursor() as c:
+            c.execute("""
+                SELECT COUNT(DISTINCT comprador_id) as n, COALESCE(SUM(preco_total),0) as fat
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
+            """, (uid,))
+            ltv_row = c.fetchone()
+        ltv = float(ltv_row['fat']) / ltv_row['n'] if ltv_row['n'] else 0
+
+        # Funil de conversão
+        with db.cursor() as c:
+            c.execute("SELECT COALESCE(SUM(visualizacoes),0) as v FROM produtos WHERE usuario_id=%s", (uid,))
+            views = int(c.fetchone()['v'])
+
+        with db.cursor() as c:
+            c.execute("""
+                SELECT COUNT(*) as n FROM favoritos f
+                JOIN produtos pr ON f.produto_id=pr.id WHERE pr.usuario_id=%s
+            """, (uid,))
+            favoritos_total = int(c.fetchone()['n'])
+
+        with db.cursor() as c:
+            c.execute("SELECT COUNT(*) as n FROM pedidos WHERE vendedor_id=%s AND status!='cancelado'", (uid,))
+            pedidos_iniciados = int(c.fetchone()['n'])
+
+        with db.cursor() as c:
+            c.execute("SELECT COUNT(*) as n FROM pedidos WHERE vendedor_id=%s AND status='entregue'", (uid,))
+            pedidos_entregues = int(c.fetchone()['n'])
+
+        # Temporal: vendas por dia da semana (MySQL: 1=Dom...7=Sáb)
+        with db.cursor() as c:
+            c.execute("""
+                SELECT DAYOFWEEK(criado_em) as dow, COUNT(*) as pedidos, COALESCE(SUM(preco_total),0) as receita
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
+                GROUP BY dow ORDER BY dow
+            """, (uid,))
+            por_dow = {r['dow']: r for r in c.fetchall()}
+
+        nomes_dow = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+        vendas_por_dia = [
+            {'dia': nomes_dow[i], 'pedidos': int(por_dow.get(i+1, {}).get('pedidos', 0)),
+             'receita': float(por_dow.get(i+1, {}).get('receita', 0))}
+            for i in range(7)
+        ]
+
+        # Temporal: últimos 6 meses
+        with db.cursor() as c:
+            c.execute("""
+                SELECT DATE_FORMAT(criado_em,'%%Y-%%m') as mes,
+                       COALESCE(SUM(preco_total),0) as receita, COUNT(*) as pedidos
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
+                  AND criado_em >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                GROUP BY mes ORDER BY mes
+            """, (uid,))
+            por_mes = [{'mes': r['mes'], 'receita': float(r['receita']), 'pedidos': int(r['pedidos'])}
+                       for r in c.fetchall()]
+
+        return ok({
+            'financeiro': {
+                'faturamento': float(financeiro['faturamento']),
+                'ticket_medio': float(financeiro['ticket_medio']),
+                'total_pedidos': int(financeiro['total_pedidos']),
+                'lucro_liquido': float(custo_row['lucro']),
+                'has_custo': float(custo_row['fat_com_custo']) > 0,
+            },
+            'produtos': [{
+                'id': p['id'], 'titulo': p['titulo'], 'categoria': p['categoria'],
+                'preco': float(p['preco']),
+                'custo': float(p['custo']) if p['custo'] else None,
+                'visualizacoes': int(p['visualizacoes'] or 0),
+                'total_vendas': int(p['total_vendas']),
+                'unidades': int(p['unidades']),
+                'receita': float(p['receita']),
+                'margem_pct': round((1 - float(p['custo']) / float(p['preco'])) * 100, 1)
+                             if p['custo'] and float(p['preco']) > 0 else None,
+            } for p in produtos_perf],
+            'encalhados': encalhados,
+            'clientes': {
+                'total': total_compradores,
+                'novos': novos,
+                'recorrentes': recorrentes,
+                'ltv': round(ltv, 2),
+                'pct_novos': round(novos / total_compradores * 100) if total_compradores else 0,
+                'pct_recorrentes': round(recorrentes / total_compradores * 100) if total_compradores else 0,
+            },
+            'funil': {
+                'views': views,
+                'favoritos': favoritos_total,
+                'pedidos_iniciados': pedidos_iniciados,
+                'pedidos_entregues': pedidos_entregues,
+            },
+            'temporal': {
+                'por_dia_semana': vendas_por_dia,
+                'por_mes': por_mes,
+            },
+            'periodo_dias': dias,
+        })
+    finally:
+        db.close()
+
+
 # ── PRODUTOS ──────────────────────────────────────────────────────────────────
 
 @app.route('/produtos', methods=['GET', 'POST', 'OPTIONS'])
@@ -722,6 +897,8 @@ def produtos():
         condicao = body.get('condicao', 'Usado')
         foto = body.get('foto_principal', '')
         quantidade = int(body.get('quantidade', 1))
+        custo = body.get('custo')
+        custo = float(custo) if custo not in (None, '', 0, '0') else None
 
         if not titulo or preco is None:
             return err('Título e preço são obrigatórios')
@@ -730,8 +907,8 @@ def produtos():
 
         with db.cursor() as c:
             c.execute(
-                "INSERT INTO produtos (usuario_id, titulo, preco, categoria, descricao, condicao, foto_principal, quantidade) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                (uid, titulo, preco, categoria, descricao, condicao, foto, quantidade)
+                "INSERT INTO produtos (usuario_id, titulo, preco, categoria, descricao, condicao, foto_principal, quantidade, custo) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (uid, titulo, preco, categoria, descricao, condicao, foto, quantidade, custo)
             )
             pid = c.lastrowid
 
@@ -769,6 +946,9 @@ def produto_item():
             if not p:
                 return err('Produto não encontrado', 404)
 
+            with db.cursor() as c:
+                c.execute("UPDATE produtos SET visualizacoes = visualizacoes + 1 WHERE id=%s", (pid,))
+
             fav = False
             if uid:
                 with db.cursor() as c:
@@ -794,6 +974,7 @@ def produto_item():
                 'id': p['id'], 'titulo': p['titulo'], 'descricao': p['descricao'],
                 'preco': float(p['preco']),
                 'preco_fmt': f"{float(p['preco']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                'custo': float(p['custo']) if p.get('custo') else None,
                 'categoria': p['categoria'], 'condicao': p['condicao'],
                 'foto': p['foto_principal'], 'imagens': imgs_extras,
                 'status': p['status'],
@@ -826,6 +1007,10 @@ def produto_item():
             for f in ['titulo', 'preco', 'categoria', 'descricao', 'condicao', 'foto_principal', 'quantidade', 'status']:
                 if f in body:
                     campos.append(f"{f}=%s"); valores.append(body[f])
+            if 'custo' in body:
+                custo_val = body.get('custo')
+                custo_val = float(custo_val) if custo_val not in (None, '', 0, '0') else None
+                campos.append("custo=%s"); valores.append(custo_val)
             if not campos:
                 return err('Nenhum campo para atualizar')
             valores.append(pid)

@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/accessibility.css">
+    <style>
+        @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr !important; } }
+    </style>
 </head>
 
 <body class="dashboard-body">
@@ -144,6 +147,19 @@
                 <span>Configurações</span>
                 <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </a>
+            <a href="/Templates/relatorio.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+                <span>Relatório</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </a>
@@ -495,6 +511,67 @@
 
         </section>
 
+        <!-- ANALYTICS SECTION -->
+        <section style="margin-bottom:40px;">
+            <div class="section-header" style="margin-bottom:20px;">
+                <div>
+                    <h2>Desempenho de Vendas</h2>
+                    <span class="subtitle">Resumo dos últimos 30 dias · <a href="/Templates/relatorio.html" style="color:var(--primary);font-weight:600;">Ver relatório completo →</a></span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <select id="analytics-periodo" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;">
+                        <option value="30">Últimos 30 dias</option>
+                        <option value="90">Últimos 90 dias</option>
+                        <option value="365">Último ano</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Mini stat cards -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px;" id="analytics-cards">
+                <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Faturamento</div>
+                    <div id="an-faturamento" style="font-size:22px;font-weight:800;color:#1e293b;margin-top:6px;">—</div>
+                </div>
+                <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Ticket Médio</div>
+                    <div id="an-ticket" style="font-size:22px;font-weight:800;color:#1e293b;margin-top:6px;">—</div>
+                </div>
+                <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Pedidos</div>
+                    <div id="an-pedidos" style="font-size:22px;font-weight:800;color:#1e293b;margin-top:6px;">—</div>
+                </div>
+                <div id="an-lucro-card" style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:none;">
+                    <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Lucro Estimado</div>
+                    <div id="an-lucro" style="font-size:22px;font-weight:800;color:#16a34a;margin-top:6px;">—</div>
+                </div>
+            </div>
+
+            <!-- Charts grid -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;" class="charts-grid">
+                <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Produtos mais vendidos</div>
+                    <canvas id="chart-top-produtos" height="200"></canvas>
+                </div>
+                <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Funil de conversão</div>
+                    <canvas id="chart-funil" height="200"></canvas>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="charts-grid">
+                <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px;">Pico de vendas por dia</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-bottom:16px;">Pedidos entregues por dia da semana</div>
+                    <canvas id="chart-dias" height="200"></canvas>
+                </div>
+                <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Comportamento de clientes</div>
+                    <div id="clientes-stats" style="display:flex;flex-direction:column;gap:16px;"></div>
+                </div>
+            </div>
+        </section>
+
         <footer class="dashboard-footer">
             <div class="footer-content">
                 <div class="footer-links">
@@ -558,6 +635,7 @@
         </button>
     </nav>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="/static/js/main.js?v=2"></script>
     <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/accessibility.js" defer></script>

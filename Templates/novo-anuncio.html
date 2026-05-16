@@ -144,6 +144,19 @@
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </a>
+            <a href="/Templates/relatorio.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+                <span>Relatório</span>
+                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </a>
             <a href="/Templates/admin.html" class="nav-item admin-only" style="display: none;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
@@ -317,10 +330,21 @@
                         oninput="document.getElementById('desc-counter').textContent=this.value.length+'/300';document.getElementById('desc-counter').style.color=this.value.length>=280?'#ef4444':'#94a3b8';"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Preço *</label>
-                    <input type="text" id="product-price" class="form-input" placeholder="R$ 0,00"
-                        inputmode="numeric" autocomplete="off" required>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Preço de Venda *</label>
+                        <input type="text" id="product-price" class="form-input" placeholder="R$ 0,00"
+                            inputmode="numeric" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="display:flex;align-items:center;gap:6px;">
+                            Custo do Produto
+                            <span style="font-size:11px;background:#f0fafa;color:#00a6a6;border:1px solid #b2e8e8;border-radius:99px;padding:1px 7px;font-weight:600;">Privado</span>
+                        </label>
+                        <input type="text" id="product-cost" class="form-input" placeholder="R$ 0,00"
+                            inputmode="numeric" autocomplete="off">
+                        <span style="font-size:11px;color:#94a3b8;margin-top:4px;display:block;">Usado apenas nos seus relatórios de margem</span>
+                    </div>
                 </div>
 
                 <div class="form-group">

@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             const counter = document.getElementById('desc-counter');
             if (counter) counter.textContent = descEl.value.length + '/300';
             document.getElementById('product-price').value = floatParaPreco(produto.preco);
+            if (produto.custo && document.getElementById('product-cost')) {
+                document.getElementById('product-cost').value = floatParaPreco(produto.custo);
+            }
             if (document.getElementById('product-quantity')) {
                 document.getElementById('product-quantity').value = produto.quantidade ?? 1;
             }
@@ -125,16 +128,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Máscara de moeda BRL
-    const precoInput = document.getElementById('product-price');
-    if (precoInput) {
-        function aplicarMascara(input) {
-            const nums = input.value.replace(/\D/g, '');
-            if (!nums) { input.value = ''; return; }
-            const centavos = parseInt(nums, 10);
-            input.value = (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-        precoInput.addEventListener('input', function () { aplicarMascara(this); });
-        precoInput.addEventListener('keydown', function (e) {
+    function aplicarMascaraBRL(input) {
+        const nums = input.value.replace(/\D/g, '');
+        if (!nums) { input.value = ''; return; }
+        const centavos = parseInt(nums, 10);
+        input.value = (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function bindMoeda(el) {
+        if (!el) return;
+        el.addEventListener('input', function () { aplicarMascaraBRL(this); });
+        el.addEventListener('keydown', function (e) {
             if (e.key === 'Backspace') {
                 const nums = this.value.replace(/\D/g, '').slice(0, -1);
                 if (!nums) { this.value = ''; e.preventDefault(); return; }
@@ -144,6 +147,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
     }
+    bindMoeda(document.getElementById('product-price'));
+    bindMoeda(document.getElementById('product-cost'));
 
     function precoParaFloat(val) {
         return parseFloat(val.replace(/\./g, '').replace(',', '.')) || 0;
@@ -162,6 +167,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const titulo     = document.getElementById('product-title').value.trim();
             const descricao  = document.getElementById('product-description').value.trim();
             const preco      = precoParaFloat(document.getElementById('product-price').value);
+            const custoRaw   = document.getElementById('product-cost')?.value;
+            const custo      = custoRaw ? precoParaFloat(custoRaw) : null;
             const catSelect  = document.getElementById('product-category');
             const condSelect = document.getElementById('product-condition');
             const categoria  = catSelect.options[catSelect.selectedIndex].value || catSelect.options[catSelect.selectedIndex].text;
@@ -178,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Salvando...'; }
 
-            const body = { titulo, descricao, preco, categoria, condicao, quantidade, foto_principal: fotoUrl, imagens_extras };
+            const body = { titulo, descricao, preco, custo, categoria, condicao, quantidade, foto_principal: fotoUrl, imagens_extras };
 
             try {
                 if (editId) {
