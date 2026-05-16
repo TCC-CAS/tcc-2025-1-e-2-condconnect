@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     let todasPropostas = [];
     let currentOrderPage = 1;
     let currentPropostaPage = 1;
+    let currentStatusFilter = 'todos';
+    let currentPropostaStatusFilter = 'todas';
 
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
@@ -64,9 +66,54 @@ document.addEventListener('DOMContentLoaded', async function () {
         return html;
     }
 
+    // ── Filter bars ──────────────────────────────────────────────────────
+
+    function renderFilterBar(tipo) {
+        const bar = document.getElementById('status-filter-bar');
+        if (!bar) return;
+        const statuses = ['todos', 'aguardando', 'confirmado', 'enviado', 'entregue', 'cancelado'];
+        const labels = { todos: 'Todos', aguardando: 'Aguardando', confirmado: 'Confirmado', enviado: 'A Caminho', entregue: 'Entregue', cancelado: 'Cancelado' };
+        bar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;';
+        bar.innerHTML = statuses.map(s => {
+            const active = s === currentStatusFilter;
+            return `<button class="filter-pill" data-status="${s}" style="padding:6px 16px;border-radius:100px;border:2px solid ${active ? 'var(--primary)' : '#e2e8f0'};background:${active ? 'var(--primary)' : 'white'};color:${active ? 'white' : '#64748b'};font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">${labels[s]}</button>`;
+        }).join('');
+        bar.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                currentStatusFilter = pill.dataset.status;
+                currentOrderPage = 1;
+                renderFilterBar(tipo);
+                renderOrdersPage(tipo, 1);
+            });
+        });
+    }
+
+    function renderPropostaFilterBar() {
+        const bar = document.getElementById('status-filter-bar');
+        if (!bar) return;
+        const statuses = ['todas', 'pendente', 'aceita', 'recusada', 'cancelada'];
+        const labels = { todas: 'Todas', pendente: 'Pendente', aceita: 'Aceita', recusada: 'Recusada', cancelada: 'Cancelada' };
+        bar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;';
+        bar.innerHTML = statuses.map(s => {
+            const active = s === currentPropostaStatusFilter;
+            return `<button class="filter-pill-p" data-status="${s}" style="padding:6px 16px;border-radius:100px;border:2px solid ${active ? 'var(--primary)' : '#e2e8f0'};background:${active ? 'var(--primary)' : 'white'};color:${active ? 'white' : '#64748b'};font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">${labels[s]}</button>`;
+        }).join('');
+        bar.querySelectorAll('.filter-pill-p').forEach(pill => {
+            pill.addEventListener('click', () => {
+                currentPropostaStatusFilter = pill.dataset.status;
+                currentPropostaPage = 1;
+                renderPropostaFilterBar();
+                renderPropostasPage(currentPropostaPage);
+            });
+        });
+    }
+
+    // ── Propostas ────────────────────────────────────────────────────────
+
     async function renderPropostas(subtipo) {
         propostaSubtipo = subtipo;
         currentPropostaPage = 1;
+        currentPropostaStatusFilter = 'todas';
         if (!ordersList) return;
         ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Carregando...</div>';
         if (emptyState) emptyState.style.display = 'none';
@@ -78,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const countEl = document.getElementById('propostas-count');
             if (countEl) countEl.textContent = `(${todasPropostas.length})`;
 
+            renderPropostaFilterBar();
             renderPropostasPage(currentPropostaPage);
         } catch {
             ordersList.innerHTML = buildSubTabs(subtipo) + '<div style="text-align:center;padding:40px;color:#dc2626">Erro ao carregar propostas.</div>';
@@ -101,11 +149,16 @@ document.addEventListener('DOMContentLoaded', async function () {
     function renderPropostasPage(page) {
         currentPropostaPage = page;
         const subtipo = propostaSubtipo;
-        const start = (page - 1) * PAGE_SIZE;
-        const slice = todasPropostas.slice(start, start + PAGE_SIZE);
 
-        if (todasPropostas.length === 0) {
-            ordersList.innerHTML = buildSubTabs(subtipo) + '<div style="text-align:center;padding:40px;color:#6b7280;">Nenhuma proposta encontrada.</div>';
+        const filtered = currentPropostaStatusFilter === 'todas'
+            ? todasPropostas
+            : todasPropostas.filter(p => p.status === currentPropostaStatusFilter);
+
+        const start = (page - 1) * PAGE_SIZE;
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+
+        if (filtered.length === 0) {
+            ordersList.innerHTML = buildSubTabs(subtipo) + '<div style="text-align:center;padding:40px;color:#6b7280;">Nenhuma proposta com este status.</div>';
             return;
         }
 
@@ -135,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">${acoesBtns}</div>
                     </div>
                 </div>`;
-        }).join('') + renderPagination(todasPropostas.length, page, 'mudarPaginaProposta');
+        }).join('') + renderPagination(filtered.length, page, 'mudarPaginaProposta');
 
         document.querySelectorAll('.btn-aceitar-proposta').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -181,6 +234,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.renderPropostasSub = renderPropostas;
     window.mudarPaginaProposta = function(page) { renderPropostasPage(page); };
 
+    // ── Pedidos (compras / vendas) ────────────────────────────────────────
+
     async function renderOrders(tipo) {
         currentTipo = tipo;
 
@@ -198,6 +253,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const tipoApi = tipo === 'purchases' ? 'compras' : 'vendas';
             const data = await CondConnect.api(`/pedidos?tipo=${tipoApi}`);
             currentPedidos = data.pedidos || [];
+            currentStatusFilter = 'todos';
             currentOrderPage = 1;
 
             const countPurchases = document.getElementById('purchases-count');
@@ -206,11 +262,14 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (tipo === 'sales' && countSales) countSales.textContent = `(${currentPedidos.length})`;
 
             if (currentPedidos.length === 0) {
+                const bar = document.getElementById('status-filter-bar');
+                if (bar) bar.style.display = 'none';
                 ordersList.innerHTML = '';
                 if (emptyState) emptyState.style.display = 'flex';
                 return;
             }
 
+            renderFilterBar(tipo);
             renderOrdersPage(tipo, 1);
         } catch {
             ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626">Erro ao carregar pedidos.</div>';
@@ -219,8 +278,18 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function renderOrdersPage(tipo, page) {
         currentOrderPage = page;
+
+        const filtered = currentStatusFilter === 'todos'
+            ? currentPedidos
+            : currentPedidos.filter(o => o.status === currentStatusFilter);
+
         const start = (page - 1) * PAGE_SIZE;
-        const slice = currentPedidos.slice(start, start + PAGE_SIZE);
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+
+        if (filtered.length === 0) {
+            ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280;">Nenhum pedido com este status.</div>';
+            return;
+        }
 
         ordersList.innerHTML = slice.map(order => {
             const chave = tipo === 'purchases' ? 'vendedor' : 'comprador';
@@ -250,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     </div>
                 </div>
             `;
-        }).join('') + renderPagination(currentPedidos.length, page, 'mudarPaginaPedido');
+        }).join('') + renderPagination(filtered.length, page, 'mudarPaginaPedido');
 
         document.querySelectorAll('.btn-track').forEach(btn => {
             btn.addEventListener('click', () => openTracking(parseInt(btn.getAttribute('data-id'))));
@@ -289,6 +358,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     window.mudarPaginaPedido = function(page) { renderOrdersPage(currentTipo, page); };
+
+    // ── Tracking modal ───────────────────────────────────────────────────
 
     function openTracking(id) {
         const order = currentPedidos.find(o => o.id === id);
