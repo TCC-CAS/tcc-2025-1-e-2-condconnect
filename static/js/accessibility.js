@@ -30,9 +30,7 @@
 
         document.querySelectorAll('.nav-item').forEach(item => {
             const text = item.querySelector('span')?.textContent?.trim();
-            if (text && !item.getAttribute('aria-label')) {
-                item.setAttribute('aria-label', text);
-            }
+            if (text && !item.getAttribute('aria-label')) item.setAttribute('aria-label', text);
         });
 
         document.querySelectorAll('.like-btn').forEach(btn => {
@@ -44,15 +42,11 @@
             });
         });
 
-        document.querySelectorAll('img:not([alt])').forEach(img => {
-            img.setAttribute('alt', '');
-        });
+        document.querySelectorAll('img:not([alt])').forEach(img => img.setAttribute('alt', ''));
 
         document.querySelectorAll('input:not([aria-label])').forEach(input => {
             const label = document.querySelector(`label[for="${input.id}"]`);
-            if (!label && input.placeholder) {
-                input.setAttribute('aria-label', input.placeholder);
-            }
+            if (!label && input.placeholder) input.setAttribute('aria-label', input.placeholder);
         });
 
         // ── Botão flutuante ───────────────────────────────────────────────
@@ -86,7 +80,25 @@
                 </label>
             </div>
             <div class="a11y-option">
-                <span>Leitura em voz alta</span>
+                <label for="toggle-tab-tts">Leitura ao navegar (Tab)</label>
+                <label class="a11y-toggle">
+                    <input type="checkbox" id="toggle-tab-tts" aria-label="Ativar leitura ao navegar com Tab">
+                    <span class="a11y-toggle-slider"></span>
+                </label>
+            </div>
+            <div class="a11y-option" style="margin-top:2px;">
+                <label for="tts-speed" style="font-size:13px;">Velocidade da leitura</label>
+                <select id="tts-speed" aria-label="Velocidade da leitura em voz alta" style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;font-family:inherit;color:#374151;cursor:pointer;background:white;">
+                    <option value="0.5">0,5×</option>
+                    <option value="0.75">0,75×</option>
+                    <option value="1" selected>1× (padrão)</option>
+                    <option value="1.25">1,25×</option>
+                    <option value="1.5">1,5×</option>
+                    <option value="2">2×</option>
+                </select>
+            </div>
+            <div class="a11y-option" style="margin-top:4px;">
+                <span>Ler página completa</span>
                 <button id="btn-tts" aria-label="Ativar leitura em voz alta" style="background:#00a6a6;color:white;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;">▶ Ouvir</button>
             </div>
             <div class="a11y-option" style="font-size:11px;color:#64748b;margin-top:4px;">
@@ -152,16 +164,90 @@
             }
         });
 
-        // ── Text-to-Speech ────────────────────────────────────────────────
+        // ── TTS helpers ───────────────────────────────────────────────────
+        const speedSelect = document.getElementById('tts-speed');
+        const savedSpeed = localStorage.getItem('a11y-tts-speed');
+        if (savedSpeed) speedSelect.value = savedSpeed;
+
+        speedSelect.addEventListener('change', () => {
+            localStorage.setItem('a11y-tts-speed', speedSelect.value);
+            announce('Velocidade: ' + speedSelect.options[speedSelect.selectedIndex].text);
+        });
+
+        function getTTSRate() {
+            return parseFloat(speedSelect.value) || 1;
+        }
+
+        function getPtVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            return voices.find(v => v.lang.startsWith('pt')) || null;
+        }
+
+        function speak(text) {
+            if (!text || text.trim().length < 2) return;
+            window.speechSynthesis.cancel();
+            const utt = new SpeechSynthesisUtterance(text.trim());
+            utt.lang = 'pt-BR';
+            utt.rate = getTTSRate();
+            utt.pitch = 1;
+            const voice = getPtVoice();
+            if (voice) utt.voice = voice;
+            window.speechSynthesis.speak(utt);
+        }
+
+        // ── Leitura ao navegar com Tab ────────────────────────────────────
+        const tabTtsToggle = document.getElementById('toggle-tab-tts');
+        let tabTtsActive = localStorage.getItem('a11y-tab-tts') === '1';
+        tabTtsToggle.checked = tabTtsActive;
+
+        tabTtsToggle.addEventListener('change', () => {
+            tabTtsActive = tabTtsToggle.checked;
+            localStorage.setItem('a11y-tab-tts', tabTtsActive ? '1' : '0');
+            if (!tabTtsActive) window.speechSynthesis.cancel();
+            announce(tabTtsActive ? 'Leitura ao navegar ativada' : 'Leitura ao navegar desativada');
+        });
+
+        function getReadableText(el) {
+            // Priority: aria-label > title > alt (img) > placeholder > text content
+            const ariaLabel = el.getAttribute('aria-label');
+            if (ariaLabel) return ariaLabel;
+            const title = el.getAttribute('title');
+            if (title) return title;
+            if (el.tagName === 'IMG') return el.getAttribute('alt') || 'Imagem';
+            const placeholder = el.getAttribute('placeholder');
+            if (placeholder) return placeholder;
+            // For inputs, read type + value
+            if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+                const labelEl = el.id ? document.querySelector(`label[for="${el.id}"]`) : null;
+                const labelText = labelEl ? labelEl.textContent.trim() : '';
+                const val = el.value ? ': ' + el.value : '';
+                return (labelText || el.type || 'campo') + val;
+            }
+            // General text — trim and strip excess whitespace
+            const text = el.textContent?.replace(/\s+/g, ' ').trim() || '';
+            // Limit long texts to avoid reading entire sections
+            return text.length > 200 ? text.slice(0, 200) + '...' : text;
+        }
+
+        // Use 'focusin' to catch all focus events including bubbled ones
+        document.addEventListener('focusin', e => {
+            if (!tabTtsActive) return;
+            // Skip the accessibility panel itself
+            if (panel.contains(e.target) || e.target === btn) return;
+            const text = getReadableText(e.target);
+            if (text && text.length > 1) speak(text);
+        });
+
+        // ── Ler página completa ────────────────────────────────────────────
         const ttsBtn = document.getElementById('btn-tts');
         let ttsActive = false;
 
         function getPageText() {
-            const main = document.querySelector('#main-content, .main-content, main') || document.body;
-            const skip = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'BUTTON', 'NAV', 'ASIDE'];
+            const mainEl = document.querySelector('#main-content, .main-content, main') || document.body;
+            const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'BUTTON', 'NAV', 'ASIDE'];
             let text = '';
-            main.querySelectorAll('h1,h2,h3,h4,p,span,label,li,td,th,.product-title,.product-price,.stat-value').forEach(el => {
-                if (skip.includes(el.tagName)) return;
+            mainEl.querySelectorAll('h1,h2,h3,h4,p,span,label,li,td,th,.product-title,.product-price,.stat-value').forEach(el => {
+                if (skipTags.includes(el.tagName)) return;
                 if (el.closest('nav, aside, script, style')) return;
                 const t = el.textContent.trim();
                 if (t.length > 2) text += t + '. ';
@@ -182,20 +268,16 @@
                 ttsBtn.disabled = true;
             } else {
                 ttsBtn.addEventListener('click', () => {
-                    if (ttsActive) {
-                        stopTTS();
-                        return;
-                    }
-                    const utterance = new SpeechSynthesisUtterance(getPageText());
-                    utterance.lang = 'pt-BR';
-                    utterance.rate = 0.95;
-                    utterance.pitch = 1;
-                    const voices = window.speechSynthesis.getVoices();
-                    const ptVoice = voices.find(v => v.lang.startsWith('pt'));
-                    if (ptVoice) utterance.voice = ptVoice;
-                    utterance.onend = stopTTS;
-                    utterance.onerror = stopTTS;
-                    window.speechSynthesis.speak(utterance);
+                    if (ttsActive) { stopTTS(); return; }
+                    const utt = new SpeechSynthesisUtterance(getPageText());
+                    utt.lang = 'pt-BR';
+                    utt.rate = getTTSRate();
+                    utt.pitch = 1;
+                    const voice = getPtVoice();
+                    if (voice) utt.voice = voice;
+                    utt.onend = stopTTS;
+                    utt.onerror = stopTTS;
+                    window.speechSynthesis.speak(utt);
                     ttsActive = true;
                     ttsBtn.textContent = '⏹ Parar';
                     ttsBtn.style.background = '#dc2626';
