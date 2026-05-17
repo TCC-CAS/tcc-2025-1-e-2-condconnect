@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const MAX_PHOTOS = 5;
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
+    const reativar = urlParams.get('reativar') === '1';
 
     // photoUrls[0] = foto_principal, [1-4] = extras
     let photoUrls = ['', '', '', '', ''];
@@ -85,8 +86,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Modo edição
     if (editId) {
-        if (pageTitle) pageTitle.textContent = 'Editar Anúncio';
-        if (pageSubtitle) pageSubtitle.textContent = 'Atualize as informações do seu produto';
+        if (reativar) {
+            if (pageTitle) pageTitle.textContent = 'Reativar Produto';
+            if (pageSubtitle) pageSubtitle.textContent = 'Atualize a quantidade para tornar o produto disponível novamente';
+        } else {
+            if (pageTitle) pageTitle.textContent = 'Editar Anúncio';
+            if (pageSubtitle) pageSubtitle.textContent = 'Atualize as informações do seu produto';
+        }
         if (submitBtn) submitBtn.textContent = 'Salvar Alterações';
 
         try {
@@ -122,6 +128,23 @@ document.addEventListener('DOMContentLoaded', async function () {
             for (let i = 0; i < condSelect.options.length; i++) {
                 if (condSelect.options[i].value === produto.condicao || condSelect.options[i].text === produto.condicao) {
                     condSelect.selectedIndex = i; break;
+                }
+            }
+            if (reativar) {
+                const qtyEl = document.getElementById('product-quantity');
+                if (qtyEl) {
+                    setTimeout(() => {
+                        const banner = document.createElement('div');
+                        banner.id = 'reativar-banner';
+                        banner.style.cssText = 'background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:12px;color:#15803d;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;';
+                        banner.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Atualize a quantidade abaixo para reativar seu produto';
+                        qtyEl.parentNode.insertBefore(banner, qtyEl);
+                        qtyEl.style.border = '2px solid #22c55e';
+                        qtyEl.style.background = '#f0fdf4';
+                        qtyEl.focus();
+                        qtyEl.select();
+                        qtyEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
                 }
             }
         } catch (err) {

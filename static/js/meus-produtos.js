@@ -6,12 +6,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const statusLabel = {
         disponivel: 'Disponível',
-        vendido: 'Vendido',
-        pendente: 'Pendente',
-        rejeitado: 'Rejeitado',
+        vendido: 'Indisponível',
+        pendente: 'Indisponível',
+        rejeitado: 'Indisponível',
     };
 
     let todosProdutos = [];
+
+    const statusIndisponivel = ['vendido', 'pendente', 'rejeitado'];
 
     function aplicarFiltros() {
         const q = (mpSearch?.value || '').toLowerCase();
@@ -19,7 +21,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         const ord = mpOrdem?.value || '';
 
         let lista = todosProdutos.filter(p => {
-            if (st && p.status !== st) return false;
+            if (st === 'disponivel' && p.status !== 'disponivel') return false;
+            if (st === 'indisponivel' && !statusIndisponivel.includes(p.status)) return false;
             if (q && !(p.titulo || '').toLowerCase().includes(q)) return false;
             return true;
         });
@@ -66,26 +69,33 @@ document.addEventListener('DOMContentLoaded', async function () {
                             </span>
                         </div>
                     </div>
-                    <div class="product-actions">
-                        <button class="actions-btn" title="Opções" data-id="${produto.id}">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle>
-                            </svg>
-                        </button>
-                        <div class="actions-dropdown">
-                            <a href="/Templates/detalhes-produto.html?id=${produto.id}" class="dropdown-item">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                Visualizar
-                            </a>
-                            <button class="dropdown-item edit-btn" data-id="${produto.id}">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                Editar
+                    <div class="product-actions" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                        ${statusIndisponivel.includes(produto.status) ? `
+                        <a href="/Templates/novo-anuncio.html?edit=${produto.id}&reativar=1"
+                           style="padding:8px 16px;background:#00a6a6;color:white;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;text-decoration:none;white-space:nowrap;">
+                           ✦ Ativar novamente
+                        </a>` : ''}
+                        <div style="position:relative;">
+                            <button class="actions-btn" title="Opções" data-id="${produto.id}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle>
+                                </svg>
                             </button>
-                            <hr>
-                            <button class="dropdown-item delete-btn danger" data-id="${produto.id}">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                Excluir
-                            </button>
+                            <div class="actions-dropdown">
+                                <a href="/Templates/detalhes-produto.html?id=${produto.id}" class="dropdown-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    Visualizar
+                                </a>
+                                <button class="dropdown-item edit-btn" data-id="${produto.id}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Editar
+                                </button>
+                                <hr>
+                                <button class="dropdown-item delete-btn danger" data-id="${produto.id}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    Excluir
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

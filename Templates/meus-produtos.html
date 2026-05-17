@@ -295,23 +295,28 @@
                 </a>
             </section>
 
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:flex-end;">
                 <div style="position:relative;flex:1;min-width:200px;">
-                    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.3px;">BUSCAR</label>
+                    <svg style="position:absolute;left:12px;bottom:11px;color:#94a3b8;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input id="mp-search" type="text" placeholder="Buscar por nome do produto..." style="width:100%;box-sizing:border-box;padding:10px 12px 10px 36px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#e2e8f0'">
                 </div>
-                <select id="mp-status" style="padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;cursor:pointer;background:white;">
-                    <option value="">Todos os status</option>
-                    <option value="disponivel">Disponível</option>
-                    <option value="vendido">Vendido</option>
-                    <option value="pendente">Pendente</option>
-                    <option value="rejeitado">Rejeitado</option>
-                </select>
-                <select id="mp-ordem" style="padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;cursor:pointer;background:white;">
-                    <option value="">Mais recentes</option>
-                    <option value="preco_asc">Menor preço</option>
-                    <option value="preco_desc">Maior preço</option>
-                </select>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.3px;">FILTRAR POR</label>
+                    <select id="mp-status" style="padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;cursor:pointer;background:white;">
+                        <option value="">Todos</option>
+                        <option value="disponivel">Disponível</option>
+                        <option value="indisponivel">Indisponível</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.3px;">CLASSIFICAR POR</label>
+                    <select id="mp-ordem" style="padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;cursor:pointer;background:white;">
+                        <option value="">Mais recentes</option>
+                        <option value="preco_asc">Menor preço</option>
+                        <option value="preco_desc">Maior preço</option>
+                    </select>
+                </div>
             </div>
 
             <div class="product-list" id="my-products-list">
