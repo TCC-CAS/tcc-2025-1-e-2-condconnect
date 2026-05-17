@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const modal = document.getElementById('tracking-modal');
     const closeModal = document.querySelector('.close-modal');
+    const codigoModal = document.getElementById('codigo-modal');
+    const codigoModalInput = document.getElementById('codigo-modal-input');
+    const codigoModalSubmit = document.getElementById('codigo-modal-submit');
+    const codigoModalErro = document.getElementById('codigo-modal-erro');
+    const closeCodigoModal = document.getElementById('close-codigo-modal');
+    let codigoModalPedidoId = null;
 
     const PAGE_SIZE = 10;
 
@@ -307,12 +313,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 : '';
 
             const codigoInputHtml = tipo === 'sales' && order.status === 'enviado'
-                ? `<div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
-                       <input type="text" maxlength="4" inputmode="numeric" placeholder="Código" class="codigo-input" data-id="${order.id}"
-                           style="width:70px;padding:8px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;font-weight:700;text-align:center;font-family:inherit;letter-spacing:4px;">
-                       <button class="btn-confirmar-codigo" data-id="${order.id}"
-                           style="padding:8px 14px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;">Confirmar Entrega</button>
-                   </div>`
+                ? `<button class="btn-abrir-codigo" data-id="${order.id}"
+                       style="margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;">
+                       🔑 Inserir Código
+                   </button>`
                 : '';
 
             return `
@@ -368,24 +372,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
         });
 
-        document.querySelectorAll('.btn-confirmar-codigo').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const input = document.querySelector(`.codigo-input[data-id="${id}"]`);
-                const codigo = input?.value.trim();
-                if (!codigo || codigo.length !== 4) {
-                    await CondConnect.showAlert('Digite o código de 4 dígitos informado pelo comprador.', 'warning');
-                    return;
-                }
-                btn.disabled = true; btn.textContent = 'Confirmando...';
-                try {
-                    await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { codigo_entrega: codigo } });
-                    await CondConnect.showAlert('Entrega confirmada! O valor foi liberado.', 'success');
-                    renderOrders(tipo);
-                } catch (err) {
-                    await CondConnect.showAlert(err.message || 'Código inválido', 'error');
-                    btn.disabled = false; btn.textContent = 'Confirmar Entrega';
-                }
+        document.querySelectorAll('.btn-abrir-codigo').forEach(btn => {
+            btn.addEventListener('click', () => {
+                codigoModalPedidoId = btn.getAttribute('data-id');
+                codigoModalInput.value = '';
+                codigoModalErro.style.display = 'none';
+                codigoModalSubmit.disabled = false;
+                codigoModalSubmit.textContent = 'Confirmar Entrega';
+                codigoModal.classList.add('active');
+                setTimeout(() => codigoModalInput.focus(), 100);
             });
         });
     }
@@ -431,6 +426,34 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (closeModal) closeModal.addEventListener('click', () => modal?.classList.remove('active'));
     window.addEventListener('click', e => { if (e.target === modal) modal?.classList.remove('active'); });
+
+    if (closeCodigoModal) closeCodigoModal.addEventListener('click', () => codigoModal?.classList.remove('active'));
+    window.addEventListener('click', e => { if (e.target === codigoModal) codigoModal?.classList.remove('active'); });
+
+    if (codigoModalSubmit) {
+        codigoModalSubmit.addEventListener('click', async () => {
+            const codigo = codigoModalInput.value.trim();
+            if (!codigo || codigo.length !== 4) {
+                codigoModalErro.textContent = 'Digite o código de 4 dígitos.';
+                codigoModalErro.style.display = 'block';
+                return;
+            }
+            codigoModalSubmit.disabled = true;
+            codigoModalSubmit.textContent = 'Confirmando...';
+            codigoModalErro.style.display = 'none';
+            try {
+                await CondConnect.api(`/pedidos/item?id=${codigoModalPedidoId}`, { method: 'PUT', body: { codigo_entrega: codigo } });
+                codigoModal.classList.remove('active');
+                await CondConnect.showAlert('Entrega confirmada! O valor foi liberado ao vendedor.', 'success');
+                renderOrders(currentTipo);
+            } catch (err) {
+                codigoModalErro.textContent = err.message || 'Código inválido. Tente novamente.';
+                codigoModalErro.style.display = 'block';
+                codigoModalSubmit.disabled = false;
+                codigoModalSubmit.textContent = 'Confirmar Entrega';
+            }
+        });
+    }
 
     renderOrders(currentTipo);
     if (currentTipo !== 'purchases') {

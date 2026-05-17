@@ -1174,7 +1174,12 @@ def pedidos():
                     chave: p['outro_nome']
                 }
                 if tipo == 'compras':
-                    item['codigo_entrega'] = p.get('codigo_entrega')
+                    codigo = p.get('codigo_entrega')
+                    if not codigo and p['status'] not in ('entregue', 'cancelado'):
+                        codigo = f"{secrets.randbelow(10000):04d}"
+                        with db.cursor() as c2:
+                            c2.execute("UPDATE pedidos SET codigo_entrega=%s WHERE id=%s", (codigo, p['id']))
+                    item['codigo_entrega'] = codigo
                 result.append(item)
 
             return ok({'pedidos': result, 'total': len(result)})

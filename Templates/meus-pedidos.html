@@ -336,6 +336,21 @@
             </div>
         </div>
 
+        <!-- Modal de Código de Entrega -->
+        <div id="codigo-modal" class="modal">
+            <div class="modal-content" style="max-width:380px;text-align:center;">
+                <button class="close-modal" id="close-codigo-modal">&times;</button>
+                <div style="font-size:40px;margin-bottom:12px;">🔑</div>
+                <h3 style="margin:0 0 8px;font-size:20px;color:#1e293b;">Confirmar Entrega</h3>
+                <p style="color:#64748b;font-size:14px;margin-bottom:24px;">Digite o código de 4 dígitos informado pelo comprador no momento da entrega.</p>
+                <input id="codigo-modal-input" type="text" maxlength="4" inputmode="numeric" placeholder="0000"
+                    style="width:100%;box-sizing:border-box;padding:16px;border:2px solid #e2e8f0;border-radius:12px;font-size:32px;font-weight:900;text-align:center;font-family:inherit;letter-spacing:10px;margin-bottom:16px;">
+                <button id="codigo-modal-submit"
+                    style="width:100%;padding:14px;background:#00a6a6;color:white;border:none;border-radius:100px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Confirmar Entrega</button>
+                <p id="codigo-modal-erro" style="color:#dc2626;font-size:13px;margin-top:12px;display:none;"></p>
+            </div>
+        </div>
+
         <!-- Tracking Modal -->
         <div id="tracking-modal" class="modal">
             <div class="modal-content">
