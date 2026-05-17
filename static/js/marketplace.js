@@ -1,6 +1,6 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
     const productGrid = document.getElementById('product-grid');
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const categorySelect = document.getElementById('category-select');
 
     let currentCategory = 'all';
     let searchTerm = '';
@@ -62,14 +62,14 @@
         }
     }
 
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            currentCategory = button.getAttribute('data-category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            currentCategory = categorySelect.value;
             renderProducts();
         });
-    });
+        categorySelect.addEventListener('focus', () => categorySelect.style.borderColor = '#00a6a6');
+        categorySelect.addEventListener('blur',  () => categorySelect.style.borderColor = '');
+    }
 
     const searchInput = document.getElementById('marketplace-search');
     if (searchInput) {
