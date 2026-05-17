@@ -72,6 +72,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+
     function destroyChart(id) {
         if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
     }
@@ -109,7 +111,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { right: 70 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v >= 1000 ? 'R$' + (v / 1000).toFixed(1) + 'k' : 'R$' + v.toFixed(0)
+                        }
+                    },
                     scales: {
                         x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(0) + 'k' : 'R$' + v } },
                         y: { grid: { display: false } }
@@ -138,7 +150,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { right: 50 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
                     scales: {
                         x: { grid: { color: '#f1f5f9' } },
                         y: { grid: { display: false } }
@@ -167,7 +189,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { precision: 0 } },
                         x: { grid: { display: false } }
