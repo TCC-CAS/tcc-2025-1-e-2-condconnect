@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     layout: { padding: { right: 70 } },
                     plugins: {
                         legend: { display: false },
@@ -156,6 +157,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     layout: { padding: { right: 50 } },
                     plugins: {
                         legend: { display: false },
@@ -195,6 +197,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     layout: { padding: { top: 20 } },
                     plugins: {
                         legend: { display: false },
