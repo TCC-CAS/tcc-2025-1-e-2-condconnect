@@ -94,12 +94,19 @@ const CondConnect = {
             if (!likeBtn) return;
             const productId = parseInt(likeBtn.getAttribute('data-id') || card.getAttribute('data-id'));
             const isFav = favs.includes(productId);
+            const titulo = likeBtn.getAttribute('data-titulo') || '';
             if (isFav) {
                 likeBtn.style.color = 'var(--error)';
                 likeBtn.querySelector('svg')?.setAttribute('fill', 'currentColor');
+                likeBtn.setAttribute('aria-label', titulo
+                    ? `${titulo} está nos seus favoritos. Pressione Espaço para remover dos favoritos.`
+                    : 'Remover dos favoritos. Pressione Espaço.');
             } else {
                 likeBtn.style.color = '';
                 likeBtn.querySelector('svg')?.setAttribute('fill', 'none');
+                likeBtn.setAttribute('aria-label', titulo
+                    ? `Favoritar ${titulo}. Pressione Espaço para adicionar aos favoritos.`
+                    : 'Adicionar aos favoritos. Pressione Espaço.');
             }
         });
     },
@@ -348,7 +355,7 @@ const CondConnect = {
                 <div class="product-image-container">
                     <img src="${produto.foto || ''}" alt="${produto.titulo}" class="product-image" onerror="this.style.opacity='0';this.parentElement.style.background='#e2e8f0'">
                     <span class="product-tag ${condicaoClass}">${condicao}</span>
-                    <div class="like-btn" data-id="${produto.id}" aria-label="Favoritar ${produto.titulo}">
+                    <div class="like-btn" data-id="${produto.id}" data-titulo="${produto.titulo}" aria-label="Favoritar ${produto.titulo}. Pressione Espaço para adicionar aos favoritos.">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
@@ -439,6 +446,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isFav === null) return; // não autenticado
             likeBtn.style.color = isFav ? '#ef4444' : '';
             likeBtn.querySelector('svg')?.setAttribute('fill', isFav ? 'currentColor' : 'none');
+            const titulo = likeBtn.getAttribute('data-titulo') || '';
+            likeBtn.setAttribute('aria-label', isFav
+                ? (titulo ? `${titulo} está nos seus favoritos. Pressione Espaço para remover dos favoritos.` : 'Remover dos favoritos. Pressione Espaço.')
+                : (titulo ? `Favoritar ${titulo}. Pressione Espaço para adicionar aos favoritos.` : 'Adicionar aos favoritos. Pressione Espaço.'));
         } catch {}
     });
 
