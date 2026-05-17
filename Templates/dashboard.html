@@ -13,9 +13,10 @@
     <link rel="stylesheet" href="/static/css/accessibility.css">
     <style>
         @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr !important; } }
+        .stat-card { position: relative; }
+        .stat-card:hover { z-index: 10000; }
         .stat-info span.chart-info-icon { display: inline-flex !important; align-items: center; justify-content: center; width: 16px !important; height: 16px !important; min-height: 0 !important; border-radius: 50%; flex-shrink: 0; vertical-align: middle; }
-        .stat-info span.chart-info-icon:hover { z-index: 9999 !important; }
-        .stat-info span.chart-tooltip { display: none !important; min-height: 0; font-size: 12px; top: 22px !important; right: 0 !important; left: auto !important; }
+        .stat-info span.chart-tooltip { display: none !important; min-height: 0; font-size: 12px; top: 22px !important; left: 0 !important; right: auto !important; width: 190px !important; }
         .stat-info .chart-info-icon:hover span.chart-tooltip { display: block !important; }
     </style>
 </head>
