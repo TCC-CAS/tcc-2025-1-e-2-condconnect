@@ -87,9 +87,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         set('an-pedidos', f.total_pedidos);
 
         const lucroCard = document.getElementById('an-lucro-card');
+        const margemCard = document.getElementById('an-margem-card');
         if (f.has_custo && lucroCard) {
             lucroCard.style.display = 'block';
             set('an-lucro', brl(f.lucro_liquido));
+            if (margemCard) {
+                margemCard.style.display = 'block';
+                const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : '0.0';
+                set('an-margem', margem + '%');
+            }
         }
 
         // Chart: Top produtos

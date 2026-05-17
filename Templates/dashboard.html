@@ -13,8 +13,10 @@
     <link rel="stylesheet" href="/static/css/accessibility.css">
     <style>
         @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr !important; } }
-        .stat-info span.chart-tooltip { display: none; min-height: 0; font-size: 12px; }
-        .stat-info .chart-info-icon:hover span.chart-tooltip { display: block; }
+        .stat-info span.chart-info-wrap { display: inline-flex !important; align-items: center; gap: 4px; min-height: 0 !important; }
+        .stat-info span.chart-info-icon { display: inline-flex !important; align-items: center; justify-content: center; width: 16px !important; height: 16px !important; min-height: 0 !important; border-radius: 50%; flex-shrink: 0; }
+        .stat-info span.chart-tooltip { display: none !important; min-height: 0; font-size: 12px; }
+        .stat-info .chart-info-icon:hover span.chart-tooltip { display: block !important; }
     </style>
 </head>
 
@@ -396,7 +398,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span class="chart-info-wrap">Favoritos <span class="chart-info-icon">i<span class="chart-tooltip">Quantidade de produtos que você salvou como favorito no marketplace.</span></span></span>
+                    <span class="chart-info-wrap">Favoritos <span class="chart-info-icon">i<span class="chart-tooltip">Quantas vezes seus produtos foram salvos como favorito por outros usuários.</span></span></span>
                     <strong id="stat-favoritos">0</strong>
                 </div>
                 <div class="stat-icon purple">
@@ -546,6 +548,10 @@
                 <div id="an-lucro-card" style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:none;">
                     <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Lucro Estimado</div>
                     <div id="an-lucro" style="font-size:22px;font-weight:800;color:#16a34a;margin-top:6px;">—</div>
+                </div>
+                <div id="an-margem-card" style="background:white;border-radius:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:none;">
+                    <div style="font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Margem de Lucro</div>
+                    <div id="an-margem" style="font-size:22px;font-weight:800;color:#16a34a;margin-top:6px;">—</div>
                 </div>
             </div>
 

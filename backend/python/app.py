@@ -603,7 +603,7 @@ def me():
             with db.cursor() as c:
                 c.execute("SELECT COUNT(*) as n FROM produtos WHERE usuario_id=%s AND status!='rejeitado'", (uid,))
                 total_produtos = c.fetchone()['n']
-                c.execute("SELECT COUNT(*) as n FROM favoritos WHERE usuario_id=%s", (uid,))
+                c.execute("SELECT COUNT(*) as n FROM favoritos f JOIN produtos p ON f.produto_id=p.id WHERE p.usuario_id=%s", (uid,))
                 total_favoritos = c.fetchone()['n']
                 c.execute("SELECT COUNT(*) as n FROM pedidos WHERE comprador_id=%s", (uid,))
                 total_pedidos = c.fetchone()['n']
