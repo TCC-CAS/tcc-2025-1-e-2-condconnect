@@ -559,14 +559,14 @@
                 <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">
                         Produtos mais vendidos
-                        <span class="chart-info-icon">i<span class="chart-tooltip">Ranking dos seus 5 produtos com maior receita total no período selecionado. O valor de cada barra é a soma de (preço × quantidade) de todos os pedidos entregues daquele produto.</span></span>
+                        <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Ranking dos seus 5 produtos com maior receita no período.<br><br><strong>Como é calculado:</strong><br>• Soma de preço × quantidade<br>• Considera apenas pedidos entregues<br>• Ordenado do maior para o menor faturamento</span></span>
                     </div>
                     <canvas id="chart-top-produtos" height="200"></canvas>
                 </div>
                 <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">
                         Funil de conversão
-                        <span class="chart-info-icon">i<span class="chart-tooltip">Mostra quantos usuários avançaram em cada etapa: Visualizações = acessos às páginas dos seus produtos · Favoritos = vezes que foram salvos · Pedidos iniciados = pedidos criados · Pedidos entregues = pedidos concluídos com código confirmado.</span></span>
+                        <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Quantos usuários avançaram em cada etapa.<br><br><strong>Etapas:</strong><br>• <strong>Visualizações:</strong> acessos às páginas dos seus produtos<br>• <strong>Favoritos:</strong> vezes que foram salvos<br>• <strong>Pedidos iniciados:</strong> pedidos criados<br>• <strong>Pedidos entregues:</strong> concluídos com código confirmado</span></span>
                     </div>
                     <canvas id="chart-funil" height="200"></canvas>
                 </div>
@@ -576,7 +576,7 @@
                 <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px;" class="chart-info-wrap">
                         Pico de vendas por dia
-                        <span class="chart-info-icon">i<span class="chart-tooltip">Quantidade de pedidos entregues agrupados pelo dia da semana em que foram criados. Ajuda a identificar quais dias têm mais movimento de compras no seu condomínio.</span></span>
+                        <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Dias com mais vendas na semana.<br><br><strong>Como é calculado:</strong><br>• Agrupa pedidos entregues pelo dia da semana em que foram criados<br>• Útil para saber quando anunciar ou fazer promoções</span></span>
                     </div>
                     <div style="font-size:12px;color:#94a3b8;margin-bottom:16px;">Pedidos entregues por dia da semana</div>
                     <canvas id="chart-dias" height="200"></canvas>
@@ -584,7 +584,7 @@
                 <div style="background:white;border-radius:16px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">
                         Comportamento de clientes
-                        <span class="chart-info-icon">i<span class="chart-tooltip">Novos clientes: compradores que fizeram o 1º pedido com você no período · Recorrentes: compradores com mais de 1 pedido entregue · LTV médio: valor médio total gasto por cliente com você desde o início.</span></span>
+                        <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Perfil dos seus compradores.<br><br><strong>Indicadores:</strong><br>• <strong>Novos:</strong> 1º pedido com você no período<br>• <strong>Recorrentes:</strong> mais de 1 pedido entregue<br>• <strong>LTV médio:</strong> valor total médio gasto por cliente desde o início</span></span>
                     </div>
                     <div id="clientes-stats" style="display:flex;flex-direction:column;gap:16px;"></div>
                 </div>

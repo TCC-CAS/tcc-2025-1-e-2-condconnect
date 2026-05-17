@@ -1,5 +1,8 @@
-﻿document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const productsList = document.getElementById('my-products-list');
+    const mpSearch = document.getElementById('mp-search');
+    const mpStatus = document.getElementById('mp-status');
+    const mpOrdem = document.getElementById('mp-ordem');
 
     const statusLabel = {
         disponivel: 'Disponível',
@@ -8,15 +11,130 @@
         rejeitado: 'Rejeitado',
     };
 
+    let todosProdutos = [];
+
+    function aplicarFiltros() {
+        const q = (mpSearch?.value || '').toLowerCase();
+        const st = mpStatus?.value || '';
+        const ord = mpOrdem?.value || '';
+
+        let lista = todosProdutos.filter(p => {
+            if (st && p.status !== st) return false;
+            if (q && !(p.titulo || '').toLowerCase().includes(q)) return false;
+            return true;
+        });
+
+        if (ord === 'preco_asc') lista.sort((a, b) => a.preco - b.preco);
+        else if (ord === 'preco_desc') lista.sort((a, b) => b.preco - a.preco);
+
+        renderList(lista);
+    }
+
+    if (mpSearch) mpSearch.addEventListener('input', aplicarFiltros);
+    if (mpStatus) mpStatus.addEventListener('change', aplicarFiltros);
+    if (mpOrdem) mpOrdem.addEventListener('change', aplicarFiltros);
+
+    function renderList(produtos) {
+        if (!productsList) return;
+
+        if (produtos.length === 0) {
+            productsList.innerHTML = `
+                <div class="empty-state" style="text-align:center;padding:60px;color:#64748b;">
+                    <p style="font-size:16px;font-weight:500;">Nenhum produto encontrado.</p>
+                </div>`;
+            return;
+        }
+
+        productsList.innerHTML = produtos.map(produto => {
+            const label = statusLabel[produto.status] || produto.status;
+            const dataFmt = new Date(produto.criado_em).toLocaleDateString('pt-BR');
+            return `
+                <div class="product-item" data-id="${produto.id}">
+                    ${produto.foto
+                        ? `<img src="${produto.foto}" alt="${produto.titulo}" class="product-thumb" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">`
+                        : `<div style="width:70px;height:70px;border-radius:8px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+                    }
+                    <div class="product-details">
+                        <h3 class="product-title">${produto.titulo}</h3>
+                        <span class="product-status tag-${produto.status}">${label}</span>
+                        <div class="product-price">${produto.preco_fmt}</div>
+                        <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+                            <span class="product-date">Criado em ${dataFmt}</span>
+                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="${produto.total_favoritos > 0 ? '#ef4444' : 'none'}" stroke="${produto.total_favoritos > 0 ? '#ef4444' : '#94a3b8'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                ${produto.total_favoritos || 0} favorito(s)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="actions-btn" title="Opções" data-id="${produto.id}">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle>
+                            </svg>
+                        </button>
+                        <div class="actions-dropdown">
+                            <a href="/Templates/detalhes-produto.html?id=${produto.id}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                Visualizar
+                            </a>
+                            <button class="dropdown-item edit-btn" data-id="${produto.id}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Editar
+                            </button>
+                            <hr>
+                            <button class="dropdown-item delete-btn danger" data-id="${produto.id}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.actions-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                document.querySelectorAll('.actions-dropdown').forEach(d => {
+                    if (d !== btn.nextElementSibling) d.classList.remove('show');
+                });
+                btn.nextElementSibling?.classList.toggle('show');
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.actions-dropdown').forEach(d => d.classList.remove('show'));
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (!await CondConnect.showConfirm('O anúncio será removido permanentemente.', 'Excluir Anúncio')) return;
+                try {
+                    await CondConnect.api(`/produtos/item?id=${id}`, { method: 'DELETE' });
+                    renderMyProducts();
+                } catch (err) {
+                    await CondConnect.showAlert(err.message || 'Erro ao excluir produto', 'error');
+                }
+            });
+        });
+
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.location.href = `/Templates/novo-anuncio.html?edit=${btn.getAttribute('data-id')}`;
+            });
+        });
+    }
+
     async function renderMyProducts() {
         if (!productsList) return;
         productsList.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Carregando...</div>';
 
         try {
             const raw = await CondConnect.api('/produtos?meus=1');
-            const produtos = Array.isArray(raw) ? raw : (raw.produtos || []);
+            todosProdutos = Array.isArray(raw) ? raw : (raw.produtos || []);
 
-            if (produtos.length === 0) {
+            if (todosProdutos.length === 0) {
                 productsList.innerHTML = `
                     <div class="empty-state" style="text-align: center; padding: 60px; color: #64748b;">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px; opacity: 0.5;">
@@ -28,87 +146,7 @@
                 return;
             }
 
-            productsList.innerHTML = produtos.map(produto => {
-                const label = statusLabel[produto.status] || produto.status;
-                const dataFmt = new Date(produto.criado_em).toLocaleDateString('pt-BR');
-                return `
-                    <div class="product-item" data-id="${produto.id}">
-                        ${produto.foto
-                            ? `<img src="${produto.foto}" alt="${produto.titulo}" class="product-thumb" style="width:70px;height:70px;object-fit:cover;border-radius:8px;">`
-                            : `<div style="width:70px;height:70px;border-radius:8px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
-                        }
-                        <div class="product-details">
-                            <h3 class="product-title">${produto.titulo}</h3>
-                            <span class="product-status tag-${produto.status}">${label}</span>
-                            <div class="product-price">${produto.preco_fmt}</div>
-                            <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
-                                <span class="product-date">Criado em ${dataFmt}</span>
-                                <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="${produto.total_favoritos > 0 ? '#ef4444' : 'none'}" stroke="${produto.total_favoritos > 0 ? '#ef4444' : '#94a3b8'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                                    ${produto.total_favoritos || 0} favorito(s)
-                                </span>
-                            </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="actions-btn" title="Opções" data-id="${produto.id}">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle>
-                                </svg>
-                            </button>
-                            <div class="actions-dropdown">
-                                <a href="/Templates/detalhes-produto.html?id=${produto.id}" class="dropdown-item">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    Visualizar
-                                </a>
-                                <button class="dropdown-item edit-btn" data-id="${produto.id}">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    Editar
-                                </button>
-                                <hr>
-                                <button class="dropdown-item delete-btn danger" data-id="${produto.id}">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                    Excluir
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Dropdown toggles
-            document.querySelectorAll('.actions-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.actions-dropdown').forEach(d => {
-                        if (d !== btn.nextElementSibling) d.classList.remove('show');
-                    });
-                    btn.nextElementSibling?.classList.toggle('show');
-                });
-            });
-
-            document.addEventListener('click', () => {
-                document.querySelectorAll('.actions-dropdown').forEach(d => d.classList.remove('show'));
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    if (!await CondConnect.showConfirm('O anúncio será removido permanentemente.', 'Excluir Anúncio')) return;
-                    try {
-                        await CondConnect.api(`/produtos/item?id=${id}`, { method: 'DELETE' });
-                        renderMyProducts();
-                    } catch (err) {
-                        await CondConnect.showAlert(err.message || 'Erro ao excluir produto', 'error');
-                    }
-                });
-            });
-
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    window.location.href = `/Templates/novo-anuncio.html?edit=${btn.getAttribute('data-id')}`;
-                });
-            });
-
+            aplicarFiltros();
         } catch (err) {
             productsList.innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626">Erro ao carregar seus produtos.</div>';
         }
