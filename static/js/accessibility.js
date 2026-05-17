@@ -220,17 +220,23 @@
         }
 
         // ── Leitura ao navegar com Tab ────────────────────────────────────
-        function setHeadingsFocusable(enable) {
+        // Torna focusáveis via Tab todos os elementos de texto do conteúdo principal
+        function setContentFocusable(enable) {
             const mainEl = document.querySelector('#main-content, .main-content, main') || document.body;
-            mainEl.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+            const selector = 'h1, h2, h3, h4, h5, h6, p, label, li';
+            mainEl.querySelectorAll(selector).forEach(el => {
+                if (el.closest('.sidebar, nav, aside, #accessibility-panel, script, style, footer')) return;
+                if (['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) return;
+                const text = el.textContent?.trim() || '';
+                if (text.length < 3) return;
                 if (enable) {
-                    if (!h.hasAttribute('tabindex')) {
-                        h.setAttribute('tabindex', '0');
-                        h.dataset.a11yAdded = '1';
+                    if (!el.hasAttribute('tabindex')) {
+                        el.setAttribute('tabindex', '0');
+                        el.dataset.a11yAdded = '1';
                     }
-                } else if (h.dataset.a11yAdded === '1') {
-                    h.removeAttribute('tabindex');
-                    delete h.dataset.a11yAdded;
+                } else if (el.dataset.a11yAdded === '1') {
+                    el.removeAttribute('tabindex');
+                    delete el.dataset.a11yAdded;
                 }
             });
         }
@@ -238,18 +244,17 @@
         const tabTtsToggle = document.getElementById('toggle-tab-tts');
         let tabTtsActive = localStorage.getItem('a11y-tab-tts') === '1';
         tabTtsToggle.checked = tabTtsActive;
-        if (tabTtsActive) setHeadingsFocusable(true);
+        if (tabTtsActive) setContentFocusable(true);
 
         tabTtsToggle.addEventListener('change', () => {
             tabTtsActive = tabTtsToggle.checked;
             localStorage.setItem('a11y-tab-tts', tabTtsActive ? '1' : '0');
             if (!tabTtsActive) window.speechSynthesis.cancel();
-            setHeadingsFocusable(tabTtsActive);
+            setContentFocusable(tabTtsActive);
             announce(tabTtsActive ? 'Leitura ao navegar ativada' : 'Leitura ao navegar desativada');
         });
 
         function getReadableText(el) {
-            // Priority: aria-label > title > alt (img) > placeholder > text content
             const ariaLabel = el.getAttribute('aria-label');
             if (ariaLabel) return ariaLabel;
             const title = el.getAttribute('title');
@@ -257,17 +262,22 @@
             if (el.tagName === 'IMG') return el.getAttribute('alt') || 'Imagem';
             const placeholder = el.getAttribute('placeholder');
             if (placeholder) return placeholder;
-            // For inputs, read type + value
             if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
                 const labelEl = el.id ? document.querySelector(`label[for="${el.id}"]`) : null;
                 const labelText = labelEl ? labelEl.textContent.trim() : '';
                 const val = el.value ? ': ' + el.value : '';
                 return (labelText || el.type || 'campo') + val;
             }
-            // General text — trim and strip excess whitespace
-            const text = el.textContent?.replace(/\s+/g, ' ').trim() || '';
-            // Limit long texts to avoid reading entire sections
-            return text.length > 200 ? text.slice(0, 200) + '...' : text;
+            const raw = el.textContent?.replace(/\s+/g, ' ').trim() || '';
+            const text = raw.length > 200 ? raw.slice(0, 200) + '...' : raw;
+            // Prefixo de contexto por tipo de elemento
+            const tag = el.tagName;
+            if (tag === 'H1') return `Título: ${text}`;
+            if (tag === 'H2') return `Seção: ${text}`;
+            if (tag === 'H3' || tag === 'H4' || tag === 'H5' || tag === 'H6') return `Subtítulo: ${text}`;
+            if (tag === 'LABEL') return `Campo: ${text}`;
+            if (tag === 'LI') return `Item da lista: ${text}`;
+            return text;
         }
 
         // Use 'focusin' to catch all focus events including bubbled ones
