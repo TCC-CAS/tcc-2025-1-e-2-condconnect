@@ -90,6 +90,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (charts[id]) { charts[id].destroy(); delete charts[id]; }
     }
 
+    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+
     // Carregar lista de produtos para o filtro
     async function carregarProdutos() {
         try {
@@ -164,7 +166,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                         cutout: '55%',
                         plugins: {
                             legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } },
-                            tooltip: { callbacks: { label: ctx => ` ${brl(ctx.parsed)} (${((ctx.parsed/total)*100).toFixed(1)}%)` } }
+                            tooltip: { callbacks: { label: ctx => ` ${brl(ctx.parsed)} (${((ctx.parsed/total)*100).toFixed(1)}%)` } },
+                            datalabels: { display: false }
                         }
                     }
                 });
@@ -215,7 +218,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { right: 70 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v >= 1000 ? 'R$' + (v / 1000).toFixed(1) + 'k' : 'R$' + v.toFixed(0)
+                        }
+                    },
                     scales: {
                         x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
                         y: { grid: { display: false } }
@@ -276,7 +289,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     maintainAspectRatio: false,
                     cutout: '65%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 12 } } }
+                        legend: { position: 'bottom', labels: { font: { size: 12 } } },
+                        datalabels: { display: false }
                     }
                 }
             });
@@ -302,7 +316,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { right: 50 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'right',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
                     scales: {
                         x: { grid: { color: '#f1f5f9' } },
                         y: { grid: { display: false } }
@@ -353,7 +377,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#374151',
+                            font: { size: 11, weight: '600' },
+                            formatter: v => v > 0 ? v : ''
+                        }
+                    },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, beginAtZero: true, ticks: { precision: 0 } },
                         x: { grid: { display: false } }
@@ -387,7 +421,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false }
+                    },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
                         x: { grid: { display: false } }
