@@ -104,6 +104,7 @@ CREATE TABLE pedidos (
     quantidade INT DEFAULT 1,
     preco_total DECIMAL(10,2) NOT NULL,
     status ENUM('aguardando', 'confirmado', 'enviado', 'entregue', 'cancelado') DEFAULT 'aguardando',
+    codigo_entrega CHAR(4) NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (comprador_id) REFERENCES usuarios(id),

@@ -294,6 +294,27 @@ document.addEventListener('DOMContentLoaded', async function () {
         ordersList.innerHTML = slice.map(order => {
             const chave = tipo === 'purchases' ? 'vendedor' : 'comprador';
             const pessoaLabel = tipo === 'purchases' ? 'Vendedor' : 'Comprador';
+
+            const codigoHtml = tipo === 'purchases' && order.codigo_entrega && !['entregue', 'cancelado'].includes(order.status)
+                ? `<div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-top:10px;">
+                       <span style="font-size:18px;">🔑</span>
+                       <div>
+                           <p style="margin:0;color:#15803d;font-size:11px;font-weight:700;letter-spacing:.5px;">CÓDIGO DE ENTREGA</p>
+                           <p style="margin:2px 0 0;color:#166534;font-size:22px;font-weight:900;letter-spacing:6px;">${order.codigo_entrega}</p>
+                       </div>
+                       <p style="margin:0 0 0 auto;color:#16a34a;font-size:11px;max-width:110px;text-align:right;line-height:1.3;">Informe ao vendedor no momento da entrega</p>
+                   </div>`
+                : '';
+
+            const codigoInputHtml = tipo === 'sales' && order.status === 'enviado'
+                ? `<div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+                       <input type="text" maxlength="4" inputmode="numeric" placeholder="Código" class="codigo-input" data-id="${order.id}"
+                           style="width:70px;padding:8px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;font-weight:700;text-align:center;font-family:inherit;letter-spacing:4px;">
+                       <button class="btn-confirmar-codigo" data-id="${order.id}"
+                           style="padding:8px 14px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;">Confirmar Entrega</button>
+                   </div>`
+                : '';
+
             return `
                 <div class="order-card">
                     <img src="${order.produto?.foto || '/static/assets/images/produto-placeholder.jpg'}" alt="${order.produto?.titulo}" class="order-img">
@@ -310,12 +331,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                             <span>${pessoaLabel}: ${order[chave] || ''}</span>
                         </div>
                         <div class="order-price">R$ ${order.preco_fmt}</div>
+                        ${codigoHtml}
                     </div>
                     <div class="order-actions">
                         <button class="btn-track" data-id="${order.id}">Acompanhar Pedido</button>
                         ${tipo === 'sales' && order.status === 'aguardando' ? `<button class="btn-confirmar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Pedido</button>` : ''}
                         ${tipo === 'sales' && order.status === 'confirmado' ? `<button class="btn-enviar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Marcar Enviado</button>` : ''}
-                        ${tipo === 'purchases' && order.status === 'enviado' ? `<button class="btn-receber" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Recebimento</button>` : ''}
+                        ${codigoInputHtml}
                     </div>
                 </div>
             `;
@@ -346,13 +368,24 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
         });
 
-        document.querySelectorAll('.btn-receber').forEach(btn => {
+        document.querySelectorAll('.btn-confirmar-codigo').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
+                const input = document.querySelector(`.codigo-input[data-id="${id}"]`);
+                const codigo = input?.value.trim();
+                if (!codigo || codigo.length !== 4) {
+                    await CondConnect.showAlert('Digite o código de 4 dígitos informado pelo comprador.', 'warning');
+                    return;
+                }
+                btn.disabled = true; btn.textContent = 'Confirmando...';
                 try {
-                    await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { status: 'entregue' } });
+                    await CondConnect.api(`/pedidos/item?id=${id}`, { method: 'PUT', body: { codigo_entrega: codigo } });
+                    await CondConnect.showAlert('Entrega confirmada! O valor foi liberado.', 'success');
                     renderOrders(tipo);
-                } catch (err) { await CondConnect.showAlert(err.message || 'Erro', 'error'); }
+                } catch (err) {
+                    await CondConnect.showAlert(err.message || 'Código inválido', 'error');
+                    btn.disabled = false; btn.textContent = 'Confirmar Entrega';
+                }
             });
         });
     }

@@ -1150,7 +1150,7 @@ def pedidos():
                          JOIN usuarios u ON p.comprador_id=u.id
                          WHERE p.vendedor_id=%s ORDER BY p.criado_em DESC"""
             else:
-                sql = """SELECT p.id, p.quantidade, p.preco_total, p.status, p.criado_em, p.atualizado_em,
+                sql = """SELECT p.id, p.quantidade, p.preco_total, p.status, p.codigo_entrega, p.criado_em, p.atualizado_em,
                                 pr.titulo as produto_titulo, pr.foto_principal as produto_foto,
                                 u.nome as outro_nome
                          FROM pedidos p JOIN produtos pr ON p.produto_id=pr.id
@@ -1162,15 +1162,20 @@ def pedidos():
                 pedidos = c.fetchall()
 
             chave = 'comprador' if tipo == 'vendas' else 'vendedor'
-            result = [{
-                'id': p['id'], 'id_fmt': fmt_id(p['id']),
-                'quantidade': p['quantidade'], 'preco_total': float(p['preco_total']),
-                'preco_fmt': f"{float(p['preco_total']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-                'status': p['status'], 'status_label': status_labels.get(p['status'], p['status']),
-                'criado_em': str(p['criado_em']),
-                'produto': {'titulo': p['produto_titulo'], 'foto': p['produto_foto'] or '/static/assets/images/produto-placeholder.jpg'},
-                chave: p['outro_nome']
-            } for p in pedidos]
+            result = []
+            for p in pedidos:
+                item = {
+                    'id': p['id'], 'id_fmt': fmt_id(p['id']),
+                    'quantidade': p['quantidade'], 'preco_total': float(p['preco_total']),
+                    'preco_fmt': f"{float(p['preco_total']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+                    'status': p['status'], 'status_label': status_labels.get(p['status'], p['status']),
+                    'criado_em': str(p['criado_em']),
+                    'produto': {'titulo': p['produto_titulo'], 'foto': p['produto_foto'] or '/static/assets/images/produto-placeholder.jpg'},
+                    chave: p['outro_nome']
+                }
+                if tipo == 'compras':
+                    item['codigo_entrega'] = p.get('codigo_entrega')
+                result.append(item)
 
             return ok({'pedidos': result, 'total': len(result)})
 
@@ -1202,10 +1207,12 @@ def pedidos():
                 continue
             total = float(item['preco']) * int(item['quantidade'])
 
+            codigo = f"{secrets.randbelow(10000):04d}"
+
             with db.cursor() as c:
                 c.execute(
-                    "INSERT INTO pedidos (comprador_id, vendedor_id, produto_id, quantidade, preco_total) VALUES (%s,%s,%s,%s,%s)",
-                    (uid, item['vendedor_id'], item['produto_id'], item['quantidade'], total)
+                    "INSERT INTO pedidos (comprador_id, vendedor_id, produto_id, quantidade, preco_total, codigo_entrega) VALUES (%s,%s,%s,%s,%s,%s)",
+                    (uid, item['vendedor_id'], item['produto_id'], item['quantidade'], total, codigo)
                 )
                 pedido_id = c.lastrowid
             pedidos_criados.append(pedido_id)
@@ -1218,19 +1225,20 @@ def pedidos():
 
             notificar(db, item['vendedor_id'], 'pedido', 'Novo Pedido!', 'Você recebeu um novo pedido.', '/Templates/meus-pedidos.html')
 
-            # Email para o vendedor
             try:
                 with db.cursor() as c:
                     c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (item['vendedor_id'],))
                     vend = c.fetchone()
-                    c.execute("SELECT nome FROM usuarios WHERE id=%s", (uid,))
+                    c.execute("SELECT nome, email FROM usuarios WHERE id=%s", (uid,))
                     comp = c.fetchone()
                     c.execute("SELECT titulo FROM produtos WHERE id=%s", (item['produto_id'],))
                     prod = c.fetchone()
                 if vend and comp and prod:
                     id_fmt = fmt_id(pedido_id)
                     preco_str = f"R$ {total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-                    corpo = email_layout('🛒 Você recebeu um novo pedido!',
+
+                    # Email para o vendedor
+                    corpo_vend = email_layout('🛒 Você recebeu um novo pedido!',
                         f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{vend['nome']}</strong>! Você recebeu um novo pedido no CondConnect.</p>
                         <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
                           <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
@@ -1240,9 +1248,26 @@ def pedidos():
                         </div>
                         <a href='http://54.242.139.170/Templates/meus-pedidos.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Pedido</a>"""
                     )
-                    send_email(vend['email'], f"Novo pedido {id_fmt} - CondConnect", corpo)
+                    send_email(vend['email'], f"Novo pedido {id_fmt} - CondConnect", corpo_vend)
+
+                    # Email para o comprador com código de entrega
+                    corpo_comp = email_layout('🔑 Seu código de entrega',
+                        f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{comp['nome']}</strong>! Seu pedido foi realizado com sucesso.</p>
+                        <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
+                          <p style='margin:0;color:#64748b;font-size:13px;'>Produto</p>
+                          <p style='margin:4px 0 12px;color:#1e293b;font-weight:700;font-size:16px;'>{prod['titulo']}</p>
+                          <p style='margin:0;color:#64748b;font-size:13px;'>ID: <strong>{id_fmt}</strong> &nbsp;•&nbsp; Valor: <strong>{preco_str}</strong></p>
+                        </div>
+                        <p style='color:#64748b;font-size:14px;text-align:center;margin-bottom:12px;'>No momento da entrega, informe este código ao vendedor:</p>
+                        <div style='background:#00a6a6;border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;'>
+                          <p style='margin:0;color:rgba(255,255,255,0.8);font-size:13px;font-weight:600;letter-spacing:1px;'>CÓDIGO DE ENTREGA</p>
+                          <p style='margin:8px 0 0;color:white;font-size:48px;font-weight:900;letter-spacing:12px;'>{codigo}</p>
+                        </div>
+                        <p style='color:#94a3b8;font-size:12px;text-align:center;'>Guarde este código. O valor só é liberado ao vendedor após a confirmação.</p>"""
+                    )
+                    send_email(comp['email'], f"Código de entrega {id_fmt} - CondConnect", corpo_comp)
             except Exception as ex:
-                print(f'Email vendedor error: {ex}')
+                print(f'Email error: {ex}')
 
         with db.cursor() as c:
             c.execute("DELETE FROM itens_carrinho WHERE usuario_id=%s", (uid,))
@@ -1289,13 +1314,11 @@ def pedido_item():
 
         # PUT
         body = get_body()
-        status = body.get('status', '')
-        if status not in ['confirmado', 'enviado', 'entregue', 'cancelado']:
-            return err('Status inválido')
 
         with db.cursor() as c:
             c.execute(
-                """SELECT p.comprador_id, p.vendedor_id, p.preco_total, pr.titulo as produto_titulo,
+                """SELECT p.comprador_id, p.vendedor_id, p.preco_total, p.status as status_atual,
+                          p.codigo_entrega, pr.titulo as produto_titulo,
                           uc.nome as comprador_nome, uc.email as comprador_email,
                           uv.nome as vendedor_nome, uv.email as vendedor_email
                    FROM pedidos p JOIN produtos pr ON p.produto_id=pr.id
@@ -1308,6 +1331,37 @@ def pedido_item():
             return err('Pedido não encontrado', 404)
         if pedido['comprador_id'] != uid and pedido['vendedor_id'] != uid:
             return err('Sem permissão', 403)
+
+        # Confirmação de entrega via código
+        codigo_informado = body.get('codigo_entrega', '').strip()
+        if codigo_informado:
+            if pedido['vendedor_id'] != uid:
+                return err('Apenas o vendedor pode confirmar o código', 403)
+            if pedido['status_atual'] != 'enviado':
+                return err('O pedido precisa estar com status "enviado" para confirmar a entrega')
+            if pedido['codigo_entrega'] != codigo_informado:
+                return err('Código inválido. Verifique com o comprador.')
+            with db.cursor() as c:
+                c.execute("UPDATE pedidos SET status='entregue' WHERE id=%s", (pid,))
+            notificar(db, pedido['comprador_id'], 'pedido', 'Entrega Confirmada!', 'O vendedor confirmou a entrega do seu pedido.', '/Templates/meus-pedidos.html')
+            id_fmt = fmt_id(pid)
+            preco_str = f"R$ {float(pedido['preco_total']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            corpo = email_layout('🎉 Entrega confirmada — pagamento liberado!',
+                f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>Olá, <strong>{pedido['vendedor_nome']}</strong>! A entrega foi confirmada com sucesso.</p>
+                <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
+                  <p style='margin:0;color:#64748b;font-size:13px;'>Produto vendido</p>
+                  <p style='margin:4px 0 8px;color:#1e293b;font-weight:700;font-size:16px;'>{pedido['produto_titulo']}</p>
+                  <p style='margin:0;color:#64748b;font-size:13px;'>ID: <strong>{id_fmt}</strong></p>
+                  <p style='margin:8px 0 0;color:#00a6a6;font-weight:700;font-size:22px;'>{preco_str} liberados!</p>
+                </div>
+                <p style='color:#64748b;font-size:14px;text-align:center;'>Obrigado por vender no CondConnect!</p>"""
+            )
+            send_email(pedido['vendedor_email'], f"Pagamento liberado: {id_fmt} - CondConnect", corpo)
+            return ok({'message': 'Entrega confirmada! Valor liberado ao vendedor.'})
+
+        status = body.get('status', '')
+        if status not in ['confirmado', 'enviado', 'cancelado']:
+            return err('Status inválido')
 
         with db.cursor() as c:
             c.execute("UPDATE pedidos SET status=%s WHERE id=%s", (status, pid))
@@ -1343,17 +1397,6 @@ def pedido_item():
                 </div>"""
             )
             send_email(pedido['comprador_email'], f"Pedido {id_fmt} saiu para entrega - CondConnect", corpo)
-
-        elif status == 'entregue':
-            corpo = email_layout('🎉 Entrega confirmada!',
-                f"""<p style='color:#64748b;text-align:center;margin-bottom:24px;'>O comprador <strong>{pedido['comprador_nome']}</strong> confirmou o recebimento do pedido <strong>{id_fmt}</strong>.</p>
-                <div style='background:#f1f5f9;border-radius:12px;padding:20px;margin-bottom:20px;'>
-                  <p style='margin:0;color:#64748b;font-size:13px;'>Produto vendido</p>
-                  <p style='margin:4px 0 8px;color:#1e293b;font-weight:700;font-size:16px;'>{produto}</p>
-                  <p style='margin:0;color:#00a6a6;font-weight:700;font-size:18px;'>{preco_str}</p>
-                </div>"""
-            )
-            send_email(pedido['vendedor_email'], f"Venda concluída: {id_fmt} - CondConnect", corpo)
 
         elif status == 'cancelado':
             email_dest = pedido['comprador_email'] if pedido['vendedor_id'] == uid else pedido['vendedor_email']
