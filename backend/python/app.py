@@ -20,7 +20,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = False
 
 CORS(app, supports_credentials=True, origins=[
-    'http://54.242.139.170', 'http://localhost', 'http://127.0.0.1'
+    'https://condconnect.duckdns.org', 'http://localhost', 'http://127.0.0.1'
 ])
 
 UPLOAD_DIR = '/var/www/html/condconnect/static/assets/uploads'
@@ -1330,7 +1330,7 @@ def pedidos():
                           <p style='margin:0;color:#64748b;font-size:13px;'>ID: <strong>{id_fmt}</strong> &nbsp;•&nbsp; Valor: <strong>{preco_str}</strong></p>
                           <p style='margin:8px 0 0;color:#64748b;font-size:13px;'>Comprador: <strong>{comp['nome']}</strong></p>
                         </div>
-                        <a href='http://54.242.139.170/Templates/meus-pedidos.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Pedido</a>"""
+                        <a href='https://condconnect.duckdns.org/Templates/meus-pedidos.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Pedido</a>"""
                     )
                     send_email(vend['email'], f"Novo pedido {id_fmt} - CondConnect", corpo_vend)
 
@@ -2310,7 +2310,7 @@ def propostas_route():
                       {f'<p style="margin:12px 0 0;color:#64748b;font-size:13px;font-style:italic;">"{mensagem}"</p>' if mensagem else ''}
                     </div>
                     <p style='color:#64748b;font-size:13px;text-align:center;margin-bottom:16px;'>Enviada por: <strong>{comp['nome']}</strong></p>
-                    <a href='http://54.242.139.170/Templates/meus-pedidos.html?tab=propostas' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Proposta</a>"""
+                    <a href='https://condconnect.duckdns.org/Templates/meus-pedidos.html?tab=propostas' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;margin-bottom:16px;'>Ver Proposta</a>"""
                 )
                 send_email(vend['email'], f'Nova proposta: {produto["titulo"]} - CondConnect', corpo)
         except Exception as ex:
@@ -2384,7 +2384,7 @@ def proposta_item():
                       <p style='margin:0;color:#16a34a;font-size:20px;font-weight:700;'>{valor_str}</p>
                     </div>
                     <p style='color:#64748b;font-size:14px;text-align:center;margin-bottom:16px;'>Entre em contato com o vendedor <strong>{proposta['vendedor_nome']}</strong> para combinar os detalhes.</p>
-                    <a href='http://54.242.139.170/Templates/mensagens.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Entrar em Contato</a>"""
+                    <a href='https://condconnect.duckdns.org/Templates/mensagens.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Entrar em Contato</a>"""
                 )
                 send_email(proposta['comprador_email'], f'Proposta aceita: {titulo} - CondConnect', corpo)
             except Exception as ex:
@@ -2402,7 +2402,7 @@ def proposta_item():
                       <p style='margin:4px 0;color:#1e293b;font-weight:700;'>{titulo}</p>
                       <p style='margin:4px 0 0;color:#dc2626;font-size:14px;'>Proposta de {valor_str} recusada.</p>
                     </div>
-                    <a href='http://54.242.139.170/Templates/marketplace.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Ver outros produtos</a>"""
+                    <a href='https://condconnect.duckdns.org/Templates/marketplace.html' style='display:block;background:#00a6a6;color:white;text-decoration:none;text-align:center;padding:14px;border-radius:100px;font-weight:700;'>Ver outros produtos</a>"""
                 )
                 send_email(proposta['comprador_email'], f'Proposta recusada: {titulo} - CondConnect', corpo)
             except Exception as ex:
