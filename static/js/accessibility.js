@@ -5,6 +5,15 @@
         skip.href = '#main-content';
         skip.className = 'skip-link';
         skip.textContent = 'Ir para o conteúdo principal';
+        skip.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.getElementById('main-content');
+            if (target) {
+                target.setAttribute('tabindex', '-1');
+                target.focus();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
         document.body.prepend(skip);
 
         // ── ARIA live announcer ───────────────────────────────────────────

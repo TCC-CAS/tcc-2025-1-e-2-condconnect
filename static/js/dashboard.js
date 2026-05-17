@@ -23,13 +23,27 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'stat-vendas': user.total_vendas || 0,
                 'stat-favoritos': user.total_favoritos || 0,
             };
+            const statLabels = {
+                'stat-produtos': 'Produtos Anunciados',
+                'stat-pedidos': 'Pedidos Ativos',
+                'stat-vendas': 'Vendas Realizadas',
+                'stat-favoritos': 'Favoritos recebidos nos seus produtos',
+            };
             Object.entries(stats).forEach(([id, val]) => {
                 const el = document.getElementById(id);
-                if (el) el.textContent = val;
+                if (el) {
+                    el.textContent = val;
+                    const card = el.closest('.stat-card');
+                    if (card) card.setAttribute('aria-label', `${statLabels[id]}: ${val}`);
+                }
             });
 
             const fatEl = document.getElementById('stat-faturamento');
-            if (fatEl) fatEl.textContent = brl(user.faturamento || 0);
+            if (fatEl) {
+                fatEl.textContent = brl(user.faturamento || 0);
+                const fatCard = fatEl.closest('.stat-card');
+                if (fatCard) fatCard.setAttribute('aria-label', `Faturamento Total: ${brl(user.faturamento || 0)}`);
+            }
 
             if (user.papel === 'admin') {
                 const banner = document.getElementById('admin-banner');
