@@ -306,6 +306,13 @@
                 <button class="tab-btn" data-type="propostas">Propostas <span id="propostas-count"></span></button>
             </div>
 
+            <div style="margin-bottom:16px;">
+                <div style="position:relative;max-width:400px;">
+                    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input id="pedidos-search" type="text" placeholder="Buscar por produto ou pessoa..." style="width:100%;box-sizing:border-box;padding:10px 12px 10px 36px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;outline:none;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+            </div>
+
             <div id="status-filter-bar"></div>
 
             <div id="orders-list" class="orders-list">
@@ -354,7 +361,7 @@
         <!-- Tracking Modal -->
         <div id="tracking-modal" class="modal">
             <div class="modal-content">
-                <button class="close-modal">&times;</button>
+                <button id="close-tracking-modal" class="close-modal">&times;</button>
                 <h3 style="margin-top: 0; font-size: 20px;">Acompanhamento do Pedido</h3>
                 <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Pedido #<span
                         id="modal-order-id"></span></p>

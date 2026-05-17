@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const emptyState = document.getElementById('empty-state');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const modal = document.getElementById('tracking-modal');
-    const closeModal = document.querySelector('.close-modal');
+    const closeModal = document.getElementById('close-tracking-modal');
     const codigoModal = document.getElementById('codigo-modal');
     const codigoModalInput = document.getElementById('codigo-modal-input');
     const codigoModalSubmit = document.getElementById('codigo-modal-submit');
@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     let currentPropostaPage = 1;
     let currentStatusFilter = 'todos';
     let currentPropostaStatusFilter = 'todas';
+    let searchTerm = '';
 
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
@@ -156,9 +157,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         currentPropostaPage = page;
         const subtipo = propostaSubtipo;
 
-        const filtered = currentPropostaStatusFilter === 'todas'
-            ? todasPropostas
-            : todasPropostas.filter(p => p.status === currentPropostaStatusFilter);
+        const filtered = todasPropostas.filter(p => {
+            if (currentPropostaStatusFilter !== 'todas' && p.status !== currentPropostaStatusFilter) return false;
+            if (searchTerm) {
+                const q = searchTerm.toLowerCase();
+                return (p.produto?.titulo || '').toLowerCase().includes(q) ||
+                       (p.outro_nome || '').toLowerCase().includes(q);
+            }
+            return true;
+        });
 
         const start = (page - 1) * PAGE_SIZE;
         const slice = filtered.slice(start, start + PAGE_SIZE);
@@ -284,10 +291,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function renderOrdersPage(tipo, page) {
         currentOrderPage = page;
+        const chaveNome = tipo === 'purchases' ? 'vendedor' : 'comprador';
 
-        const filtered = currentStatusFilter === 'todos'
-            ? currentPedidos
-            : currentPedidos.filter(o => o.status === currentStatusFilter);
+        const filtered = currentPedidos.filter(o => {
+            if (currentStatusFilter !== 'todos' && o.status !== currentStatusFilter) return false;
+            if (searchTerm) {
+                const q = searchTerm.toLowerCase();
+                return (o.produto?.titulo || '').toLowerCase().includes(q) ||
+                       (o[chaveNome] || '').toLowerCase().includes(q);
+            }
+            return true;
+        });
 
         const start = (page - 1) * PAGE_SIZE;
         const slice = filtered.slice(start, start + PAGE_SIZE);
@@ -338,7 +352,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         ${codigoHtml}
                     </div>
                     <div class="order-actions">
-                        <button class="btn-track" data-id="${order.id}">Acompanhar Pedido</button>
+                        ${!['entregue', 'cancelado'].includes(order.status) ? `<button class="btn-track" data-id="${order.id}">Acompanhar Pedido</button>` : ''}
                         ${tipo === 'sales' && order.status === 'aguardando' ? `<button class="btn-confirmar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Pedido</button>` : ''}
                         ${tipo === 'sales' && order.status === 'confirmado' ? `<button class="btn-enviar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Marcar Enviado</button>` : ''}
                         ${codigoInputHtml}
@@ -416,10 +430,23 @@ document.addEventListener('DOMContentLoaded', async function () {
         modal.classList.add('active');
     }
 
+    const pedidosSearch = document.getElementById('pedidos-search');
+    if (pedidosSearch) {
+        pedidosSearch.addEventListener('input', e => {
+            searchTerm = e.target.value.trim();
+            currentOrderPage = 1;
+            currentPropostaPage = 1;
+            if (currentTipo === 'propostas') renderPropostasPage(1);
+            else renderOrdersPage(currentTipo, 1);
+        });
+    }
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            searchTerm = '';
+            if (pedidosSearch) pedidosSearch.value = '';
             renderOrders(btn.dataset.type);
         });
     });

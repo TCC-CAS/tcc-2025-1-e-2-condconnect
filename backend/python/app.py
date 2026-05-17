@@ -906,8 +906,8 @@ def produtos():
                 if categoria:
                     where.append("p.categoria=%s"); params.append(categoria)
                 if busca:
-                    where.append("(p.titulo LIKE %s OR p.descricao LIKE %s)")
-                    params += [f'%{busca}%', f'%{busca}%']
+                    where.append("(p.titulo LIKE %s OR p.descricao LIKE %s OR u.nome LIKE %s)")
+                    params += [f'%{busca}%', f'%{busca}%', f'%{busca}%']
                 if preco_min:
                     where.append("p.preco>=%s"); params.append(preco_min)
                 if preco_max:
