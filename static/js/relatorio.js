@@ -290,7 +290,18 @@ document.addEventListener('DOMContentLoaded', async function () {
                     cutout: '65%',
                     plugins: {
                         legend: { position: 'bottom', labels: { font: { size: 12 } } },
-                        datalabels: { display: false }
+                        datalabels: {
+                            color: '#fff',
+                            font: { size: 11, weight: '700' },
+                            formatter: (v, ctx) => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                return total > 0 && v > 0 ? ((v / total) * 100).toFixed(0) + '%' : '';
+                            },
+                            display: (ctx) => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                return total > 0 && (ctx.dataset.data[ctx.dataIndex] / total) > 0.05;
+                            }
+                        }
                     }
                 }
             });
@@ -421,9 +432,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
                     plugins: {
                         legend: { display: false },
-                        datalabels: { display: false }
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#00a6a6',
+                            font: { size: 10, weight: '600' },
+                            formatter: v => v >= 1000 ? 'R$' + (v / 1000).toFixed(1) + 'k' : 'R$' + v.toFixed(0)
+                        }
                     },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },

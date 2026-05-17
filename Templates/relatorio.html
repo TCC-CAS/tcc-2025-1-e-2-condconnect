@@ -28,6 +28,10 @@
             .rel-card { box-shadow:none !important; border:1px solid #e2e8f0; break-inside:avoid; }
         }
         @media (max-width:768px) { .grid-2 { grid-template-columns:1fr !important; } }
+        .chart-info-wrap { display:inline-flex; align-items:center; gap:6px; }
+        .chart-info-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:#e2e8f0; color:#64748b; font-size:10px; font-weight:700; cursor:default; position:relative; flex-shrink:0; }
+        .chart-info-icon:hover .chart-tooltip { display:block; }
+        .chart-tooltip { display:none; position:absolute; left:20px; top:-4px; z-index:99; width:230px; background:#1e293b; color:#f8fafc; font-size:12px; font-weight:400; line-height:1.6; padding:10px 12px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.18); white-space:normal; pointer-events:none; }
     </style>
 </head>
 <body class="dashboard-body">
@@ -188,7 +192,7 @@
         <div class="rel-card" style="margin-bottom:24px;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
                 <div>
-                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Mais vendidos por receita</div>
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">Mais vendidos por receita <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Top 5 produtos por faturamento no período.<br><br><strong>Como é calculado:</strong><br>• Preço × unidades vendidas<br>• Apenas pedidos entregues<br>• Ordenado do maior para o menor</span></span></div>
                     <div style="position:relative;height:220px;"><canvas id="chart-r-top"></canvas></div>
                 </div>
                 <div>
@@ -253,7 +257,7 @@
         <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">3. Comportamento de Clientes</h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;" class="grid-2">
             <div class="rel-card">
-                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:20px;">Novos vs Recorrentes</div>
+                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:20px;" class="chart-info-wrap">Novos vs Recorrentes <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Perfil dos compradores no período.<br><br><strong>Categorias:</strong><br>• <strong>Novos:</strong> 1º pedido entregue com você<br>• <strong>Recorrentes:</strong> já compraram antes</span></span></div>
                 <div style="position:relative;height:200px;"><canvas id="chart-r-clientes"></canvas></div>
             </div>
             <div class="rel-card" style="display:flex;flex-direction:column;gap:20px;">
@@ -279,7 +283,7 @@
         </div>
 
         <!-- 4. FUNIL DE CONVERSÃO -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">4. Funil de Conversão</h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;" class="chart-info-wrap">4. Funil de Conversão <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Quantos usuários avançaram em cada etapa dos seus produtos.<br><br><strong>Etapas:</strong><br>• <strong>Visualizações:</strong> acessos às páginas<br>• <strong>Favoritos:</strong> vezes que foram salvos<br>• <strong>Pedidos iniciados:</strong> pedidos criados<br>• <strong>Pedidos entregues:</strong> concluídos com código</span></span></h2>
         <div class="rel-card" style="margin-bottom:24px;">
             <div style="position:relative;height:160px;"><canvas id="chart-r-funil"></canvas></div>
             <div id="funil-taxas" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;text-align:center;"></div>
@@ -289,12 +293,12 @@
         <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">5. Temporal e Sazonalidade</h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;" class="grid-2">
             <div class="rel-card">
-                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px;">Pico por dia da semana</div>
+                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px;" class="chart-info-wrap">Pico por dia da semana <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Dias com mais pedidos entregues no histórico total.<br><br><strong>Como usar:</strong><br>• Programe promoções nos dias de maior movimento<br>• Planeje sua disponibilidade para entregas</span></span></div>
                 <div style="font-size:12px;color:#94a3b8;margin-bottom:16px;">Pedidos entregues (histórico total)</div>
                 <div style="position:relative;height:200px;"><canvas id="chart-r-dias"></canvas></div>
             </div>
             <div class="rel-card">
-                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;">Faturamento mensal (6 meses)</div>
+                <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">Faturamento mensal (6 meses) <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Evolução da receita mês a mês.<br><br><strong>Como é calculado:</strong><br>• Soma das receitas de pedidos entregues<br>• Agrupado por mês de criação do pedido<br>• Considera os últimos 6 meses no histórico</span></span></div>
                 <div style="position:relative;height:200px;"><canvas id="chart-r-mensal"></canvas></div>
             </div>
         </div>
