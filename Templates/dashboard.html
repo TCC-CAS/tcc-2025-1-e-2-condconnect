@@ -14,8 +14,8 @@
     <style>
         @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr !important; } }
         .stat-info span.chart-info-icon { display: inline-flex !important; align-items: center; justify-content: center; width: 16px !important; height: 16px !important; min-height: 0 !important; border-radius: 50%; flex-shrink: 0; vertical-align: middle; }
-        .stat-info span.chart-info-icon:hover { z-index: 300 !important; }
-        .stat-info span.chart-tooltip { display: none !important; min-height: 0; font-size: 12px; }
+        .stat-info span.chart-info-icon:hover { z-index: 9999 !important; }
+        .stat-info span.chart-tooltip { display: none !important; min-height: 0; font-size: 12px; top: 22px !important; right: 0 !important; left: auto !important; }
         .stat-info .chart-info-icon:hover span.chart-tooltip { display: block !important; }
     </style>
 </head>
@@ -559,7 +559,7 @@
                 .chart-info-wrap { position:relative; display:inline-flex; align-items:center; gap:6px; }
                 .chart-info-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:#e2e8f0; color:#64748b; font-size:10px; font-weight:700; cursor:default; position:relative; }
                 .chart-info-icon:hover .chart-tooltip { display:block; }
-                .chart-tooltip { display:none; position:absolute; left:20px; top:-4px; z-index:99; width:220px; background:#1e293b; color:#f8fafc; font-size:12px; font-weight:400; line-height:1.5; padding:10px 12px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.18); white-space:normal; pointer-events:none; }
+                .chart-tooltip { display:none; position:absolute; left:20px; top:-4px; z-index:9999; width:220px; background:#1e293b; color:#f8fafc; font-size:12px; font-weight:400; line-height:1.5; padding:10px 12px; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.18); white-space:normal; pointer-events:none; }
             </style>
 
             <!-- Charts grid -->
