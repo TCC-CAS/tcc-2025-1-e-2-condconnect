@@ -36,7 +36,7 @@
         document.querySelectorAll('.like-btn').forEach(btn => {
             btn.setAttribute('role', 'button');
             btn.setAttribute('tabindex', '0');
-            btn.setAttribute('aria-label', 'Adicionar aos favoritos');
+            if (!btn.getAttribute('aria-label')) btn.setAttribute('aria-label', 'Adicionar aos favoritos');
             btn.addEventListener('keydown', e => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
             });

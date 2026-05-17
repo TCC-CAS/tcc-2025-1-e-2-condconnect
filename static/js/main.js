@@ -336,12 +336,19 @@ const CondConnect = {
     renderProdutoCard(produto, options = {}) {
         const { linkHref = `/Templates/detalhes-produto.html?id=${produto.id}` } = options;
         const condicaoClass = produto.condicao === 'Novo' ? 'green' : produto.condicao === 'Seminovo' ? 'blue' : 'dark';
+        const condicao = produto.condicao || 'Usado';
+        const preco = produto.preco_fmt || CondConnect.formatarPreco(produto.preco);
+        const vendedor = produto.vendedor?.nome || '';
+        const ratingPart = produto.produto_rating != null
+            ? ` Avaliação do vendedor: ${produto.produto_rating.toFixed(1)}. Vendas: ${produto.produto_avaliacoes}.`
+            : ' Sem avaliações.';
+        const cardAriaLabel = `Produto: ${produto.titulo}. Condição: ${condicao}. Categoria: ${produto.categoria}. Preço: ${preco}. Vendedor: ${vendedor}.${ratingPart}`;
         return `
-            <a href="${linkHref}" class="product-card" data-id="${produto.id}">
+            <a href="${linkHref}" class="product-card" data-id="${produto.id}" aria-label="${cardAriaLabel}">
                 <div class="product-image-container">
                     <img src="${produto.foto || ''}" alt="${produto.titulo}" class="product-image" onerror="this.style.opacity='0';this.parentElement.style.background='#e2e8f0'">
-                    <span class="product-tag ${condicaoClass}">${produto.condicao || 'Usado'}</span>
-                    <div class="like-btn" data-id="${produto.id}">
+                    <span class="product-tag ${condicaoClass}">${condicao}</span>
+                    <div class="like-btn" data-id="${produto.id}" aria-label="Favoritar ${produto.titulo}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
