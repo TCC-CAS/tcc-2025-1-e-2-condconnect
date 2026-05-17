@@ -172,6 +172,21 @@
         speedSelect.addEventListener('change', () => {
             localStorage.setItem('a11y-tts-speed', speedSelect.value);
             announce('Velocidade: ' + speedSelect.options[speedSelect.selectedIndex].text);
+            // Se leitura completa está ativa, reinicia com a nova velocidade
+            if (ttsActive) {
+                window.speechSynthesis.cancel();
+                setTimeout(() => {
+                    const utt = new SpeechSynthesisUtterance(getPageText());
+                    utt.lang = 'pt-BR';
+                    utt.rate = getTTSRate();
+                    utt.pitch = 1;
+                    const voice = getPtVoice();
+                    if (voice) utt.voice = voice;
+                    utt.onend = stopTTS;
+                    utt.onerror = stopTTS;
+                    window.speechSynthesis.speak(utt);
+                }, 100);
+            }
         });
 
         function getTTSRate() {
@@ -196,14 +211,31 @@
         }
 
         // ── Leitura ao navegar com Tab ────────────────────────────────────
+        function setHeadingsFocusable(enable) {
+            const mainEl = document.querySelector('#main-content, .main-content, main') || document.body;
+            mainEl.querySelectorAll('h1, h2, h3, h4').forEach(h => {
+                if (enable) {
+                    if (!h.hasAttribute('tabindex')) {
+                        h.setAttribute('tabindex', '0');
+                        h.dataset.a11yAdded = '1';
+                    }
+                } else if (h.dataset.a11yAdded === '1') {
+                    h.removeAttribute('tabindex');
+                    delete h.dataset.a11yAdded;
+                }
+            });
+        }
+
         const tabTtsToggle = document.getElementById('toggle-tab-tts');
         let tabTtsActive = localStorage.getItem('a11y-tab-tts') === '1';
         tabTtsToggle.checked = tabTtsActive;
+        if (tabTtsActive) setHeadingsFocusable(true);
 
         tabTtsToggle.addEventListener('change', () => {
             tabTtsActive = tabTtsToggle.checked;
             localStorage.setItem('a11y-tab-tts', tabTtsActive ? '1' : '0');
             if (!tabTtsActive) window.speechSynthesis.cancel();
+            setHeadingsFocusable(tabTtsActive);
             announce(tabTtsActive ? 'Leitura ao navegar ativada' : 'Leitura ao navegar desativada');
         });
 
