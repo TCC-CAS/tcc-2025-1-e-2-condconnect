@@ -673,6 +673,85 @@ def me():
         db.close()
 
 
+# ── EXPORT (tabela fato de vendas) ───────────────────────────────────────────
+
+@app.route('/me/export', methods=['GET', 'OPTIONS'])
+def me_export():
+    uid, e = require_auth()
+    if e:
+        return e
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("""
+                SELECT
+                    pe.id                                         AS pedido_id,
+                    pe.criado_em                                  AS data_venda,
+                    pe.quantidade,
+                    pe.preco_total,
+                    pr.titulo,
+                    pr.descricao,
+                    pr.preco                                      AS preco_anunciado,
+                    pr.custo                                      AS custo_unitario,
+                    pr.categoria,
+                    pr.condicao,
+                    pr.visualizacoes,
+                    (SELECT ROUND(AVG(nota),1) FROM avaliacoes WHERE produto_id=pr.id)  AS avaliacao,
+                    (SELECT COUNT(*)           FROM avaliacoes WHERE produto_id=pr.id)  AS total_avaliacoes,
+                    (SELECT COUNT(*)           FROM favoritos  WHERE produto_id=pr.id)  AS total_favoritos,
+                    (SELECT COUNT(*)           FROM produto_insumos WHERE produto_id=pr.id) AS qtd_insumos,
+                    u.nome                                        AS comprador_nome
+                FROM pedidos pe
+                JOIN produtos pr ON pe.produto_id = pr.id
+                JOIN usuarios  u ON pe.comprador_id = u.id
+                WHERE pe.vendedor_id = %s AND pe.status = 'entregue'
+                ORDER BY pe.criado_em DESC
+            """, (uid,))
+            rows = c.fetchall()
+
+        vendas = []
+        for r in rows:
+            preco_anunc  = float(r['preco_anunciado'] or 0)
+            custo_unit   = float(r['custo_unitario']  or 0) if r['custo_unitario'] else None
+            preco_total  = float(r['preco_total'] or 0)
+            qtd          = int(r['quantidade'] or 1)
+            preco_venda  = round(preco_total / qtd, 2) if qtd else preco_total
+
+            # Venda via proposta: preço negociado difere do anunciado em >1 %
+            via_proposta = preco_venda < preco_anunc * 0.99
+
+            lucro_unit  = round(preco_venda - custo_unit, 2)        if custo_unit is not None else None
+            lucro_total = round(lucro_unit  * qtd, 2)               if lucro_unit  is not None else None
+            margem      = round(lucro_unit / preco_venda * 100, 1)  if (lucro_unit is not None and preco_venda > 0) else None
+
+            vendas.append({
+                'pedido_id':          int(r['pedido_id']),
+                'data_venda':         str(r['data_venda'])[:16],
+                'produto':            r['titulo'],
+                'descricao':          (r['descricao'] or '').strip(),
+                'categoria':          r['categoria'],
+                'condicao':           r['condicao'],
+                'preco_anunciado':    preco_anunc,
+                'preco_venda_unit':   preco_venda,
+                'custo_unitario':     custo_unit,
+                'quantidade_vendida': qtd,
+                'receita_total':      preco_total,
+                'lucro_unitario':     lucro_unit,
+                'lucro_total':        lucro_total,
+                'margem_pct':         margem,
+                'via_proposta':       'Sim' if via_proposta else 'Não',
+                'avaliacao':          float(r['avaliacao']) if r['avaliacao'] else None,
+                'total_avaliacoes':   int(r['total_avaliacoes'] or 0),
+                'total_favoritos':    int(r['total_favoritos'] or 0),
+                'qtd_insumos':        int(r['qtd_insumos'] or 0),
+                'visualizacoes':      int(r['visualizacoes'] or 0),
+                'comprador':          r['comprador_nome'],
+            })
+        return ok(vendas)
+    finally:
+        db.close()
+
+
 # ── ANALYTICS ────────────────────────────────────────────────────────────────
 
 @app.route('/me/analytics', methods=['GET', 'OPTIONS'])

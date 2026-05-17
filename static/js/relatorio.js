@@ -1,12 +1,55 @@
 let _relData = null;
 let _relInsumos = null;
 
-function exportarExcel() {
+async function exportarExcel() {
     if (!_relData) return alert('Carregue o relatório antes de exportar.');
     const wb = XLSX.utils.book_new();
-    const f = _relData.financeiro;
 
-    // Aba 1: Visão Financeira
+    // ── Aba 1: Vendas Detalhadas (tabela fato) ────────────────────────────────
+    let vendas = [];
+    try { vendas = await CondConnect.api('/me/export'); } catch (e) { console.warn('export:', e); }
+
+    const cabFato = [
+        'Nº Pedido', 'Data da Venda', 'Produto', 'Descrição', 'Categoria', 'Condição',
+        'Preço Anunciado (R$)', 'Preço de Venda (R$)', 'Custo Unitário (R$)',
+        'Qtd. Vendida', 'Receita Total (R$)', 'Lucro Unitário (R$)', 'Lucro Total (R$)',
+        'Margem de Lucro (%)', 'Via Proposta', 'Avaliação (0–5)', 'Nº Avaliações',
+        'Favoritos Recebidos', 'Qtd. de Insumos', 'Visualizações', 'Comprador',
+    ];
+    const fatoRows = [cabFato];
+    vendas.forEach(v => fatoRows.push([
+        v.pedido_id,
+        v.data_venda,
+        v.produto,
+        v.descricao,
+        v.categoria,
+        v.condicao,
+        v.preco_anunciado,
+        v.preco_venda_unit,
+        v.custo_unitario ?? '—',
+        v.quantidade_vendida,
+        v.receita_total,
+        v.lucro_unitario ?? '—',
+        v.lucro_total    ?? '—',
+        v.margem_pct     != null ? v.margem_pct + '%' : '—',
+        v.via_proposta,
+        v.avaliacao      != null ? v.avaliacao : 'Sem avaliação',
+        v.total_avaliacoes,
+        v.total_favoritos,
+        v.qtd_insumos,
+        v.visualizacoes,
+        v.comprador,
+    ]));
+
+    const wsVendas = XLSX.utils.aoa_to_sheet(fatoRows);
+    // Largura mínima de colunas para legibilidade
+    wsVendas['!cols'] = cabFato.map((h, i) => ({
+        wch: [10,18,30,40,15,12,20,20,20,12,20,18,15,18,14,16,14,18,14,14,25][i] || 15
+    }));
+    XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas Detalhadas');
+
+    // ── Aba 2: Visão Financeira ───────────────────────────────────────────────
+    const f = _relData.financeiro;
     const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : '—';
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
         ['Indicador', 'Valor'],
@@ -17,14 +60,14 @@ function exportarExcel() {
         ['Margem (%)', f.has_custo ? margem : '—'],
     ]), 'Financeiro');
 
-    // Aba 2: Produtos
+    // ── Aba 3: Produtos ───────────────────────────────────────────────────────
     const prodRows = [['Produto', 'Categoria', 'Pedidos', 'Unidades', 'Receita (R$)', 'Margem (%)', 'Visualizações']];
     (_relData.produtos || []).forEach(p => {
         prodRows.push([p.titulo, p.categoria, p.total_vendas, p.unidades, p.receita, p.margem_pct ?? '—', p.visualizacoes]);
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(prodRows), 'Produtos');
 
-    // Aba 3: Clientes
+    // ── Aba 4: Clientes ───────────────────────────────────────────────────────
     const cl = _relData.clientes;
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
         ['Indicador', 'Valor'],
@@ -36,7 +79,7 @@ function exportarExcel() {
         ['% Recorrentes', cl.pct_recorrentes],
     ]), 'Clientes');
 
-    // Aba 4: Funil de Conversão
+    // ── Aba 5: Funil de Conversão ─────────────────────────────────────────────
     const funil = _relData.funil;
     const txFav = funil.views > 0 ? ((funil.favoritos / funil.views) * 100).toFixed(1) : 0;
     const txPed = funil.views > 0 ? ((funil.pedidos_iniciados / funil.views) * 100).toFixed(1) : 0;
@@ -49,17 +92,17 @@ function exportarExcel() {
         ['Pedidos Entregues', funil.pedidos_entregues, txFin],
     ]), 'Funil');
 
-    // Aba 5: Vendas por Dia da Semana
+    // ── Aba 6: Vendas por Dia da Semana ───────────────────────────────────────
     const diasRows = [['Dia', 'Pedidos']];
     (_relData.temporal.por_dia_semana || []).forEach(d => diasRows.push([d.dia, d.pedidos]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(diasRows), 'Por Dia da Semana');
 
-    // Aba 6: Evolução Mensal
+    // ── Aba 7: Evolução Mensal ────────────────────────────────────────────────
     const mesRows = [['Mês', 'Receita (R$)', 'Pedidos']];
     (_relData.temporal.por_mes || []).forEach(m => mesRows.push([m.mes, m.receita, m.pedidos ?? '']));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mesRows), 'Evolução Mensal');
 
-    // Aba 7: Insumos (se disponível)
+    // ── Aba 8: Insumos (se disponível) ────────────────────────────────────────
     if (_relInsumos && _relInsumos.length > 0) {
         const total = _relInsumos.reduce((s, i) => s + i.custo, 0);
         const insRows = [['Insumo', 'Quantidade', 'Unidade', 'Custo (R$)', '% do Total']];
