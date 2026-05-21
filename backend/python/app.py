@@ -44,7 +44,10 @@ def get_db():
         database='engenharia_16',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor,
-        autocommit=True
+        autocommit=True,
+        connect_timeout=5,
+        read_timeout=15,
+        write_timeout=10
     )
 
 
@@ -2531,9 +2534,7 @@ def admin_denuncias():
                 JOIN avaliacoes a ON da.avaliacao_id = a.id
                 JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
                 JOIN usuarios ud ON a.avaliado_id = ud.id
-                LEFT JOIN denuncias_avaliacao da2 ON da2.avaliacao_id = da.avaliacao_id
                 WHERE da.status=%s {cond_filter}
-                GROUP BY da.id
                 ORDER BY da.criado_em DESC
             """
             try:
@@ -2544,7 +2545,7 @@ def admin_denuncias():
                                u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
                                u_autor.total_suspensoes,
                                ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
-                               COUNT(da2.id) as total_denuncias_avaliacao
+                               1 as total_denuncias_avaliacao
                         {BASE_DEN_SQL}
                     """, (status,) + cond_param)
                     rows = c.fetchall()
@@ -2557,7 +2558,7 @@ def admin_denuncias():
                                    u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
                                    0 as total_suspensoes,
                                    ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
-                                   COUNT(da2.id) as total_denuncias_avaliacao
+                                   1 as total_denuncias_avaliacao
                             {BASE_DEN_SQL}
                         """, (status,) + cond_param)
                         rows = c.fetchall()
