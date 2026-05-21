@@ -245,64 +245,76 @@
             `;
         }).join('');
 
-        // Modal de denúncia
-        const modal = document.getElementById('denuncia-modal');
-        let avaliacaoAlvo = null, motivoSelecionado = null;
-
+        // Listeners nos botões de comentário (criados dinâmicamente acima)
         document.querySelectorAll('.btn-denunciar').forEach(btn => {
-            btn.addEventListener('click', () => {
-                avaliacaoAlvo = btn.dataset.id;
-                motivoSelecionado = null;
-                document.getElementById('denuncia-step1').style.display = 'block';
-                document.getElementById('denuncia-step2').style.display = 'none';
-                document.getElementById('denuncia-step3').style.display = 'none';
-                document.getElementById('denuncia-back').style.display = 'none';
-                document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
-                modal.style.display = 'flex';
-            });
-        });
-
-        document.querySelectorAll('.denuncia-item').forEach(item => {
-            item.addEventListener('click', () => {
-                motivoSelecionado = item.dataset.motivo;
-                document.getElementById('denuncia-motivo-label').textContent = `Motivo: "${motivoSelecionado}"`;
-                document.getElementById('denuncia-step1').style.display = 'none';
-                document.getElementById('denuncia-step2').style.display = 'block';
-                document.getElementById('denuncia-back').style.display = 'block';
-                document.getElementById('denuncia-titulo').textContent = 'Confirmar denúncia';
-            });
-        });
-
-        document.getElementById('denuncia-back').addEventListener('click', () => {
-            document.getElementById('denuncia-step2').style.display = 'none';
-            document.getElementById('denuncia-step1').style.display = 'block';
-            document.getElementById('denuncia-back').style.display = 'none';
-            document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
-        });
-
-        const fecharModal = () => { modal.style.display = 'none'; };
-        document.getElementById('denuncia-fechar').addEventListener('click', fecharModal);
-        document.getElementById('denuncia-cancelar').addEventListener('click', fecharModal);
-        document.getElementById('denuncia-ok').addEventListener('click', fecharModal);
-        modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
-
-        document.getElementById('denuncia-confirmar').addEventListener('click', async () => {
-            if (!avaliacaoAlvo || !motivoSelecionado) return;
-            const btn = document.getElementById('denuncia-confirmar');
-            btn.disabled = true; btn.textContent = 'Enviando...';
-            try {
-                await CondConnect.api('/denuncias/avaliacao', { method: 'POST', body: { avaliacao_id: avaliacaoAlvo, motivo: motivoSelecionado } });
-                document.getElementById('denuncia-step2').style.display = 'none';
-                document.getElementById('denuncia-step3').style.display = 'block';
-                document.getElementById('denuncia-back').style.display = 'none';
-                document.getElementById('denuncia-titulo').textContent = 'Obrigado!';
-            } catch (err) {
-                await CondConnect.showAlert(err.message || 'Erro ao enviar denúncia', 'error');
-            } finally {
-                btn.disabled = false; btn.textContent = 'Confirmar denúncia';
-            }
+            btn.addEventListener('click', () => abrirDenuncia('avaliacao', btn.dataset.id));
         });
     }
+
+    // Modal de denúncia — funciona para publicação e comentários
+    const modal = document.getElementById('denuncia-modal');
+    let tipoAlvo = null;
+    let idAlvo = null;
+    let motivoSelecionado = null;
+
+    function abrirDenuncia(tipo, id) {
+        tipoAlvo = tipo;
+        idAlvo = id;
+        motivoSelecionado = null;
+        document.getElementById('denuncia-step1').style.display = 'block';
+        document.getElementById('denuncia-step2').style.display = 'none';
+        document.getElementById('denuncia-step3').style.display = 'none';
+        document.getElementById('denuncia-back').style.display = 'none';
+        document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
+        modal.style.display = 'flex';
+    }
+
+    document.getElementById('btn-denunciar-produto')?.addEventListener('click', () => abrirDenuncia('produto', productId));
+
+    document.querySelectorAll('.denuncia-item').forEach(item => {
+        item.addEventListener('click', () => {
+            motivoSelecionado = item.dataset.motivo;
+            document.getElementById('denuncia-motivo-label').textContent = `Motivo: "${motivoSelecionado}"`;
+            document.getElementById('denuncia-step1').style.display = 'none';
+            document.getElementById('denuncia-step2').style.display = 'block';
+            document.getElementById('denuncia-back').style.display = 'block';
+            document.getElementById('denuncia-titulo').textContent = 'Confirmar denúncia';
+        });
+    });
+
+    document.getElementById('denuncia-back').addEventListener('click', () => {
+        document.getElementById('denuncia-step2').style.display = 'none';
+        document.getElementById('denuncia-step1').style.display = 'block';
+        document.getElementById('denuncia-back').style.display = 'none';
+        document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
+    });
+
+    const fecharDenunciaModal = () => { modal.style.display = 'none'; };
+    document.getElementById('denuncia-fechar').addEventListener('click', fecharDenunciaModal);
+    document.getElementById('denuncia-cancelar').addEventListener('click', fecharDenunciaModal);
+    document.getElementById('denuncia-ok').addEventListener('click', fecharDenunciaModal);
+    modal.addEventListener('click', e => { if (e.target === modal) fecharDenunciaModal(); });
+
+    document.getElementById('denuncia-confirmar').addEventListener('click', async () => {
+        if (!idAlvo || !motivoSelecionado) return;
+        const btn = document.getElementById('denuncia-confirmar');
+        btn.disabled = true; btn.textContent = 'Enviando...';
+        try {
+            const endpoint = tipoAlvo === 'produto' ? '/denuncias/produto' : '/denuncias/avaliacao';
+            const body = tipoAlvo === 'produto'
+                ? { produto_id: idAlvo, motivo: motivoSelecionado }
+                : { avaliacao_id: idAlvo, motivo: motivoSelecionado };
+            await CondConnect.api(endpoint, { method: 'POST', body });
+            document.getElementById('denuncia-step2').style.display = 'none';
+            document.getElementById('denuncia-step3').style.display = 'block';
+            document.getElementById('denuncia-back').style.display = 'none';
+            document.getElementById('denuncia-titulo').textContent = 'Obrigado!';
+        } catch (err) {
+            await CondConnect.showAlert(err.message || 'Erro ao enviar denúncia', 'error');
+        } finally {
+            btn.disabled = false; btn.textContent = 'Confirmar denúncia';
+        }
+    });
 
     // Seção de avaliação — verificar permissão
     const avaliacaoContainer = document.querySelector('.evaluations-container');

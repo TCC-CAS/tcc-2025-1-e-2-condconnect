@@ -358,6 +358,18 @@ def init_db():
                     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS denuncias_produto (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    produto_id INT NOT NULL,
+                    denunciante_id INT NOT NULL,
+                    motivo VARCHAR(100) NOT NULL,
+                    status ENUM('pendente','ignorada','removida') DEFAULT 'pendente',
+                    resolvido_por INT DEFAULT NULL,
+                    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY unico_denuncia_prod (produto_id, denunciante_id)
+                )
+            """)
             # Colunas adicionadas em migrações (ignora se já existem)
             for alter_sql in [
                 "ALTER TABLE usuarios ADD COLUMN condominio VARCHAR(100) DEFAULT NULL",
@@ -2136,6 +2148,42 @@ def denunciar_avaliacao():
         except Exception:
             return err('Você já denunciou esta avaliação.', 409)
         return ok({'message': 'Denúncia registrada. Obrigado por ajudar a manter a comunidade segura.'}, 201)
+    finally:
+        db.close()
+
+
+@app.route('/denuncias/produto', methods=['POST', 'OPTIONS'])
+def denunciar_produto():
+    if request.method == 'OPTIONS':
+        return ok()
+    uid, e = require_auth()
+    if e:
+        return e
+    body = get_body()
+    produto_id = body.get('produto_id')
+    motivo = (body.get('motivo') or '').strip()
+    if not produto_id or not motivo:
+        return err('produto_id e motivo são obrigatórios')
+    if motivo not in MOTIVOS_DENUNCIA:
+        return err('Motivo inválido')
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT id, usuario_id FROM produtos WHERE id=%s", (produto_id,))
+            p = c.fetchone()
+            if not p:
+                return err('Produto não encontrado', 404)
+            if p['usuario_id'] == uid:
+                return err('Você não pode denunciar seu próprio produto.')
+        try:
+            with db.cursor() as c:
+                c.execute(
+                    "INSERT INTO denuncias_produto (produto_id, denunciante_id, motivo) VALUES (%s,%s,%s)",
+                    (produto_id, uid, motivo)
+                )
+        except Exception:
+            return err('Você já denunciou esta publicação.', 409)
+        return ok({'message': 'Denúncia registrada. Nossa equipe irá analisar a publicação.'}, 201)
     finally:
         db.close()
 

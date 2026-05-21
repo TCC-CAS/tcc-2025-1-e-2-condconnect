@@ -221,7 +221,7 @@
                     document.getElementById('codigo-2fa').focus();
                 } else {
                     CondConnect.setUser(resp);
-                    window.location.href = '/Templates/dashboard.html';
+                    window.location.href = resp.papel === 'admin' ? '/Templates/admin.html' : '/Templates/dashboard.html';
                 }
             } catch (err) {
                 mostrarErro(err.message || 'Email ou senha incorretos');
@@ -249,7 +249,7 @@
                     body: { codigo },
                 });
                 CondConnect.setUser(user);
-                window.location.href = '/Templates/dashboard.html';
+                window.location.href = user.papel === 'admin' ? '/Templates/admin.html' : '/Templates/dashboard.html';
             } catch (err) {
                 const msg = err.message || 'Código inválido ou expirado.';
                 await CondConnect.showAlert(msg, 'error');
