@@ -19,6 +19,8 @@ app.secret_key = 'condconnect_secret_2025_tcc'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = False
 
+PERSPECTIVE_API_KEY = os.environ.get('PERSPECTIVE_API_KEY', '')
+
 CORS(app, supports_credentials=True, origins=[
     'https://condconnect.duckdns.org', 'http://localhost', 'http://127.0.0.1'
 ])
@@ -70,6 +72,77 @@ def require_auth():
     finally:
         db.close()
     return uid, None
+
+def verificar_toxicidade(texto):
+    """Detecta linguagem ofensiva via lista de palavras com normalização de texto."""
+    if not texto or len(texto.strip()) < 3:
+        return 0.0
+
+    import unicodedata
+
+    def _norm(s):
+        s = s.lower()
+        s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+        for old, new in {'@': 'a', '3': 'e', '1': 'i', '0': 'o', '$': 's', '5': 's', '4': 'a', '7': 't'}.items():
+            s = s.replace(old, new)
+        s = re.sub(r'[^a-z0-9\s]', '', s)
+        s = re.sub(r'(.)\1{2,}', r'\1', s)
+        return s
+
+    t = _norm(texto)
+
+    _TERMOS = [
+        r'\bputa\b', r'\bputinha\b', r'\bputo\b', r'\bputas\b',
+        r'\bvadia\b', r'\bvagabunda\b', r'\bvagabundo\b',
+        r'\bviado\b', r'\bviadinho\b', r'\bviada\b',
+        r'\bcuzao\b', r'\bcuzoes\b', r'\bcu\b',
+        r'\bbuceta\b', r'\bbct\b',
+        r'\bcaralho\b', r'\bkrl\b', r'\bcrl\b',
+        r'\bfodase\b', r'foda.?se', r'\bfoder\b', r'\bfodido\b', r'\bfodida\b', r'\bfoda\b',
+        r'\bporra\b',
+        r'\bmerda\b',
+        r'\barrombado\b', r'\barrombada\b',
+        r'\bbabaca\b',
+        r'\bretardado\b', r'\bretardada\b',
+        r'\bcorno\b', r'\bcorna\b',
+        r'\bprostituta\b', r'\bpiranha\b',
+        r'\bbosta\b', r'\bbostinha\b',
+        r'\bdesgraca\b', r'\bdesgraçado\b', r'\bdesgraçada\b',
+        r'\bfdp\b', r'filho.?da.?puta', r'filha.?da.?puta',
+        r'\bvsf\b', r'vai.?se.?foder',
+        r'\bcacete\b',
+        r'\botario\b', r'\botaria\b',
+        r'\blazarento\b', r'\blazarenta\b',
+        r'\bsafado\b', r'\bsafada\b',
+        r'\bescroto\b',
+        r'\bcanalha\b',
+        r'\bnojento\b', r'\bnojenta\b',
+        r'\bidiota\b', r'\bimbecil\b',
+        r'\bpalhaço\b', r'\bpalhaco\b',
+    ]
+
+    for termo in _TERMOS:
+        if re.search(termo, t):
+            return 1.0
+    return 0.0
+
+
+def contem_dado_sensivel(texto):
+    """Detecta e-mail, telefone, CPF, CNPJ ou chave PIX (UUID) em mensagens de chat."""
+    padroes = [
+        r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}',           # e-mail
+        r'(?:\+55[\s\-]?)?(?:\(?\d{2}\)?[\s\-]?)\d{4,5}[\s\-]?\d{4}',  # telefone BR com DDD
+        r'\d{3}\.\d{3}\.\d{3}-\d{2}',                                    # CPF formatado
+        r'\b\d{11}\b',                                                    # CPF sem formatação
+        r'\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}',                             # CNPJ formatado
+        r'\b\d{14}\b',                                                    # CNPJ sem formatação
+        r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',  # UUID/PIX aleatória
+    ]
+    for padrao in padroes:
+        if re.search(padrao, texto):
+            return True
+    return False
+
 
 def require_admin():
     uid, e = require_auth()
@@ -431,15 +504,27 @@ def verificar_2fa():
 
         if not user:
             return err('Usuário não encontrado', 404)
+
         if not user['codigo_2fa'] or user['codigo_2fa'] != codigo:
-            return err('Código incorreto')
+            tentativas = session.get('twofa_attempts', 0) + 1
+            if tentativas >= 3:
+                session.pop('pending_2fa_uid', None)
+                session.pop('twofa_attempts', None)
+                return err('Muitas tentativas incorretas. Faça o login novamente.', 401)
+            session['twofa_attempts'] = tentativas
+            restantes = 3 - tentativas
+            return err(f'Código incorreto. {restantes} tentativa{"s" if restantes > 1 else ""} restante{"s" if restantes > 1 else ""}.')
+
         if not user['codigo_2fa_expira'] or datetime.now() > user['codigo_2fa_expira']:
-            return err('Código expirado. Faça login novamente.')
+            session.pop('pending_2fa_uid', None)
+            session.pop('twofa_attempts', None)
+            return err('Código expirado. Faça login novamente.', 401)
 
         with db.cursor() as c:
             c.execute("UPDATE usuarios SET codigo_2fa=NULL, codigo_2fa_expira=NULL WHERE id=%s", (uid,))
 
         session.pop('pending_2fa_uid', None)
+        session.pop('twofa_attempts', None)
         session['user_id'] = user['id']
         session['user_role'] = user['papel']
         session['session_version'] = user['session_version']
@@ -760,24 +845,51 @@ def me_analytics():
     if e:
         return e
 
-    dias = min(int(request.args.get('dias', 30)), 365)
+    dias_raw = request.args.get('dias', '30')
+    dias = min(int(dias_raw), 365) if dias_raw != 'all' else 3650
     produto_id = request.args.get('produto_id')
     produto_id = int(produto_id) if produto_id and produto_id.isdigit() else None
-    data_inicio = datetime.now() - timedelta(days=dias)
+    categoria   = request.args.get('categoria', '').strip() or None
+    ano_raw     = request.args.get('ano', '').strip()
+    mes_raw     = request.args.get('mes', '').strip()
+    ano  = int(ano_raw)  if ano_raw.isdigit()  else None
+    mes  = int(mes_raw)  if mes_raw.isdigit()  else None
+
+    if ano:
+        from calendar import monthrange
+        if mes:
+            data_inicio = datetime(ano, mes, 1)
+            ultimo_dia  = monthrange(ano, mes)[1]
+            data_fim    = datetime(ano, mes, ultimo_dia, 23, 59, 59)
+        else:
+            data_inicio = datetime(ano, 1, 1)
+            data_fim    = datetime(ano, 12, 31, 23, 59, 59)
+    else:
+        data_inicio = datetime.now() - timedelta(days=dias)
+        data_fim    = datetime.now()
 
     db = get_db()
     try:
-        filtro_produto = "AND pe.produto_id=%s" if produto_id else ""
-        params_produto = (produto_id,) if produto_id else ()
+        filtros_extra = []
+        params_extra  = []
+        if produto_id:
+            filtros_extra.append("AND pe.produto_id=%s"); params_extra.append(produto_id)
+        if categoria:
+            filtros_extra.append("AND pr.categoria=%s"); params_extra.append(categoria)
+        filtro_join_produto = "JOIN produtos pr ON pe.produto_id=pr.id" if categoria else ""
+        filtro_str  = " ".join(filtros_extra)
+        params_base = tuple(params_extra)
 
         # Visão financeira
         with db.cursor() as c:
             c.execute(f"""
                 SELECT COUNT(*) as total_pedidos,
-                       COALESCE(SUM(preco_total), 0) as faturamento,
-                       COALESCE(AVG(preco_total), 0) as ticket_medio
-                FROM pedidos pe WHERE vendedor_id=%s AND status='entregue' AND criado_em >= %s {filtro_produto}
-            """, (uid, data_inicio) + params_produto)
+                       COALESCE(SUM(pe.preco_total), 0) as faturamento,
+                       COALESCE(AVG(pe.preco_total), 0) as ticket_medio
+                FROM pedidos pe {filtro_join_produto}
+                WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s {filtro_str}
+            """, (uid, data_inicio, data_fim) + params_base)
             financeiro = c.fetchone()
 
         with db.cursor() as c:
@@ -785,39 +897,46 @@ def me_analytics():
                 SELECT COALESCE(SUM(pe.preco_total - (COALESCE(pr.custo, 0) * pe.quantidade)), 0) as lucro,
                        COALESCE(SUM(pe.preco_total), 0) as fat_com_custo
                 FROM pedidos pe JOIN produtos pr ON pe.produto_id=pr.id
-                WHERE pe.vendedor_id=%s AND pe.status='entregue' AND pe.criado_em >= %s
-                  AND pr.custo IS NOT NULL AND pr.custo > 0 {filtro_produto}
-            """, (uid, data_inicio) + params_produto)
+                WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s
+                  AND pr.custo IS NOT NULL AND pr.custo > 0
+                  {" ".join(filtros_extra)}
+            """, (uid, data_inicio, data_fim) + params_base)
             custo_row = c.fetchone()
 
         # Performance de produtos (top 10 por receita)
+        cat_filtro = "AND pr.categoria=%s" if categoria else ""
+        cat_param  = (categoria,) if categoria else ()
         with db.cursor() as c:
-            c.execute("""
+            c.execute(f"""
                 SELECT pr.id, pr.titulo, pr.categoria, pr.preco, pr.custo, pr.visualizacoes,
                        COUNT(pe.id) as total_vendas,
                        COALESCE(SUM(pe.quantidade), 0) as unidades,
                        COALESCE(SUM(pe.preco_total), 0) as receita
                 FROM produtos pr
-                LEFT JOIN pedidos pe ON pe.produto_id=pr.id AND pe.status='entregue' AND pe.criado_em >= %s
-                WHERE pr.usuario_id=%s
+                LEFT JOIN pedidos pe ON pe.produto_id=pr.id AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s
+                WHERE pr.usuario_id=%s {cat_filtro}
                 GROUP BY pr.id ORDER BY receita DESC LIMIT 10
-            """, (data_inicio, uid))
+            """, (data_inicio, data_fim, uid) + cat_param)
             produtos_perf = c.fetchall()
 
         with db.cursor() as c:
-            c.execute("""
-                SELECT COUNT(*) as n FROM produtos WHERE usuario_id=%s AND status='disponivel'
+            c.execute(f"""
+                SELECT COUNT(*) as n FROM produtos WHERE usuario_id=%s AND status='disponivel' {cat_filtro}
                 AND id NOT IN (SELECT DISTINCT produto_id FROM pedidos WHERE status='entregue')
-            """, (uid,))
+            """, (uid,) + cat_param)
             encalhados = int(c.fetchone()['n'])
 
         # Comportamento de clientes
         with db.cursor() as c:
             c.execute(f"""
                 SELECT pe.comprador_id, COUNT(*) as pedidos
-                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' AND pe.criado_em >= %s {filtro_produto}
+                FROM pedidos pe {filtro_join_produto}
+                WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s {filtro_str}
                 GROUP BY pe.comprador_id
-            """, (uid, data_inicio) + params_produto)
+            """, (uid, data_inicio, data_fim) + params_base)
             compradores = c.fetchall()
 
         total_compradores = len(compradores)
@@ -856,9 +975,11 @@ def me_analytics():
         with db.cursor() as c:
             c.execute(f"""
                 SELECT DAYOFWEEK(pe.criado_em) as dow, COUNT(*) as pedidos, COALESCE(SUM(pe.preco_total),0) as receita
-                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' {filtro_produto}
+                FROM pedidos pe {filtro_join_produto}
+                WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s {filtro_str}
                 GROUP BY dow ORDER BY dow
-            """, (uid,) + params_produto)
+            """, (uid, data_inicio, data_fim) + params_base)
             por_dow = {r['dow']: r for r in c.fetchall()}
 
         nomes_dow = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -873,10 +994,11 @@ def me_analytics():
             c.execute(f"""
                 SELECT DATE_FORMAT(pe.criado_em,'%%Y-%%m') as mes,
                        COALESCE(SUM(pe.preco_total),0) as receita, COUNT(*) as pedidos
-                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue'
-                  AND pe.criado_em >= DATE_SUB(NOW(), INTERVAL 6 MONTH) {filtro_produto}
+                FROM pedidos pe {filtro_join_produto}
+                WHERE pe.vendedor_id=%s AND pe.status='entregue'
+                  AND pe.criado_em >= %s AND pe.criado_em <= %s {filtro_str}
                 GROUP BY mes ORDER BY mes
-            """, (uid,) + params_produto)
+            """, (uid, data_inicio, data_fim) + params_base)
             por_mes = [{'mes': r['mes'], 'receita': float(r['receita']), 'pedidos': int(r['pedidos'])}
                        for r in c.fetchall()]
 
@@ -1092,7 +1214,7 @@ def produto_item():
                 c.execute(
                     """SELECT p.*, u.id as vid, u.nome as vnome, u.bloco as vbloco,
                               u.apartamento as vapto, u.rating as vrating, u.total_vendas as vvendas,
-                              u.bio as vbio, u.foto_url as vfoto_url, u.pix_key as vpix_key,
+                              u.bio as vbio, u.foto_url as vfoto_url,
                               COALESCE((SELECT cu.privacidade_endereco FROM configuracoes_usuario cu WHERE cu.usuario_id=u.id LIMIT 1), 0) as privacidade_endereco
                        FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.id=%s""",
                     (pid,)
@@ -1145,7 +1267,7 @@ def produto_item():
                     'id': p['vid'], 'nome': p['vnome'],
                     'localizacao': 'Localização privada' if p.get('privacidade_endereco') else f"Bloco {p['vbloco']} - Apto {p['vapto']}",
                     'rating': float(p['vrating'] or 0), 'vendas': p['vvendas'], 'bio': p['vbio'],
-                    'foto_url': p['vfoto_url'], 'pix_key': p['vpix_key']
+                    'foto_url': p['vfoto_url']
                 },
                 'avaliacoes': [{**a, 'criado_em': str(a['criado_em'])} for a in avs]
             })
@@ -1223,14 +1345,14 @@ def pedidos():
 
             if tipo == 'vendas':
                 sql = """SELECT p.id, p.quantidade, p.preco_total, p.status, p.criado_em, p.atualizado_em,
-                                pr.titulo as produto_titulo, pr.foto_principal as produto_foto,
+                                pr.id as produto_id, pr.titulo as produto_titulo, pr.foto_principal as produto_foto, pr.status as produto_status,
                                 u.nome as outro_nome
                          FROM pedidos p JOIN produtos pr ON p.produto_id=pr.id
                          JOIN usuarios u ON p.comprador_id=u.id
                          WHERE p.vendedor_id=%s ORDER BY p.criado_em DESC"""
             else:
                 sql = """SELECT p.id, p.quantidade, p.preco_total, p.status, p.codigo_entrega, p.criado_em, p.atualizado_em,
-                                pr.titulo as produto_titulo, pr.foto_principal as produto_foto,
+                                pr.id as produto_id, pr.titulo as produto_titulo, pr.foto_principal as produto_foto, pr.status as produto_status,
                                 u.nome as outro_nome
                          FROM pedidos p JOIN produtos pr ON p.produto_id=pr.id
                          JOIN usuarios u ON p.vendedor_id=u.id
@@ -1249,7 +1371,7 @@ def pedidos():
                     'preco_fmt': f"{float(p['preco_total']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
                     'status': p['status'], 'status_label': status_labels.get(p['status'], p['status']),
                     'criado_em': str(p['criado_em']),
-                    'produto': {'titulo': p['produto_titulo'], 'foto': p['produto_foto'] or '/static/assets/images/produto-placeholder.jpg'},
+                    'produto': {'id': p['produto_id'], 'titulo': p['produto_titulo'], 'foto': p['produto_foto'] or '/static/assets/images/produto-placeholder.jpg', 'status': p['produto_status']},
                     chave: p['outro_nome']
                 }
                 if tipo == 'compras':
@@ -1758,6 +1880,9 @@ def mensagens():
         if not texto:
             return err('Mensagem não pode ser vazia')
 
+        if contem_dado_sensivel(texto):
+            return err('Por segurança, não é permitido compartilhar dados pessoais (e-mail, telefone, CPF ou chave PIX) pelo chat. Finalize a transação pela plataforma.', 422)
+
         with db.cursor() as c:
             c.execute("INSERT INTO mensagens (conversa_id, remetente_id, texto) VALUES (%s,%s,%s)", (cid, uid, texto))
             mid = c.lastrowid
@@ -1865,6 +1990,11 @@ def avaliacoes():
         if avaliado == uid:
             return err('Você não pode avaliar a si mesmo')
 
+        if comentario:
+            score = verificar_toxicidade(comentario)
+            if score is not None and score >= 0.80:
+                return err('Seu comentário contém linguagem inapropriada e não pode ser enviado. Por favor, revise o texto.', 422)
+
         if produto_id:
             with db.cursor() as c:
                 c.execute("SELECT id FROM pedidos WHERE comprador_id=%s AND produto_id=%s AND status='entregue' LIMIT 1", (uid, produto_id))
@@ -1898,7 +2028,7 @@ def perfil():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento, pix_key FROM usuarios WHERE id=%s AND ativo=1", (uid,))
+            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento FROM usuarios WHERE id=%s AND ativo=1", (uid,))
             user = c.fetchone()
         if not user:
             return err('Usuário não encontrado', 404)

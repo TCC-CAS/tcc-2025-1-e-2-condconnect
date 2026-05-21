@@ -176,12 +176,7 @@
 
                     <!-- Info grid -->
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:20px;">
-                        ${v.pix_key ? `
-                        <div style="padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
-                            <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Chave Pix</div>
-                            <div style="font-size:14px;font-weight:600;color:#1e293b;word-break:break-all;">${v.pix_key}</div>
-                        </div>` : ''}
-                        <div style="padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
+                            <div style="padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
                             <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Avaliação</div>
                             <div style="font-size:14px;font-weight:600;color:#1e293b;">${v.rating.toFixed(1)} / 5.0</div>
                         </div>

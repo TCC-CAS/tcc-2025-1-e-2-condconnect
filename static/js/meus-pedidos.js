@@ -353,6 +353,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                     </div>
                     <div class="order-actions">
                         ${!['entregue', 'cancelado'].includes(order.status) ? `<button class="btn-track" data-id="${order.id}">Acompanhar Pedido</button>` : ''}
+                        ${tipo === 'purchases'
+                            ? order.produto?.status === 'disponivel'
+                                ? `<a href="/Templates/detalhes-produto.html?id=${order.produto.id}" style="display:inline-block;margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border-radius:8px;font-size:13px;font-family:inherit;font-weight:600;text-decoration:none;">Comprar novamente</a>`
+                                : `<span style="display:inline-block;margin-top:8px;padding:6px 12px;background:#fef9c3;color:#92400e;border-radius:8px;font-size:12px;font-weight:600;">Produto indisponível</span>`
+                            : ''}
                         ${tipo === 'sales' && order.status === 'aguardando' ? `<button class="btn-confirmar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Confirmar Pedido</button>` : ''}
                         ${tipo === 'sales' && order.status === 'confirmado' ? `<button class="btn-enviar" data-id="${order.id}" style="margin-top:8px;padding:8px 16px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;">Marcar Enviado</button>` : ''}
                         ${codigoInputHtml}

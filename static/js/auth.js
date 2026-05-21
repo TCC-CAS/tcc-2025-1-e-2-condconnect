@@ -251,9 +251,16 @@
                 CondConnect.setUser(user);
                 window.location.href = '/Templates/dashboard.html';
             } catch (err) {
-                await CondConnect.showAlert(err.message || 'Código inválido ou expirado.', 'error');
-                document.getElementById('codigo-2fa').value = '';
-                document.getElementById('codigo-2fa').focus();
+                const msg = err.message || 'Código inválido ou expirado.';
+                await CondConnect.showAlert(msg, 'error');
+                if (msg.includes('login novamente') || msg.includes('Muitas tentativas')) {
+                    document.getElementById('step-2fa').style.display = 'none';
+                    document.getElementById('step-login').style.display = 'block';
+                    document.getElementById('codigo-2fa').value = '';
+                } else {
+                    document.getElementById('codigo-2fa').value = '';
+                    document.getElementById('codigo-2fa').focus();
+                }
             } finally {
                 btn2fa.disabled = false;
                 btn2fa.textContent = 'Verificar';
