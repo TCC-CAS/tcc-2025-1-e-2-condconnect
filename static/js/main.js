@@ -120,10 +120,35 @@ const CondConnect = {
         if (role === 'admin') {
             adminEls.forEach(el => el.style.display = 'flex');
             if (adminBanner) adminBanner.style.display = 'block';
+            this._injectAdminNav();
         } else {
             adminEls.forEach(el => el.style.display = 'none');
             if (adminBanner) adminBanner.style.display = 'none';
         }
+    },
+
+    _injectAdminNav() {
+        const nav = document.querySelector('.sidebar-nav');
+        if (!nav) return;
+        const path = window.location.pathname;
+        const isAdmin   = path.includes('admin.html');
+        const isMarket  = path.includes('marketplace.html') || path.includes('detalhes-produto.html');
+        const chevron   = `<svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        nav.innerHTML = `
+            <a href="/Templates/admin.html" class="nav-item${isAdmin ? ' active' : ''}">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Painel Admin</span>${chevron}
+            </a>
+            <a href="/Templates/marketplace.html" class="nav-item${isMarket ? ' active' : ''}">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>Marketplace</span>${chevron}
+            </a>
+        `;
     },
 
     initMobileNav() {
@@ -395,6 +420,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const user = await CondConnect.api('/me');
             CondConnect.currentUser = user;
             localStorage.setItem('condconnect_user', JSON.stringify(user));
+            if (user.papel === 'admin' && _path.includes('dashboard.html')) {
+                window.location.href = '/Templates/admin.html';
+                return;
+            }
         } catch {
             localStorage.removeItem('condconnect_user');
             window.location.href = '/Templates/login.html';
