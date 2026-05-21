@@ -497,20 +497,42 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    async function carregarRelatorio(dias, produto_id) {
+    function getFiltros() {
+        return {
+            dias:      document.getElementById('rel-periodo')?.value   || '30',
+            produto_id: document.getElementById('rel-produto')?.value  || '',
+            categoria:  document.getElementById('rel-categoria')?.value || '',
+            ano:        document.getElementById('rel-ano')?.value       || '',
+            mes:        document.getElementById('rel-mes')?.value       || '',
+        };
+    }
+
+    async function carregarRelatorio() {
+        const { dias, produto_id, categoria, ano, mes } = getFiltros();
         const loading = document.getElementById('rel-loading');
         const content = document.getElementById('rel-content');
         if (loading) loading.style.display = 'block';
         if (content) content.style.display = 'none';
 
         try {
-            const url = `/me/analytics?dias=${dias}${produto_id ? '&produto_id=' + produto_id : ''}`;
-            const data = await CondConnect.api(url);
+            const params = new URLSearchParams({ dias });
+            if (produto_id) params.set('produto_id', produto_id);
+            if (categoria)  params.set('categoria', categoria);
+            if (ano)        params.set('ano', ano);
+            if (mes)        params.set('mes', mes);
+
+            const data = await CondConnect.api(`/me/analytics?${params}`);
             const sub = document.getElementById('rel-subtitulo');
             if (sub) {
                 const agora = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-                const filtroTxt = produto_id ? ' · produto filtrado' : '';
-                sub.textContent = `Gerado em ${agora} · últimos ${dias} dias${filtroTxt}`;
+                const partes = [];
+                if (ano && mes) partes.push(`${document.getElementById('rel-mes').options[document.getElementById('rel-mes').selectedIndex].text}/${ano}`);
+                else if (ano) partes.push(`ano ${ano}`);
+                else if (mes) partes.push(document.getElementById('rel-mes').options[document.getElementById('rel-mes').selectedIndex].text);
+                else partes.push(`últimos ${dias} dias`);
+                if (categoria) partes.push(document.getElementById('rel-categoria').options[document.getElementById('rel-categoria').selectedIndex].text);
+                if (produto_id) partes.push('produto filtrado');
+                sub.textContent = `Gerado em ${agora} · ${partes.join(' · ')}`;
             }
             if (loading) loading.style.display = 'none';
             if (content) content.style.display = 'block';
@@ -521,16 +543,24 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    const periodoSel = document.getElementById('rel-periodo');
-    const produtoSel = document.getElementById('rel-produto');
-
-    if (periodoSel) {
-        periodoSel.addEventListener('change', () => carregarRelatorio(periodoSel.value, produtoSel?.value || ''));
+    // Preencher select de anos dinamicamente
+    function popularAnos() {
+        const sel = document.getElementById('rel-ano');
+        if (!sel) return;
+        const anoAtual = new Date().getFullYear();
+        for (let a = anoAtual; a >= anoAtual - 5; a--) {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a;
+            sel.appendChild(opt);
+        }
     }
-    if (produtoSel) {
-        produtoSel.addEventListener('change', () => carregarRelatorio(periodoSel?.value || 30, produtoSel.value));
-    }
 
+    ['rel-periodo', 'rel-produto', 'rel-categoria', 'rel-ano', 'rel-mes'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', carregarRelatorio);
+    });
+
+    popularAnos();
     await carregarProdutos();
-    await carregarRelatorio(30);
+    await carregarRelatorio();
 });
