@@ -1,0 +1,13 @@
+pytest>=7.4
+pytest-json-report>=1.5
+pytest-html>=4.0
+pytest-playwright>=0.4
+playwright>=1.40
+matplotlib>=3.7
+numpy>=1.24
+bcrypt>=4.0
+pymysql>=1.1
+flask>=2.3
+flask-cors>=4.0
+boto3>=1.28
+requests>=2.31
