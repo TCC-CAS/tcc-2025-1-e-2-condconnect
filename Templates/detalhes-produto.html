@@ -311,6 +311,66 @@
             </div>
         </section>
 
+        <!-- Modal de Denúncia -->
+        <div id="denuncia-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+            <div style="background:white;border-radius:16px;width:100%;max-width:400px;margin:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <!-- Cabeçalho -->
+                <div style="padding:20px 24px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+                    <button id="denuncia-back" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:20px;padding:0;display:none;">←</button>
+                    <h3 id="denuncia-titulo" style="margin:0;font-size:16px;font-weight:700;color:#1e293b;text-align:center;flex:1;">Por que você está denunciando?</h3>
+                    <button id="denuncia-fechar" style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:22px;padding:0;line-height:1;">&times;</button>
+                </div>
+                <!-- Step 1: motivos -->
+                <div id="denuncia-step1">
+                    <p style="padding:12px 24px 4px;margin:0;font-size:13px;color:#6b7280;">Selecione o motivo da denúncia. Sua identidade será mantida em sigilo.</p>
+                    <ul style="list-style:none;margin:0;padding:0;">
+                        <li class="denuncia-item" data-motivo="Spam ou propaganda">Spam ou propaganda</li>
+                        <li class="denuncia-item" data-motivo="Linguagem ofensiva ou xingamentos">Linguagem ofensiva ou xingamentos</li>
+                        <li class="denuncia-item" data-motivo="Nudez ou conteúdo sexual">Nudez ou conteúdo sexual</li>
+                        <li class="denuncia-item" data-motivo="Assédio ou bullying">Assédio ou bullying</li>
+                        <li class="denuncia-item" data-motivo="Informações falsas">Informações falsas</li>
+                        <li class="denuncia-item" data-motivo="Conteúdo de ódio">Conteúdo de ódio</li>
+                        <li class="denuncia-item" data-motivo="Outro">Outro</li>
+                    </ul>
+                </div>
+                <!-- Step 2: confirmação -->
+                <div id="denuncia-step2" style="display:none;padding:32px 24px;text-align:center;">
+                    <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <h4 style="margin:0 0 8px;font-size:16px;color:#1e293b;">Tem certeza?</h4>
+                    <p id="denuncia-motivo-label" style="margin:0 0 24px;font-size:14px;color:#6b7280;"></p>
+                    <button id="denuncia-confirmar" style="width:100%;padding:14px;background:#dc2626;color:white;border:none;border-radius:100px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:10px;">Confirmar denúncia</button>
+                    <button id="denuncia-cancelar" style="width:100%;padding:14px;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;border-radius:100px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;">Cancelar</button>
+                </div>
+                <!-- Step 3: sucesso -->
+                <div id="denuncia-step3" style="display:none;padding:32px 24px;text-align:center;">
+                    <div style="width:56px;height:56px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:margin:0 auto 16px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin:auto;display:block;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <h4 style="margin:16px 0 8px;font-size:16px;color:#1e293b;">Denúncia enviada</h4>
+                    <p style="margin:0 0 24px;font-size:14px;color:#6b7280;">Obrigado por ajudar a manter a comunidade segura. Nossa equipe irá analisar o conteúdo.</p>
+                    <button id="denuncia-ok" style="width:100%;padding:14px;background:#00a6a6;color:white;border:none;border-radius:100px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Entendido</button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .denuncia-item {
+                padding: 14px 24px;
+                font-size: 14px;
+                color: #1e293b;
+                cursor: pointer;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background 0.15s;
+            }
+            .denuncia-item:hover { background: #f8fafc; }
+            .denuncia-item::after { content: '›'; color: #94a3b8; font-size: 18px; }
+        </style>
+
         <footer class="dashboard-footer">
             <div class="footer-content">
                 <div class="footer-links">

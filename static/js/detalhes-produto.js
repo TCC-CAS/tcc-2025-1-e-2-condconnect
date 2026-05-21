@@ -230,17 +230,78 @@
             `).join('');
             return `
                 <div style="border-bottom:1px solid #f1f5f9;padding-bottom:16px;margin-bottom:16px;">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                        <div style="width:32px;height:32px;background:var(--primary-soft,#eff6ff);color:var(--primary,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">${av.avaliador?.charAt(0) || 'U'}</div>
-                        <div>
-                            <h4 style="margin:0;font-size:14px;color:#1e293b;">${av.avaliador || 'Usuário'}</h4>
-                            <div style="display:flex;color:#f59e0b;margin-top:2px;">${stars}</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:32px;height:32px;background:var(--primary-soft,#eff6ff);color:var(--primary,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">${av.avaliador?.charAt(0) || 'U'}</div>
+                            <div>
+                                <h4 style="margin:0;font-size:14px;color:#1e293b;">${av.avaliador || 'Usuário'}</h4>
+                                <div style="display:flex;color:#f59e0b;margin-top:2px;">${stars}</div>
+                            </div>
                         </div>
+                        ${av.id ? `<button class="btn-denunciar" data-id="${av.id}" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:12px;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#94a3b8'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Denunciar</button>` : ''}
                     </div>
                     <p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0;">${av.comentario || ''}</p>
                 </div>
             `;
         }).join('');
+
+        // Modal de denúncia
+        const modal = document.getElementById('denuncia-modal');
+        let avaliacaoAlvo = null, motivoSelecionado = null;
+
+        document.querySelectorAll('.btn-denunciar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                avaliacaoAlvo = btn.dataset.id;
+                motivoSelecionado = null;
+                document.getElementById('denuncia-step1').style.display = 'block';
+                document.getElementById('denuncia-step2').style.display = 'none';
+                document.getElementById('denuncia-step3').style.display = 'none';
+                document.getElementById('denuncia-back').style.display = 'none';
+                document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
+                modal.style.display = 'flex';
+            });
+        });
+
+        document.querySelectorAll('.denuncia-item').forEach(item => {
+            item.addEventListener('click', () => {
+                motivoSelecionado = item.dataset.motivo;
+                document.getElementById('denuncia-motivo-label').textContent = `Motivo: "${motivoSelecionado}"`;
+                document.getElementById('denuncia-step1').style.display = 'none';
+                document.getElementById('denuncia-step2').style.display = 'block';
+                document.getElementById('denuncia-back').style.display = 'block';
+                document.getElementById('denuncia-titulo').textContent = 'Confirmar denúncia';
+            });
+        });
+
+        document.getElementById('denuncia-back').addEventListener('click', () => {
+            document.getElementById('denuncia-step2').style.display = 'none';
+            document.getElementById('denuncia-step1').style.display = 'block';
+            document.getElementById('denuncia-back').style.display = 'none';
+            document.getElementById('denuncia-titulo').textContent = 'Por que você está denunciando?';
+        });
+
+        const fecharModal = () => { modal.style.display = 'none'; };
+        document.getElementById('denuncia-fechar').addEventListener('click', fecharModal);
+        document.getElementById('denuncia-cancelar').addEventListener('click', fecharModal);
+        document.getElementById('denuncia-ok').addEventListener('click', fecharModal);
+        modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
+
+        document.getElementById('denuncia-confirmar').addEventListener('click', async () => {
+            if (!avaliacaoAlvo || !motivoSelecionado) return;
+            const btn = document.getElementById('denuncia-confirmar');
+            btn.disabled = true; btn.textContent = 'Enviando...';
+            try {
+                await CondConnect.api('/denuncias/avaliacao', { method: 'POST', body: { avaliacao_id: avaliacaoAlvo, motivo: motivoSelecionado } });
+                document.getElementById('denuncia-step2').style.display = 'none';
+                document.getElementById('denuncia-step3').style.display = 'block';
+                document.getElementById('denuncia-back').style.display = 'none';
+                document.getElementById('denuncia-titulo').textContent = 'Obrigado!';
+            } catch (err) {
+                await CondConnect.showAlert(err.message || 'Erro ao enviar denúncia', 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirmar denúncia';
+            }
+        });
     }
 
     // Seção de avaliação — verificar permissão

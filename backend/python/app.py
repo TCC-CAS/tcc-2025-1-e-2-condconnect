@@ -338,6 +338,16 @@ def init_db():
                     FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
                 )
             """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS denuncias_avaliacao (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    avaliacao_id INT NOT NULL,
+                    denunciante_id INT NOT NULL,
+                    motivo VARCHAR(100) NOT NULL,
+                    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY unico_denuncia (avaliacao_id, denunciante_id)
+                )
+            """)
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -1248,7 +1258,7 @@ def produto_item():
 
             with db.cursor() as c:
                 c.execute(
-                    "SELECT a.nota, a.comentario, a.criado_em, u.nome as avaliador FROM avaliacoes a JOIN usuarios u ON a.avaliador_id=u.id WHERE a.produto_id=%s ORDER BY a.criado_em DESC",
+                    "SELECT a.id, a.nota, a.comentario, a.criado_em, u.nome as avaliador FROM avaliacoes a JOIN usuarios u ON a.avaliador_id=u.id WHERE a.produto_id=%s ORDER BY a.criado_em DESC",
                     (pid,)
                 )
                 avs = c.fetchall()
@@ -2027,6 +2037,49 @@ def avaliacoes():
 
         notificar(db, avaliado, 'avaliacao', 'Nova Avaliação', f'Você recebeu uma avaliação de {nota} estrelas.', '/Templates/perfil.html')
         return ok({'message': 'Avaliação enviada com sucesso'}, 201)
+    finally:
+        db.close()
+
+
+MOTIVOS_DENUNCIA = [
+    'Spam ou propaganda',
+    'Linguagem ofensiva ou xingamentos',
+    'Nudez ou conteúdo sexual',
+    'Assédio ou bullying',
+    'Informações falsas',
+    'Conteúdo de ódio',
+    'Outro',
+]
+
+@app.route('/denuncias/avaliacao', methods=['POST', 'OPTIONS'])
+def denunciar_avaliacao():
+    if request.method == 'OPTIONS':
+        return ok()
+    uid, e = require_auth()
+    if e:
+        return e
+    body = get_body()
+    avaliacao_id = body.get('avaliacao_id')
+    motivo = (body.get('motivo') or '').strip()
+    if not avaliacao_id or not motivo:
+        return err('avaliacao_id e motivo são obrigatórios')
+    if motivo not in MOTIVOS_DENUNCIA:
+        return err('Motivo inválido')
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("SELECT id FROM avaliacoes WHERE id=%s", (avaliacao_id,))
+            if not c.fetchone():
+                return err('Avaliação não encontrada', 404)
+        try:
+            with db.cursor() as c:
+                c.execute(
+                    "INSERT INTO denuncias_avaliacao (avaliacao_id, denunciante_id, motivo) VALUES (%s,%s,%s)",
+                    (avaliacao_id, uid, motivo)
+                )
+        except Exception:
+            return err('Você já denunciou esta avaliação.', 409)
+        return ok({'message': 'Denúncia registrada. Obrigado por ajudar a manter a comunidade segura.'}, 201)
     finally:
         db.close()
 
