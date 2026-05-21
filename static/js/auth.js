@@ -317,10 +317,15 @@
             const bairro       = document.getElementById('bairro')?.value.trim();
             const cidade       = document.getElementById('cidade')?.value.trim();
             const estado       = document.getElementById('estado')?.value.trim();
+            const condominio   = document.getElementById('condominio')?.value;
             const lgpd         = document.getElementById('lgpd_consent')?.checked;
 
             if (!nome || !email || !senha || !apto || !bloco) {
                 mostrarErro('Preencha todos os campos obrigatórios');
+                return;
+            }
+            if (!condominio) {
+                mostrarErro('Selecione o seu condomínio');
                 return;
             }
             if (!cpf || !validarCPF(cpf)) {
@@ -358,7 +363,7 @@
             try {
                 await CondConnect.api('/auth/register', {
                     method: 'POST',
-                    body: { nome, email, senha, apartamento: apto, bloco, cpf, telefone, cep, numero, logradouro, bairro, cidade, estado, recaptcha_token: recaptchaToken },
+                    body: { nome, email, senha, apartamento: apto, bloco, cpf, telefone, condominio, cep, numero, logradouro, bairro, cidade, estado, recaptcha_token: recaptchaToken },
                 });
                 window.location.href = '/Templates/login.html?cadastro=1';
             } catch (err) {

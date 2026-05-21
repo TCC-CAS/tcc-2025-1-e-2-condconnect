@@ -21,6 +21,11 @@ app.config['SESSION_COOKIE_SECURE'] = False
 
 PERSPECTIVE_API_KEY = os.environ.get('PERSPECTIVE_API_KEY', '')
 
+CONDOMINIOS = [
+    'Vivaz Santo Amaro',
+    'Condomínio Ribeirão Preto',
+]
+
 CORS(app, supports_credentials=True, origins=[
     'https://condconnect.duckdns.org', 'http://localhost', 'http://127.0.0.1'
 ])
@@ -431,6 +436,7 @@ def register():
     senha      = body.get('senha') or ''
     apto       = (body.get('apartamento') or '').strip()
     bloco      = (body.get('bloco') or '').strip()
+    condominio = (body.get('condominio') or '').strip()
     cpf        = (body.get('cpf') or '').strip()
     telefone   = (body.get('telefone') or '').strip() or None
     cep        = (body.get('cep') or '').strip() or None
@@ -442,6 +448,8 @@ def register():
 
     if not all([nome, email, senha, apto, bloco]):
         return err('Todos os campos são obrigatórios')
+    if condominio not in CONDOMINIOS:
+        return err('Selecione um condomínio parceiro válido')
     if not verificar_recaptcha(body.get('recaptcha_token', '')):
         return err('Verificação de segurança falhou. Tente novamente.')
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
@@ -467,9 +475,9 @@ def register():
             cpf_store = re.sub(r'\D', '', cpf) if cpf else None
             c.execute(
                 """INSERT INTO usuarios
-                   (nome, email, senha, apartamento, bloco, cpf, telefone, cep, logradouro, numero, bairro, cidade, estado)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-                (nome, email, hashed, apto, bloco, cpf_store, telefone, cep, logradouro, numero, bairro, cidade, estado)
+                   (nome, email, senha, apartamento, bloco, condominio, cpf, telefone, cep, logradouro, numero, bairro, cidade, estado)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (nome, email, hashed, apto, bloco, condominio, cpf_store, telefone, cep, logradouro, numero, bairro, cidade, estado)
             )
             uid = c.lastrowid
             c.execute("INSERT INTO configuracoes_usuario (usuario_id) VALUES (%s)", (uid,))
@@ -499,7 +507,7 @@ def verificar_2fa():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, email, papel, foto_url, apartamento, bloco, session_version, codigo_2fa, codigo_2fa_expira FROM usuarios WHERE id=%s", (uid,))
+            c.execute("SELECT id, nome, email, papel, foto_url, apartamento, bloco, condominio, session_version, codigo_2fa, codigo_2fa_expira FROM usuarios WHERE id=%s", (uid,))
             user = c.fetchone()
 
         if not user:
@@ -528,11 +536,13 @@ def verificar_2fa():
         session['user_id'] = user['id']
         session['user_role'] = user['papel']
         session['session_version'] = user['session_version']
+        session['condominio'] = user.get('condominio')
 
         return ok({
             'id': user['id'], 'nome': user['nome'], 'email': user['email'],
             'papel': user['papel'], 'foto_url': user['foto_url'],
-            'apartamento': user['apartamento'], 'bloco': user['bloco']
+            'apartamento': user['apartamento'], 'bloco': user['bloco'],
+            'condominio': user.get('condominio'),
         })
     finally:
         db.close()
@@ -678,7 +688,7 @@ def me():
         if request.method == 'GET':
             with db.cursor() as c:
                 c.execute(
-                    "SELECT id,nome,email,telefone,apartamento,bloco,foto_url,bio,pix_key,rating,total_vendas,total_compras,papel,criado_em FROM usuarios WHERE id=%s",
+                    "SELECT id,nome,email,telefone,apartamento,bloco,condominio,foto_url,bio,pix_key,rating,total_vendas,total_compras,papel,criado_em FROM usuarios WHERE id=%s",
                     (uid,)
                 )
                 user = c.fetchone()
@@ -1098,12 +1108,16 @@ def produtos():
             limite = int(request.args.get('limite', 50))
             meus = request.args.get('meus')
 
+            user_condo = session.get('condominio')
+
             where = ["p.status='disponivel'"]
             params = []
             if meus and uid:
                 where = ["p.usuario_id=%s"]
                 params = [uid]
             else:
+                if user_condo:
+                    where.append("u.condominio=%s"); params.append(user_condo)
                 if categoria:
                     where.append("p.categoria=%s"); params.append(categoria)
                 if busca:
@@ -2028,7 +2042,7 @@ def perfil():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento FROM usuarios WHERE id=%s AND ativo=1", (uid,))
+            c.execute("SELECT id, nome, foto_url, bio, rating, total_vendas, total_compras, criado_em, bloco, apartamento, condominio FROM usuarios WHERE id=%s AND ativo=1", (uid,))
             user = c.fetchone()
         if not user:
             return err('Usuário não encontrado', 404)

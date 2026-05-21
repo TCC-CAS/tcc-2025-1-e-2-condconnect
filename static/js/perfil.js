@@ -31,13 +31,14 @@
             localStorage.setItem('condconnect_user', JSON.stringify(user));
 
             const campos = {
-                'profile-name':  user.nome,
-                'profile-email': user.email,
-                'profile-phone': user.telefone || '',
-                'profile-apto':  user.apartamento || '',
-                'profile-bloco': user.bloco || '',
-                'profile-bio':   user.bio || '',
-                'profile-pix':   user.pix_key || '',
+                'profile-name':       user.nome,
+                'profile-email':      user.email,
+                'profile-phone':      user.telefone || '',
+                'profile-apto':       user.apartamento || '',
+                'profile-bloco':      user.bloco || '',
+                'profile-bio':        user.bio || '',
+                'profile-pix':        user.pix_key || '',
+                'profile-condominio': user.condominio || '',
             };
 
             Object.entries(campos).forEach(([id, val]) => {

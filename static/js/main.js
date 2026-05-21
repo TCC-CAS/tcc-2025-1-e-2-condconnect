@@ -216,7 +216,8 @@ const CondConnect = {
         if (!user) return;
         document.querySelectorAll('.user-name').forEach(el => el.textContent = user.nome);
         document.querySelectorAll('.user-role').forEach(el => {
-            el.textContent = user.papel === 'admin' ? 'Administrador' : 'Membro';
+            const papel = user.papel === 'admin' ? 'Administrador' : 'Membro';
+            el.textContent = user.condominio ? `${papel} · ${user.condominio}` : papel;
         });
         document.querySelectorAll('.header-avatar').forEach(el => {
             el.src = user.foto_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nome)}&background=00A6A6&color=fff`;
