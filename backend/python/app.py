@@ -344,15 +344,68 @@ def init_db():
                     avaliacao_id INT NOT NULL,
                     denunciante_id INT NOT NULL,
                     motivo VARCHAR(100) NOT NULL,
+                    status ENUM('pendente','ignorada','removida','suspendeu') DEFAULT 'pendente',
+                    resolvido_por INT DEFAULT NULL,
                     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE KEY unico_denuncia (avaliacao_id, denunciante_id)
                 )
             """)
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS cpf_banidos (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    cpf VARCHAR(20) NOT NULL UNIQUE,
+                    motivo TEXT,
+                    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            # Colunas de suspensão em usuarios (ignora se já existem)
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN suspenso_ate DATETIME NULL")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE usuarios ADD COLUMN total_suspensoes INT NOT NULL DEFAULT 0")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE denuncias_avaliacao ADD COLUMN status ENUM('pendente','ignorada','removida','suspendeu') DEFAULT 'pendente'")
+            except Exception:
+                pass
+            try:
+                c.execute("ALTER TABLE denuncias_avaliacao ADD COLUMN resolvido_por INT DEFAULT NULL")
+            except Exception:
+                pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
 
 init_db()
+
+
+def ensure_admin():
+    """Garante que o admin principal existe no banco."""
+    ADMIN_EMAIL = 'condconnect382@gmail.com'
+    ADMIN_SENHA = 'CondConnect@2025!'
+    try:
+        db = get_db()
+        with db.cursor() as c:
+            c.execute("SELECT id, papel FROM usuarios WHERE email=%s", (ADMIN_EMAIL,))
+            admin = c.fetchone()
+            if not admin:
+                hashed = hash_password(ADMIN_SENHA)
+                c.execute(
+                    "INSERT INTO usuarios (nome, email, senha, papel, apartamento, bloco) VALUES (%s,%s,%s,'admin','0','ADM')",
+                    ('CondConnect Admin', ADMIN_EMAIL, hashed)
+                )
+                print(f'Admin criado: {ADMIN_EMAIL}')
+            elif admin['papel'] != 'admin':
+                c.execute("UPDATE usuarios SET papel='admin' WHERE email=%s", (ADMIN_EMAIL,))
+                print(f'Papel admin atribuído a {ADMIN_EMAIL}')
+        db.close()
+    except Exception as e:
+        print(f'ensure_admin error: {e}')
+
+ensure_admin()
 
 
 # ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -370,10 +423,15 @@ def login():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version FROM usuarios WHERE email=%s AND ativo=1", (email,))
+            c.execute("SELECT id, nome, email, senha, papel, foto_url, apartamento, bloco, session_version, suspenso_ate, total_suspensoes FROM usuarios WHERE email=%s AND ativo=1", (email,))
             user = c.fetchone()
         if not user or not check_password(senha, user['senha']):
             return err('E-mail ou senha incorretos', 401)
+
+        # Checar suspensão ativa
+        if user.get('suspenso_ate') and datetime.now() < user['suspenso_ate']:
+            ate = user['suspenso_ate'].strftime('%d/%m/%Y às %H:%M')
+            return err(f'Sua conta está suspensa até {ate}. Entre em contato com a administração caso tenha dúvidas.', 403)
 
         codigo = str(secrets.randbelow(900000) + 100000)
         expira = datetime.now() + timedelta(minutes=10)
@@ -480,6 +538,9 @@ def register():
                 c.execute("SELECT id FROM usuarios WHERE cpf=%s", (cpf_digits,))
                 if c.fetchone():
                     return err('CPF já cadastrado')
+                c.execute("SELECT id FROM cpf_banidos WHERE cpf=%s", (cpf_digits,))
+                if c.fetchone():
+                    return err('Este CPF está permanentemente banido da plataforma.')
 
             hashed = hash_password(senha)
             cpf_store = re.sub(r'\D', '', cpf) if cpf else None
@@ -2267,30 +2328,68 @@ def admin_usuarios():
     db = get_db()
     try:
         if request.method == 'GET':
-            busca = request.args.get('busca', '')
+            busca = request.args.get('busca', '').strip()
+            condo = request.args.get('condominio', '').strip() or None
+            where, params = ['1=1'], []
+            if busca:
+                where.append("(nome LIKE %s OR email LIKE %s)")
+                params += [f'%{busca}%', f'%{busca}%']
+            if condo:
+                where.append("condominio=%s"); params.append(condo)
             with db.cursor() as c:
-                if busca:
-                    c.execute("SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento FROM usuarios WHERE nome LIKE %s OR email LIKE %s ORDER BY criado_em DESC", (f'%{busca}%', f'%{busca}%'))
-                else:
-                    c.execute("SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento FROM usuarios ORDER BY criado_em DESC")
+                c.execute(
+                    f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio, suspenso_ate, total_suspensoes FROM usuarios WHERE {' AND '.join(where)} ORDER BY criado_em DESC",
+                    params
+                )
                 users = c.fetchall()
-            return ok({'usuarios': [{**u, 'ativo': bool(u['ativo']), 'criado_em': str(u['criado_em'])} for u in users]})
+            return ok({'usuarios': [{**u, 'ativo': bool(u['ativo']), 'criado_em': str(u['criado_em']), 'suspenso_ate': str(u['suspenso_ate']) if u.get('suspenso_ate') else None} for u in users]})
 
         body = get_body()
-        target_id = int(body.get('usuario_id', 0))
-        acao = body.get('acao', '')
-        if not target_id or acao not in ['banir', 'desbanir', 'tornar_admin', 'tornar_usuario']:
+        target_id    = int(body.get('usuario_id', 0))
+        acao         = body.get('acao', '')
+        duracao_dias = int(body.get('duracao_dias', 3))
+
+        if not target_id or acao not in ['banir', 'desbanir', 'suspender', 'remover_suspensao', 'tornar_admin', 'tornar_usuario']:
             return err('usuario_id e ação válida são obrigatórios')
+
+        with db.cursor() as c:
+            c.execute("SELECT nome, email, cpf, total_suspensoes FROM usuarios WHERE id=%s", (target_id,))
+            target = c.fetchone()
+        if not target:
+            return err('Usuário não encontrado', 404)
 
         with db.cursor() as c:
             if acao == 'banir':
                 c.execute("UPDATE usuarios SET ativo=0 WHERE id=%s", (target_id,))
+                cpf_digits = re.sub(r'\D', '', target['cpf'] or '')
+                if cpf_digits:
+                    try:
+                        c.execute("INSERT INTO cpf_banidos (cpf, motivo) VALUES (%s,%s)", (cpf_digits, 'Banido pelo administrador'))
+                    except Exception:
+                        pass
             elif acao == 'desbanir':
                 c.execute("UPDATE usuarios SET ativo=1 WHERE id=%s", (target_id,))
+            elif acao == 'suspender':
+                suspenso_ate = datetime.now() + timedelta(days=duracao_dias)
+                c.execute("UPDATE usuarios SET suspenso_ate=%s, total_suspensoes=total_suspensoes+1 WHERE id=%s", (suspenso_ate, target_id))
+                aviso_ban = f'\n\n⚠️ Após 3 suspensões, sua conta poderá ser banida permanentemente.' if target['total_suspensoes'] + 1 >= 2 else ''
+                corpo = email_layout('⚠️ Conta suspensa',
+                    f"""<div style='background:#fef2f2;border:2px solid #fca5a5;border-radius:16px;padding:24px;margin:20px 0;text-align:center;'>
+                        <p style='font-size:32px;margin:0;'>🚫</p>
+                        <h2 style='color:#dc2626;margin:12px 0 8px;'>Conta Suspensa</h2>
+                        <p style='color:#6b7280;margin:0;'>Sua conta foi suspensa por <strong>{duracao_dias} dia(s)</strong>, até <strong>{suspenso_ate.strftime('%d/%m/%Y')}</strong>.</p>
+                    </div>
+                    <p style='color:#64748b;font-size:14px;'>Motivo: violação das diretrizes da comunidade CondConnect.{aviso_ban}</p>
+                    <p style='color:#94a3b8;font-size:13px;'>Dúvidas? condconnect382@gmail.com</p>"""
+                )
+                send_email(target['email'], '⚠️ Sua conta foi suspensa - CondConnect', corpo)
+            elif acao == 'remover_suspensao':
+                c.execute("UPDATE usuarios SET suspenso_ate=NULL WHERE id=%s", (target_id,))
             elif acao == 'tornar_admin':
                 c.execute("UPDATE usuarios SET papel='admin' WHERE id=%s", (target_id,))
             elif acao == 'tornar_usuario':
                 c.execute("UPDATE usuarios SET papel='usuario' WHERE id=%s", (target_id,))
+
         return ok({'message': 'Usuário atualizado com sucesso'})
     finally:
         db.close()
@@ -2302,25 +2401,165 @@ def admin_stats():
     if e:
         return e
 
+    condo = request.args.get('condominio', '').strip() or None
+    cond_filter = "AND u.condominio=%s" if condo else ""
+    cond_param  = (condo,) if condo else ()
+
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("SELECT COUNT(*) as n FROM usuarios"); total_usuarios = c.fetchone()['n']
-            c.execute("SELECT COUNT(*) as n FROM produtos"); total_produtos = c.fetchone()['n']
-            c.execute("SELECT COUNT(*) as n FROM pedidos"); total_pedidos = c.fetchone()['n']
-            c.execute("SELECT COUNT(*) as n FROM mensagens"); total_mensagens = c.fetchone()['n']
-            c.execute("SELECT COUNT(*) as n FROM usuarios WHERE ativo=0"); banidos = c.fetchone()['n']
-            c.execute(
-                "SELECT r.id, r.tipo, r.motivo, r.criado_em, u.nome as autor FROM relatorios r JOIN usuarios u ON r.usuario_id=u.id WHERE r.status='pendente' ORDER BY r.criado_em DESC LIMIT 10"
-            )
-            relatorios = c.fetchall()
+            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE 1=1 {cond_filter}", cond_param)
+            total_usuarios = c.fetchone()['n']
+            c.execute(f"SELECT COUNT(*) as n FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE 1=1 {cond_filter}", cond_param)
+            total_produtos = c.fetchone()['n']
+            c.execute(f"SELECT COUNT(*) as n FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE 1=1 {cond_filter}", cond_param)
+            total_pedidos = c.fetchone()['n']
+            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE ativo=0 {cond_filter}", cond_param)
+            banidos = c.fetchone()['n']
+            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE suspenso_ate > NOW() {cond_filter}", cond_param)
+            suspensos = c.fetchone()['n']
+            c.execute("SELECT COUNT(*) as n FROM denuncias_avaliacao WHERE status='pendente'")
+            denuncias_pendentes = c.fetchone()['n']
+            c.execute(f"SELECT COALESCE(SUM(pe.preco_total),0) as fat FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE pe.status='entregue' {cond_filter}", cond_param)
+            faturamento = float(c.fetchone()['fat'])
+
+            # Usuários por condomínio
+            c.execute("SELECT condominio, COUNT(*) as n FROM usuarios WHERE condominio IS NOT NULL GROUP BY condominio")
+            por_condo = c.fetchall()
 
         return ok({
-            'total_usuarios': total_usuarios, 'total_produtos': total_produtos,
-            'total_pedidos': total_pedidos, 'total_mensagens': total_mensagens,
+            'total_usuarios': total_usuarios,
+            'total_produtos': total_produtos,
+            'total_pedidos': total_pedidos,
             'usuarios_banidos': banidos,
-            'relatorios_pendentes': [{**r, 'criado_em': str(r['criado_em'])} for r in relatorios]
+            'usuarios_suspensos': suspensos,
+            'denuncias_pendentes': denuncias_pendentes,
+            'faturamento': faturamento,
+            'por_condominio': por_condo,
         })
+    finally:
+        db.close()
+
+
+@app.route('/admin/denuncias', methods=['GET', 'PUT', 'OPTIONS'])
+def admin_denuncias():
+    uid, e = require_admin()
+    if e:
+        return e
+
+    condo  = request.args.get('condominio', '').strip() or None
+    status = request.args.get('status', 'pendente')
+
+    db = get_db()
+    try:
+        if request.method == 'GET':
+            cond_filter = "AND ud.condominio=%s" if condo else ""
+            cond_param  = (condo,) if condo else ()
+            with db.cursor() as c:
+                c.execute(f"""
+                    SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
+                           a.nota, a.comentario, a.avaliador_id,
+                           u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
+                           u_autor.total_suspensoes,
+                           ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
+                           COUNT(da2.id) as total_denuncias_avaliacao
+                    FROM denuncias_avaliacao da
+                    JOIN avaliacoes a ON da.avaliacao_id = a.id
+                    JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
+                    JOIN usuarios ud ON a.avaliado_id = ud.id
+                    LEFT JOIN denuncias_avaliacao da2 ON da2.avaliacao_id = da.avaliacao_id
+                    WHERE da.status=%s {cond_filter}
+                    GROUP BY da.id
+                    ORDER BY da.criado_em DESC
+                """, (status,) + cond_param)
+                rows = c.fetchall()
+            return ok({'denuncias': [{**r, 'criado_em': str(r['criado_em'])} for r in rows]})
+
+        # PUT – ações de moderação
+        body = get_body()
+        denuncia_id  = int(body.get('denuncia_id', 0))
+        acao         = body.get('acao', '')   # ignorar | remover_comentario | suspender | banir
+        duracao_dias = int(body.get('duracao_dias', 3))
+
+        if not denuncia_id or acao not in ('ignorar', 'remover_comentario', 'suspender', 'banir'):
+            return err('denuncia_id e acao valida sao obrigatorios')
+
+        with db.cursor() as c:
+            c.execute("""
+                SELECT da.avaliacao_id, a.avaliador_id, a.avaliado_id,
+                       u.nome, u.email, u.cpf, u.total_suspensoes
+                FROM denuncias_avaliacao da
+                JOIN avaliacoes a ON da.avaliacao_id = a.id
+                JOIN usuarios u ON a.avaliador_id = u.id
+                WHERE da.id=%s
+            """, (denuncia_id,))
+            den = c.fetchone()
+        if not den:
+            return err('Denúncia não encontrada', 404)
+
+        autor_id   = den['avaliador_id']
+        avaliacao_id = den['avaliacao_id']
+
+        if acao == 'ignorar':
+            with db.cursor() as c:
+                c.execute("UPDATE denuncias_avaliacao SET status='ignorada', resolvido_por=%s WHERE id=%s", (uid, denuncia_id))
+            return ok({'message': 'Denúncia ignorada'})
+
+        if acao == 'remover_comentario':
+            with db.cursor() as c:
+                c.execute("UPDATE avaliacoes SET comentario=NULL WHERE id=%s", (avaliacao_id,))
+                c.execute("UPDATE denuncias_avaliacao SET status='removida', resolvido_por=%s WHERE avaliacao_id=%s", (uid, avaliacao_id))
+            notificar(db, autor_id, 'moderacao', 'Comentário removido',
+                      'Um comentário seu foi removido por violação das diretrizes da comunidade.', '/Templates/marketplace.html')
+            return ok({'message': 'Comentário removido'})
+
+        if acao == 'suspender':
+            suspenso_ate = datetime.now() + timedelta(days=duracao_dias)
+            with db.cursor() as c:
+                c.execute("UPDATE usuarios SET suspenso_ate=%s, total_suspensoes=total_suspensoes+1 WHERE id=%s", (suspenso_ate, autor_id))
+                c.execute("UPDATE denuncias_avaliacao SET status='suspendeu', resolvido_por=%s WHERE avaliacao_id=%s", (uid, avaliacao_id))
+                c.execute("SELECT total_suspensoes FROM usuarios WHERE id=%s", (autor_id,))
+                novos = c.fetchone()['total_suspensoes']
+
+            aviso_ban = f'\n\n⚠️ Atenção: você já recebeu {novos} suspensão(ões). Após 3 suspensões, sua conta poderá ser banida permanentemente.' if novos >= 2 else ''
+            corpo = email_layout('⚠️ Conta suspensa',
+                f"""<p style='color:#64748b;text-align:center;'>Olá, <strong>{den['nome']}</strong>.</p>
+                <div style='background:#fef2f2;border:2px solid #fca5a5;border-radius:16px;padding:24px;margin:20px 0;text-align:center;'>
+                    <p style='font-size:32px;margin:0;'>🚫</p>
+                    <h2 style='color:#dc2626;margin:12px 0 8px;'>Conta Suspensa</h2>
+                    <p style='color:#6b7280;margin:0;'>Sua conta foi suspensa por <strong>{duracao_dias} dia(s)</strong>.</p>
+                    <p style='color:#6b7280;margin:8px 0 0;'>Suspensão válida até: <strong>{suspenso_ate.strftime('%d/%m/%Y às %H:%M')}</strong></p>
+                </div>
+                <p style='color:#64748b;font-size:14px;'>Motivo: um comentário seu foi reportado e avaliado como inapropriado pela nossa equipe de moderação.{aviso_ban}</p>
+                <p style='color:#64748b;font-size:14px;'>Durante a suspensão você não poderá acessar a plataforma. Após o período, seu acesso será restaurado automaticamente.</p>
+                <p style='color:#94a3b8;font-size:13px;'>Em caso de dúvidas, entre em contato: condconnect382@gmail.com</p>"""
+            )
+            send_email(den['email'], '⚠️ Sua conta foi suspensa - CondConnect', corpo)
+            return ok({'message': f'Usuário suspenso por {duracao_dias} dia(s). Total de suspensões: {novos}'})
+
+        if acao == 'banir':
+            cpf_digits = re.sub(r'\D', '', den['cpf'] or '')
+            with db.cursor() as c:
+                c.execute("UPDATE usuarios SET ativo=0 WHERE id=%s", (autor_id,))
+                c.execute("UPDATE denuncias_avaliacao SET status='removida', resolvido_por=%s WHERE avaliacao_id=%s", (uid, avaliacao_id))
+                if cpf_digits:
+                    try:
+                        c.execute("INSERT INTO cpf_banidos (cpf, motivo) VALUES (%s,%s)", (cpf_digits, 'Banido por violações repetidas'))
+                    except Exception:
+                        pass
+            corpo = email_layout('🚫 Conta banida permanentemente',
+                f"""<p style='color:#64748b;text-align:center;'>Olá, <strong>{den['nome']}</strong>.</p>
+                <div style='background:#fef2f2;border:2px solid #dc2626;border-radius:16px;padding:24px;margin:20px 0;text-align:center;'>
+                    <p style='font-size:32px;margin:0;'>⛔</p>
+                    <h2 style='color:#dc2626;margin:12px 0 8px;'>Conta Banida</h2>
+                    <p style='color:#6b7280;margin:0;'>Sua conta foi banida permanentemente da plataforma CondConnect.</p>
+                </div>
+                <p style='color:#64748b;font-size:14px;'>Após múltiplas violações das nossas diretrizes de comunidade, sua conta foi encerrada definitivamente. O acesso com este CPF não será mais permitido.</p>
+                <p style='color:#94a3b8;font-size:13px;'>Se acredita que houve um engano, entre em contato: condconnect382@gmail.com</p>"""
+            )
+            send_email(den['email'], '⛔ Conta banida permanentemente - CondConnect', corpo)
+            return ok({'message': 'Usuário banido permanentemente'})
+
     finally:
         db.close()
 
