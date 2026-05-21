@@ -2379,12 +2379,22 @@ def admin_usuarios():
                 params += [f'%{busca}%', f'%{busca}%']
             if condo:
                 where.append("condominio=%s"); params.append(condo)
-            with db.cursor() as c:
-                c.execute(
-                    f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio, suspenso_ate, total_suspensoes FROM usuarios WHERE {' AND '.join(where)} ORDER BY criado_em DESC",
-                    params
-                )
-                users = c.fetchall()
+            where_sql = ' AND '.join(where)
+            users = []
+            try:
+                with db.cursor() as c:
+                    c.execute(
+                        f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio, suspenso_ate, total_suspensoes FROM usuarios WHERE {where_sql} ORDER BY criado_em DESC",
+                        params
+                    )
+                    users = c.fetchall()
+            except Exception:
+                with db.cursor() as c:
+                    c.execute(
+                        f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio FROM usuarios WHERE {where_sql} ORDER BY criado_em DESC",
+                        params
+                    )
+                    users = [{**u, 'suspenso_ate': None, 'total_suspensoes': 0} for u in c.fetchall()]
             return ok({'usuarios': [{**u, 'ativo': bool(u['ativo']), 'criado_em': str(u['criado_em']), 'suspenso_ate': str(u['suspenso_ate']) if u.get('suspenso_ate') else None} for u in users]})
 
         body = get_body()
@@ -2515,24 +2525,44 @@ def admin_denuncias():
         if request.method == 'GET':
             cond_filter = "AND ud.condominio=%s" if condo else ""
             cond_param  = (condo,) if condo else ()
-            with db.cursor() as c:
-                c.execute(f"""
-                    SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
-                           a.nota, a.comentario, a.avaliador_id,
-                           u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
-                           u_autor.total_suspensoes,
-                           ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
-                           COUNT(da2.id) as total_denuncias_avaliacao
-                    FROM denuncias_avaliacao da
-                    JOIN avaliacoes a ON da.avaliacao_id = a.id
-                    JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
-                    JOIN usuarios ud ON a.avaliado_id = ud.id
-                    LEFT JOIN denuncias_avaliacao da2 ON da2.avaliacao_id = da.avaliacao_id
-                    WHERE da.status=%s {cond_filter}
-                    GROUP BY da.id
-                    ORDER BY da.criado_em DESC
-                """, (status,) + cond_param)
-                rows = c.fetchall()
+            rows = []
+            BASE_DEN_SQL = f"""
+                FROM denuncias_avaliacao da
+                JOIN avaliacoes a ON da.avaliacao_id = a.id
+                JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
+                JOIN usuarios ud ON a.avaliado_id = ud.id
+                LEFT JOIN denuncias_avaliacao da2 ON da2.avaliacao_id = da.avaliacao_id
+                WHERE da.status=%s {cond_filter}
+                GROUP BY da.id
+                ORDER BY da.criado_em DESC
+            """
+            try:
+                with db.cursor() as c:
+                    c.execute(f"""
+                        SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
+                               a.nota, a.comentario, a.avaliador_id,
+                               u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
+                               u_autor.total_suspensoes,
+                               ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
+                               COUNT(da2.id) as total_denuncias_avaliacao
+                        {BASE_DEN_SQL}
+                    """, (status,) + cond_param)
+                    rows = c.fetchall()
+            except Exception:
+                try:
+                    with db.cursor() as c:
+                        c.execute(f"""
+                            SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
+                                   a.nota, a.comentario, a.avaliador_id,
+                                   u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
+                                   0 as total_suspensoes,
+                                   ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
+                                   COUNT(da2.id) as total_denuncias_avaliacao
+                            {BASE_DEN_SQL}
+                        """, (status,) + cond_param)
+                        rows = c.fetchall()
+                except Exception as ex:
+                    return err(f'Erro ao carregar denúncias: {str(ex)}', 500)
             return ok({'denuncias': [{**r, 'criado_em': str(r['criado_em'])} for r in rows]})
 
         # PUT – ações de moderação
