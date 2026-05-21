@@ -126,7 +126,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 el.innerHTML = '<p style="color:#94a3b8;font-size:14px;">Sem dados</p>';
             }
         } catch (e) {
-            console.error(e);
+            console.error('[admin/stats]', e);
+            const errMsg = e?.message || 'Erro ao carregar dados';
+            document.getElementById('condo-breakdown').innerHTML =
+                `<p style="color:#dc2626;font-size:13px;">Erro: ${errMsg}</p>`;
         }
     }
 

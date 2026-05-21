@@ -358,23 +358,18 @@ def init_db():
                     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            # Colunas de suspensão em usuarios (ignora se já existem)
-            try:
-                c.execute("ALTER TABLE usuarios ADD COLUMN suspenso_ate DATETIME NULL")
-            except Exception:
-                pass
-            try:
-                c.execute("ALTER TABLE usuarios ADD COLUMN total_suspensoes INT NOT NULL DEFAULT 0")
-            except Exception:
-                pass
-            try:
-                c.execute("ALTER TABLE denuncias_avaliacao ADD COLUMN status ENUM('pendente','ignorada','removida','suspendeu') DEFAULT 'pendente'")
-            except Exception:
-                pass
-            try:
-                c.execute("ALTER TABLE denuncias_avaliacao ADD COLUMN resolvido_por INT DEFAULT NULL")
-            except Exception:
-                pass
+            # Colunas adicionadas em migrações (ignora se já existem)
+            for alter_sql in [
+                "ALTER TABLE usuarios ADD COLUMN condominio VARCHAR(100) DEFAULT NULL",
+                "ALTER TABLE usuarios ADD COLUMN suspenso_ate DATETIME NULL",
+                "ALTER TABLE usuarios ADD COLUMN total_suspensoes INT NOT NULL DEFAULT 0",
+                "ALTER TABLE denuncias_avaliacao ADD COLUMN status ENUM('pendente','ignorada','removida','suspendeu') DEFAULT 'pendente'",
+                "ALTER TABLE denuncias_avaliacao ADD COLUMN resolvido_por INT DEFAULT NULL",
+            ]:
+                try:
+                    c.execute(alter_sql)
+                except Exception:
+                    pass
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
@@ -2408,24 +2403,39 @@ def admin_stats():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE 1=1 {cond_filter}", cond_param)
-            total_usuarios = c.fetchone()['n']
-            c.execute(f"SELECT COUNT(*) as n FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE 1=1 {cond_filter}", cond_param)
-            total_produtos = c.fetchone()['n']
-            c.execute(f"SELECT COUNT(*) as n FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE 1=1 {cond_filter}", cond_param)
-            total_pedidos = c.fetchone()['n']
-            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE ativo=0 {cond_filter}", cond_param)
-            banidos = c.fetchone()['n']
-            c.execute(f"SELECT COUNT(*) as n FROM usuarios u WHERE suspenso_ate > NOW() {cond_filter}", cond_param)
-            suspensos = c.fetchone()['n']
-            c.execute("SELECT COUNT(*) as n FROM denuncias_avaliacao WHERE status='pendente'")
-            denuncias_pendentes = c.fetchone()['n']
-            c.execute(f"SELECT COALESCE(SUM(pe.preco_total),0) as fat FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE pe.status='entregue' {cond_filter}", cond_param)
-            faturamento = float(c.fetchone()['fat'])
+            def q(sql, params=()):
+                c.execute(sql, params)
+                return c.fetchone()
 
-            # Usuários por condomínio
-            c.execute("SELECT condominio, COUNT(*) as n FROM usuarios WHERE condominio IS NOT NULL GROUP BY condominio")
-            por_condo = c.fetchall()
+            total_usuarios = q(f"SELECT COUNT(*) as n FROM usuarios u WHERE 1=1 {cond_filter}", cond_param)['n']
+            total_produtos = q(f"SELECT COUNT(*) as n FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE 1=1 {cond_filter}", cond_param)['n']
+            total_pedidos  = q(f"SELECT COUNT(*) as n FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE 1=1 {cond_filter}", cond_param)['n']
+
+            try:
+                banidos = q("SELECT COUNT(*) as n FROM cpf_banidos")['n']
+            except Exception:
+                banidos = q(f"SELECT COUNT(*) as n FROM usuarios u WHERE ativo=0 {cond_filter}", cond_param)['n']
+
+            try:
+                suspensos = q(f"SELECT COUNT(*) as n FROM usuarios u WHERE suspenso_ate > NOW() {cond_filter}", cond_param)['n']
+            except Exception:
+                suspensos = 0
+
+            try:
+                denuncias_pendentes = q("SELECT COUNT(*) as n FROM denuncias_avaliacao WHERE status='pendente'")['n']
+            except Exception:
+                denuncias_pendentes = 0
+
+            try:
+                faturamento = float(q(f"SELECT COALESCE(SUM(pe.preco_total),0) as fat FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE pe.status='entregue' {cond_filter}", cond_param)['fat'])
+            except Exception:
+                faturamento = 0.0
+
+            try:
+                c.execute("SELECT condominio, COUNT(*) as n FROM usuarios WHERE condominio IS NOT NULL GROUP BY condominio ORDER BY n DESC")
+                por_condo = c.fetchall()
+            except Exception:
+                por_condo = []
 
         return ok({
             'total_usuarios': total_usuarios,
@@ -2437,6 +2447,8 @@ def admin_stats():
             'faturamento': faturamento,
             'por_condominio': por_condo,
         })
+    except Exception as ex:
+        return err(f'Erro ao carregar estatísticas: {str(ex)}', 500)
     finally:
         db.close()
 
