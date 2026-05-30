@@ -1037,8 +1037,8 @@ def me_analytics():
         with db.cursor() as c:
             c.execute(f"""
                 SELECT COUNT(DISTINCT pe.comprador_id) as n, COALESCE(SUM(pe.preco_total),0) as fat
-                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' {filtro_produto}
-            """, (uid,) + params_produto)
+                FROM pedidos pe WHERE pe.vendedor_id=%s AND pe.status='entregue' {filtro_str}
+            """, (uid,) + params_base)
             ltv_row = c.fetchone()
         ltv = float(ltv_row['fat']) / ltv_row['n'] if ltv_row['n'] else 0
 
