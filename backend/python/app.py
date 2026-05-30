@@ -49,7 +49,11 @@ _DB_CFG = dict(
     write_timeout=10,
 )
 
-_db_conn = None  # persistent connection per gunicorn worker (process-local)
+import time as _time
+
+_db_conn      = None   # persistent connection per gunicorn worker (process-local)
+_db_last_used = 0.0    # epoch seconds of last successful use
+_PING_INTERVAL = 30    # only ping after 30 s of idle (avoids RTT overhead on every call)
 
 
 class _DbProxy:
@@ -65,14 +69,17 @@ class _DbProxy:
 
 
 def get_db():
-    global _db_conn
-    try:
-        if _db_conn is not None:
-            _db_conn.ping(reconnect=True)
-            return _DbProxy(_db_conn)
-    except Exception:
-        _db_conn = None
-    _db_conn = pymysql.connect(**_DB_CFG)
+    global _db_conn, _db_last_used
+    now = _time.monotonic()
+    if _db_conn is not None:
+        if now - _db_last_used > _PING_INTERVAL:
+            try:
+                _db_conn.ping(reconnect=False)
+            except Exception:
+                _db_conn = None
+    if _db_conn is None:
+        _db_conn = pymysql.connect(**_DB_CFG)
+    _db_last_used = now
     return _DbProxy(_db_conn)
 
 
@@ -431,6 +438,15 @@ def init_db():
         print(f'init_db error: {e}')
 
 init_db()
+
+# Warm up the persistent connection for this worker at import time.
+# With gunicorn --preload or post-fork, this runs per worker so each worker
+# starts with a live connection and the first real request has no cold-start.
+try:
+    get_db()
+    print(f'[worker {os.getpid()}] DB connection ready')
+except Exception as _e:
+    print(f'[worker {os.getpid()}] DB warm-up failed: {_e}')
 
 
 def ensure_admin():

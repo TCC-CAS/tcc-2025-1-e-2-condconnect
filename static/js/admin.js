@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     document.querySelectorAll('.user-name').forEach(el => el.textContent = me.nome);
 
+    // ── Iniciar carregamento imediatamente após auth ──────────────────────────
+    // (não espera setup de event listeners — garante que o worker aquece e
+    //  os dados do Dashboard aparecem na primeira abertura)
+    setTimeout(() => carregarStats(), 0);
+
     // ── Estado global ────────────────────────────────────────────────────────
     let condoSelecionado = '';
     let modalAcaoFn = null;
@@ -134,6 +139,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    function erroComRetry(el, fn, msg) {
+        el.innerHTML = `<div style="text-align:center;padding:40px;">
+            <p style="color:#dc2626;margin-bottom:12px;">${msg || 'Erro ao carregar.'}</p>
+            <button onclick="(${fn.name || 'this._fn'})()" style="background:#00a6a6;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;">Tentar novamente</button>
+        </div>`;
+        el._fn = fn;
+        el.querySelector('button').onclick = fn;
+    }
+
     // ── DENÚNCIAS ─────────────────────────────────────────────────────────────
     window.carregarDenuncias = async function () {
         const status = document.getElementById('den-status-filter').value;
@@ -142,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const el = document.getElementById('den-list');
         el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Carregando...</p>';
         try {
-            const { denuncias } = await CondConnect.api(`/admin/denuncias?${params}`);
+            const { denuncias } = await CondConnect.api(`/admin/denuncias?${params}`, { _timeout: 10000 });
             if (!denuncias.length) {
                 el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Nenhuma denúncia neste filtro.</p>';
                 return;
@@ -181,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>`;
             }).join('');
         } catch (e) {
-            el.innerHTML = `<p style="color:#dc2626;text-align:center;padding:40px;">${e.message}</p>`;
+            erroComRetry(el, carregarDenuncias, e.message);
         }
     };
 
@@ -229,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const el = document.getElementById('usr-list');
         el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Carregando...</p>';
         try {
-            const { usuarios } = await CondConnect.api(`/admin/usuarios?${params}`);
+            const { usuarios } = await CondConnect.api(`/admin/usuarios?${params}`, { _timeout: 10000 });
             if (!usuarios.length) { el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Nenhum usuário encontrado.</p>'; return; }
             el.innerHTML = usuarios.map(u => {
                 const suspensoAtivo = u.suspenso_ate && new Date(u.suspenso_ate) > new Date();
@@ -258,7 +272,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>`;
             }).join('');
         } catch (e) {
-            el.innerHTML = `<p style="color:#dc2626;text-align:center;padding:40px;">${e.message}</p>`;
+            erroComRetry(el, carregarUsuarios, e.message);
         }
     };
 
@@ -320,6 +334,5 @@ document.addEventListener('DOMContentLoaded', async function () {
         carregarProdutos();
     };
 
-    // ── Iniciar ───────────────────────────────────────────────────────────────
-    carregarStats();
 });
+
