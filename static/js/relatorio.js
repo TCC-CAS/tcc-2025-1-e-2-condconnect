@@ -242,12 +242,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         set('r-faturamento', brl(f.faturamento));
         set('r-ticket', brl(f.ticket_medio));
         set('r-pedidos', f.total_pedidos);
+        set('r-taxa-plat', brl(f.taxa_plataforma ?? f.faturamento * 0.05));
+        set('r-receita-liq', brl(f.receita_liquida ?? f.faturamento * 0.95));
 
         if (f.has_custo) {
             const card = document.getElementById('r-lucro-card');
             if (card) card.style.display = 'block';
-            set('r-lucro', brl(f.lucro_liquido));
-            const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : 0;
+            const lucroExibir = f.lucro_apos_taxa ?? f.lucro_liquido;
+            const recLiq = f.receita_liquida ?? f.faturamento * 0.95;
+            set('r-lucro', brl(lucroExibir));
+            const margem = recLiq > 0 ? ((lucroExibir / recLiq) * 100).toFixed(1) : 0;
             set('r-margem-txt', `Margem estimada: ${margem}%`);
         }
 
@@ -260,12 +264,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                 type: 'bar',
                 data: {
                     labels: topProdutos.map(p => p.titulo.length > 20 ? p.titulo.slice(0, 20) + '…' : p.titulo),
-                    datasets: [{
-                        label: 'Receita (R$)',
-                        data: topProdutos.map(p => p.receita),
-                        backgroundColor: '#00a6a6',
-                        borderRadius: 6,
-                    }]
+                    datasets: [
+                        {
+                            label: 'Receita Bruta',
+                            data: topProdutos.map(p => p.receita),
+                            backgroundColor: '#00a6a6',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Receita Líquida (−5%)',
+                            data: topProdutos.map(p => p.receita_liquida ?? +(p.receita * 0.95).toFixed(2)),
+                            backgroundColor: '#99e6e6',
+                            borderRadius: 4,
+                        }
+                    ]
                 },
                 options: {
                     indexAxis: 'y',
@@ -273,14 +285,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     maintainAspectRatio: false,
                     layout: { padding: { right: 70 } },
                     plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'right',
-                            color: '#374151',
-                            font: { size: 11, weight: '600' },
-                            formatter: v => v >= 1000 ? 'R$' + (v / 1000).toFixed(1) + 'k' : 'R$' + v.toFixed(0)
-                        }
+                        legend: { display: true, position: 'top', labels: { font: { size: 11 }, padding: 8 } },
+                        datalabels: { display: false }
                     },
                     scales: {
                         x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
@@ -293,15 +299,20 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Tabela de produtos
         const tbody = document.getElementById('tabela-produtos-body');
         if (tbody) {
-            tbody.innerHTML = data.produtos.map(p => `
+            tbody.innerHTML = data.produtos.map(p => {
+                const pTaxa = p.taxa_plataforma ?? +(p.receita * 0.05).toFixed(2);
+                const pLiq  = p.receita_liquida ?? +(p.receita * 0.95).toFixed(2);
+                return `
                 <tr>
                     <td><strong>${p.titulo}</strong><br><span style="color:#94a3b8;font-size:11px;">${p.categoria}</span></td>
                     <td>${p.total_vendas} ped. (${p.unidades} un.)</td>
                     <td>${brl(p.receita)}</td>
+                    <td style="color:#ea580c;">${brl(pTaxa)}</td>
+                    <td style="color:#00a6a6;font-weight:600;">${brl(pLiq)}</td>
                     <td>${p.margem_pct !== null ? p.margem_pct + '%' : '<span style="color:#94a3b8;">—</span>'}</td>
                     <td>${p.visualizacoes.toLocaleString('pt-BR')}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="5" style="color:#94a3b8;text-align:center;">Nenhum produto ainda</td></tr>';
+                </tr>`;
+            }).join('') || '<tr><td colspan="7" style="color:#94a3b8;text-align:center;">Nenhum produto ainda</td></tr>';
         }
 
         if (data.encalhados > 0) {
@@ -470,31 +481,39 @@ document.addEventListener('DOMContentLoaded', async function () {
                         const [ano, mes] = m.mes.split('-');
                         return new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
                     }),
-                    datasets: [{
-                        label: 'Faturamento',
-                        data: data.temporal.por_mes.map(m => m.receita),
-                        borderColor: '#00a6a6',
-                        backgroundColor: 'rgba(0,166,166,0.1)',
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.3,
-                        pointBackgroundColor: '#00a6a6',
-                        pointRadius: 4,
-                    }]
+                    datasets: [
+                        {
+                            label: 'Faturamento Bruto',
+                            data: data.temporal.por_mes.map(m => m.receita),
+                            borderColor: '#00a6a6',
+                            backgroundColor: 'rgba(0,166,166,0.08)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#00a6a6',
+                            pointRadius: 4,
+                        },
+                        {
+                            label: 'Receita Líquida (−5%)',
+                            data: data.temporal.por_mes.map(m => +(m.receita * 0.95).toFixed(2)),
+                            borderColor: '#ea580c',
+                            backgroundColor: 'rgba(234,88,12,0.06)',
+                            borderWidth: 2,
+                            borderDash: [5, 3],
+                            fill: false,
+                            tension: 0.3,
+                            pointBackgroundColor: '#ea580c',
+                            pointRadius: 3,
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: { padding: { top: 24 } },
                     plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            color: '#00a6a6',
-                            font: { size: 10, weight: '600' },
-                            formatter: v => v >= 1000 ? 'R$' + (v / 1000).toFixed(1) + 'k' : 'R$' + v.toFixed(0)
-                        }
+                        legend: { display: true, position: 'top', labels: { font: { size: 11 }, padding: 8 } },
+                        datalabels: { display: false }
                     },
                     scales: {
                         y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
