@@ -5,8 +5,13 @@ const CondConnect = {
     currentUser: null,
 
     async api(endpoint, options = {}) {
+        const timeoutMs = options._timeout || 20000;
+        delete options._timeout;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
         const config = {
             credentials: 'include',
+            signal: controller.signal,
             ...options,
             headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
         };
@@ -18,10 +23,13 @@ const CondConnect = {
         }
         try {
             const res = await fetch(API_BASE + endpoint, config);
+            clearTimeout(timer);
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw { status: res.status, message: data.error || 'Erro desconhecido' };
             return data;
         } catch (err) {
+            clearTimeout(timer);
+            if (err.name === 'AbortError') throw { status: 408, message: 'A requisição demorou muito. Tente novamente.' };
             if (err.status === 401) {
                 localStorage.removeItem('condconnect_user');
                 const path = window.location.pathname;

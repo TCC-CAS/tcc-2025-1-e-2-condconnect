@@ -2494,9 +2494,14 @@ def admin_stats():
                 c.execute(sql, params)
                 return c.fetchone()
 
-            total_usuarios = q(f"SELECT COUNT(*) as n FROM usuarios u WHERE 1=1 {cond_filter}", cond_param)['n']
-            total_produtos = q(f"SELECT COUNT(*) as n FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE 1=1 {cond_filter}", cond_param)['n']
-            total_pedidos  = q(f"SELECT COUNT(*) as n FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE 1=1 {cond_filter}", cond_param)['n']
+            if condo:
+                total_usuarios = q("SELECT COUNT(*) as n FROM usuarios u WHERE condominio=%s", (condo,))['n']
+                total_produtos = q("SELECT COUNT(*) as n FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE u.condominio=%s", (condo,))['n']
+                total_pedidos  = q("SELECT COUNT(*) as n FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE u.condominio=%s", (condo,))['n']
+            else:
+                total_usuarios = q("SELECT COUNT(*) as n FROM usuarios")['n']
+                total_produtos = q("SELECT COUNT(*) as n FROM produtos")['n']
+                total_pedidos  = q("SELECT COUNT(*) as n FROM pedidos")['n']
 
             try:
                 banidos = q("SELECT COUNT(*) as n FROM cpf_banidos")['n']
@@ -2514,7 +2519,10 @@ def admin_stats():
                 denuncias_pendentes = 0
 
             try:
-                faturamento = float(q(f"SELECT COALESCE(SUM(pe.preco_total),0) as fat FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE pe.status='entregue' {cond_filter}", cond_param)['fat'])
+                if condo:
+                    faturamento = float(q("SELECT COALESCE(SUM(pe.preco_total),0) as fat FROM pedidos pe JOIN usuarios u ON pe.comprador_id=u.id WHERE pe.status='entregue' AND u.condominio=%s", (condo,))['fat'])
+                else:
+                    faturamento = float(q("SELECT COALESCE(SUM(preco_total),0) as fat FROM pedidos WHERE status='entregue'")['fat'])
             except Exception:
                 faturamento = 0.0
 
