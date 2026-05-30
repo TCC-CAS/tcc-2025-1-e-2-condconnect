@@ -417,22 +417,6 @@ def init_db():
                     c.execute(alter_sql)
                 except Exception:
                     pass
-            # Índices para acelerar as queries mais frequentes
-            for idx_sql in [
-                "CREATE INDEX idx_usuarios_condominio ON usuarios(condominio)",
-                "CREATE INDEX idx_produtos_status ON produtos(status)",
-                "CREATE INDEX idx_produtos_usuario_id ON produtos(usuario_id)",
-                "CREATE INDEX idx_pedidos_vendedor ON pedidos(vendedor_id)",
-                "CREATE INDEX idx_pedidos_comprador ON pedidos(comprador_id)",
-                "CREATE INDEX idx_pedidos_status ON pedidos(status)",
-                "CREATE INDEX idx_denuncias_av_status ON denuncias_avaliacao(status)",
-                "CREATE INDEX idx_avaliacoes_avaliado ON avaliacoes(avaliado_id)",
-                "CREATE INDEX idx_favoritos_produto ON favoritos(produto_id)",
-            ]:
-                try:
-                    c.execute(idx_sql)
-                except Exception:
-                    pass  # índice já existe
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
