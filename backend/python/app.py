@@ -2414,12 +2414,12 @@ def admin_produtos():
     db = get_db()
     try:
         if request.method == 'GET':
-            status = request.args.get('status', 'pendente')
+            status = request.args.get('status', 'todos').strip()
             with db.cursor() as c:
-                c.execute(
-                    "SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.status=%s ORDER BY p.criado_em DESC",
-                    (status,)
-                )
+                if status in ('todos', ''):
+                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id ORDER BY p.criado_em DESC")
+                else:
+                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.status=%s ORDER BY p.criado_em DESC", (status,))
                 produtos = c.fetchall()
             return ok({'produtos': [{**p, 'preco': float(p['preco']), 'criado_em': str(p['criado_em'])} for p in produtos]})
 
@@ -2631,19 +2631,28 @@ def admin_denuncias():
         return e
 
     condo  = request.args.get('condominio', '').strip() or None
-    status = request.args.get('status', 'pendente')
+    status = request.args.get('status', 'todos').strip()
+    filtrar_status = status not in ('todos', '', None)
 
     db = get_db()
     try:
         if request.method == 'GET':
-            cond_filter = "AND ud.condominio=%s" if condo else ""
-            cond_param  = (condo,) if condo else ()
             rows = []
-            # nível 1: query completa (todas as colunas de migração)
+            # Monta filtros opcionais sem depender de colunas de migração por padrão
+            where_parts, where_params = [], []
+            if filtrar_status:
+                where_parts.append("da.status=%s"); where_params.append(status)
+            if condo:
+                where_parts.append("ud.condominio=%s"); where_params.append(condo)
+            where_clause = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
+            # nível 1: query completa (com colunas de migração)
             try:
                 with db.cursor() as c:
                     c.execute(f"""
-                        SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
+                        SELECT da.id, da.avaliacao_id, da.motivo,
+                               {'da.status,' if filtrar_status else "'pendente' as status,"}
+                               da.criado_em,
                                a.nota, a.comentario, a.avaliador_id,
                                u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
                                u_autor.total_suspensoes,
@@ -2653,40 +2662,48 @@ def admin_denuncias():
                         JOIN avaliacoes a ON da.avaliacao_id = a.id
                         JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
                         JOIN usuarios ud ON a.avaliado_id = ud.id
-                        WHERE da.status=%s {cond_filter}
+                        {where_clause}
                         ORDER BY da.criado_em DESC
-                    """, (status,) + cond_param)
+                    """, where_params)
                     rows = c.fetchall()
             except Exception:
-                # nível 2: sem total_suspensoes (pode não existir em usuarios)
+                # nível 2: sem colunas de migração em usuarios (condominio, total_suspensoes)
                 try:
+                    where2_parts, where2_params = [], []
+                    if filtrar_status:
+                        where2_parts.append("da.status=%s"); where2_params.append(status)
+                    where2_clause = ("WHERE " + " AND ".join(where2_parts)) if where2_parts else ""
                     with db.cursor() as c:
                         c.execute(f"""
-                            SELECT da.id, da.avaliacao_id, da.motivo, da.status, da.criado_em,
+                            SELECT da.id, da.avaliacao_id, da.motivo,
+                                   {'da.status,' if filtrar_status else "'pendente' as status,"}
+                                   da.criado_em,
                                    a.nota, a.comentario, a.avaliador_id,
-                                   u_autor.nome as autor_nome, u_autor.condominio as autor_condo,
-                                   0 as total_suspensoes,
-                                   ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
+                                   u_autor.nome as autor_nome,
+                                   NULL as autor_condo, 0 as total_suspensoes,
+                                   ud.nome as denunciado_nome, ud.id as denunciado_id,
+                                   NULL as condominio,
                                    1 as total_denuncias_avaliacao
                             FROM denuncias_avaliacao da
                             JOIN avaliacoes a ON da.avaliacao_id = a.id
                             JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
                             JOIN usuarios ud ON a.avaliado_id = ud.id
-                            WHERE da.status=%s {cond_filter}
+                            {where2_clause}
                             ORDER BY da.criado_em DESC
-                        """, (status,) + cond_param)
+                        """, where2_params)
                         rows = c.fetchall()
                 except Exception:
-                    # nível 3: sem colunas de migração — da.status e ud/u_autor.condominio podem não existir
+                    # nível 3: absolutamente nenhuma coluna de migração — consulta mínima garantida
                     try:
                         with db.cursor() as c:
                             c.execute("""
                                 SELECT da.id, da.avaliacao_id, da.motivo, da.criado_em,
                                        a.nota, a.comentario, a.avaliador_id,
                                        u_autor.nome as autor_nome,
-                                       0 as total_suspensoes, 'pendente' as status,
+                                       NULL as autor_condo, 0 as total_suspensoes,
+                                       'pendente' as status,
                                        ud.nome as denunciado_nome, ud.id as denunciado_id,
-                                       NULL as condominio, NULL as autor_condo,
+                                       NULL as condominio,
                                        1 as total_denuncias_avaliacao
                                 FROM denuncias_avaliacao da
                                 JOIN avaliacoes a ON da.avaliacao_id = a.id
