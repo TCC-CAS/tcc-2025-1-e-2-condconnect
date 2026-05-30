@@ -35,20 +35,45 @@ UPLOAD_DIR = '/var/www/html/condconnect/static/assets/uploads'
 
 # ── Database ──────────────────────────────────────────────────────────────────
 
+_DB_CFG = dict(
+    host='www.thyagoquintas.com.br',
+    port=3306,
+    user='engenharia_16',
+    password='canariodaterra',
+    database='engenharia_16',
+    charset='utf8mb4',
+    cursorclass=pymysql.cursors.DictCursor,
+    autocommit=True,
+    connect_timeout=5,
+    read_timeout=15,
+    write_timeout=10,
+)
+
+_db_conn = None  # persistent connection per gunicorn worker (process-local)
+
+
+class _DbProxy:
+    """Wraps a persistent connection; close() is a no-op so the TCP link is reused."""
+    def __init__(self, conn):
+        self._conn = conn
+    def cursor(self):
+        return self._conn.cursor()
+    def close(self):
+        pass
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+
 def get_db():
-    return pymysql.connect(
-        host='www.thyagoquintas.com.br',
-        port=3306,
-        user='engenharia_16',
-        password='canariodaterra',
-        database='engenharia_16',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor,
-        autocommit=True,
-        connect_timeout=5,
-        read_timeout=15,
-        write_timeout=10
-    )
+    global _db_conn
+    try:
+        if _db_conn is not None:
+            _db_conn.ping(reconnect=True)
+            return _DbProxy(_db_conn)
+    except Exception:
+        _db_conn = None
+    _db_conn = pymysql.connect(**_DB_CFG)
+    return _DbProxy(_db_conn)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -385,6 +410,22 @@ def init_db():
                     c.execute(alter_sql)
                 except Exception:
                     pass
+            # Índices para acelerar as queries mais frequentes
+            for idx_sql in [
+                "CREATE INDEX idx_usuarios_condominio ON usuarios(condominio)",
+                "CREATE INDEX idx_produtos_status ON produtos(status)",
+                "CREATE INDEX idx_produtos_usuario_id ON produtos(usuario_id)",
+                "CREATE INDEX idx_pedidos_vendedor ON pedidos(vendedor_id)",
+                "CREATE INDEX idx_pedidos_comprador ON pedidos(comprador_id)",
+                "CREATE INDEX idx_pedidos_status ON pedidos(status)",
+                "CREATE INDEX idx_denuncias_av_status ON denuncias_avaliacao(status)",
+                "CREATE INDEX idx_avaliacoes_avaliado ON avaliacoes(avaliado_id)",
+                "CREATE INDEX idx_favoritos_produto ON favoritos(produto_id)",
+            ]:
+                try:
+                    c.execute(idx_sql)
+                except Exception:
+                    pass  # índice já existe
         db.close()
     except Exception as e:
         print(f'init_db error: {e}')
