@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // ── Filtros secundários ───────────────────────────────────────────────────
-    document.getElementById('den-status-filter')?.addEventListener('change', carregarDenuncias);
-    document.getElementById('prod-status-filter')?.addEventListener('change', carregarProdutos);
+    document.getElementById('den-status-filter')?.addEventListener('change', () => carregarDenuncias());
+    document.getElementById('prod-status-filter')?.addEventListener('change', () => carregarProdutos());
     document.getElementById('usr-busca')?.addEventListener('keydown', e => { if (e.key === 'Enter') carregarUsuarios(); });
 
     // ── Modal ─────────────────────────────────────────────────────────────────
