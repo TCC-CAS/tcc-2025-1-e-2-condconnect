@@ -2466,7 +2466,15 @@ def admin_usuarios():
             if condo:
                 where.append("condominio=%s"); params.append(condo)
             where_sql = ' AND '.join(where)
+            # WHERE sem condominio caso a coluna não exista ainda
+            where_base, params_base_list = ['1=1'], []
+            if busca:
+                where_base.append("(nome LIKE %s OR email LIKE %s)")
+                params_base_list += [f'%{busca}%', f'%{busca}%']
+            where_base_sql = ' AND '.join(where_base)
+
             users = []
+            # nível 1: colunas completas (inclui migração)
             try:
                 with db.cursor() as c:
                     c.execute(
@@ -2475,12 +2483,22 @@ def admin_usuarios():
                     )
                     users = c.fetchall()
             except Exception:
-                with db.cursor() as c:
-                    c.execute(
-                        f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio FROM usuarios WHERE {where_sql} ORDER BY criado_em DESC",
-                        params
-                    )
-                    users = [{**u, 'suspenso_ate': None, 'total_suspensoes': 0} for u in c.fetchall()]
+                # nível 2: sem suspenso_ate/total_suspensoes mas com condominio
+                try:
+                    with db.cursor() as c:
+                        c.execute(
+                            f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento, condominio FROM usuarios WHERE {where_sql} ORDER BY criado_em DESC",
+                            params
+                        )
+                        users = [{**u, 'suspenso_ate': None, 'total_suspensoes': 0} for u in c.fetchall()]
+                except Exception:
+                    # nível 3: apenas colunas garantidas do schema original (sem condominio)
+                    with db.cursor() as c:
+                        c.execute(
+                            f"SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento FROM usuarios WHERE {where_base_sql} ORDER BY criado_em DESC",
+                            params_base_list
+                        )
+                        users = [{**u, 'suspenso_ate': None, 'total_suspensoes': 0, 'condominio': None} for u in c.fetchall()]
             return ok({'usuarios': [{**u, 'ativo': bool(u['ativo']), 'criado_em': str(u['criado_em']), 'suspenso_ate': str(u['suspenso_ate']) if u.get('suspenso_ate') else None} for u in users]})
 
         body = get_body()
@@ -2621,14 +2639,7 @@ def admin_denuncias():
             cond_filter = "AND ud.condominio=%s" if condo else ""
             cond_param  = (condo,) if condo else ()
             rows = []
-            BASE_DEN_SQL = f"""
-                FROM denuncias_avaliacao da
-                JOIN avaliacoes a ON da.avaliacao_id = a.id
-                JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
-                JOIN usuarios ud ON a.avaliado_id = ud.id
-                WHERE da.status=%s {cond_filter}
-                ORDER BY da.criado_em DESC
-            """
+            # nível 1: query completa (todas as colunas de migração)
             try:
                 with db.cursor() as c:
                     c.execute(f"""
@@ -2638,10 +2649,16 @@ def admin_denuncias():
                                u_autor.total_suspensoes,
                                ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
                                1 as total_denuncias_avaliacao
-                        {BASE_DEN_SQL}
+                        FROM denuncias_avaliacao da
+                        JOIN avaliacoes a ON da.avaliacao_id = a.id
+                        JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
+                        JOIN usuarios ud ON a.avaliado_id = ud.id
+                        WHERE da.status=%s {cond_filter}
+                        ORDER BY da.criado_em DESC
                     """, (status,) + cond_param)
                     rows = c.fetchall()
             except Exception:
+                # nível 2: sem total_suspensoes (pode não existir em usuarios)
                 try:
                     with db.cursor() as c:
                         c.execute(f"""
@@ -2651,11 +2668,35 @@ def admin_denuncias():
                                    0 as total_suspensoes,
                                    ud.nome as denunciado_nome, ud.id as denunciado_id, ud.condominio,
                                    1 as total_denuncias_avaliacao
-                            {BASE_DEN_SQL}
+                            FROM denuncias_avaliacao da
+                            JOIN avaliacoes a ON da.avaliacao_id = a.id
+                            JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
+                            JOIN usuarios ud ON a.avaliado_id = ud.id
+                            WHERE da.status=%s {cond_filter}
+                            ORDER BY da.criado_em DESC
                         """, (status,) + cond_param)
                         rows = c.fetchall()
-                except Exception as ex:
-                    return err(f'Erro ao carregar denúncias: {str(ex)}', 500)
+                except Exception:
+                    # nível 3: sem colunas de migração — da.status e ud/u_autor.condominio podem não existir
+                    try:
+                        with db.cursor() as c:
+                            c.execute("""
+                                SELECT da.id, da.avaliacao_id, da.motivo, da.criado_em,
+                                       a.nota, a.comentario, a.avaliador_id,
+                                       u_autor.nome as autor_nome,
+                                       0 as total_suspensoes, 'pendente' as status,
+                                       ud.nome as denunciado_nome, ud.id as denunciado_id,
+                                       NULL as condominio, NULL as autor_condo,
+                                       1 as total_denuncias_avaliacao
+                                FROM denuncias_avaliacao da
+                                JOIN avaliacoes a ON da.avaliacao_id = a.id
+                                JOIN usuarios u_autor ON a.avaliador_id = u_autor.id
+                                JOIN usuarios ud ON a.avaliado_id = ud.id
+                                ORDER BY da.criado_em DESC
+                            """)
+                            rows = c.fetchall()
+                    except Exception as ex:
+                        return err(f'Erro ao carregar denúncias: {str(ex)}', 500)
             return ok({'denuncias': [{**r, 'criado_em': str(r['criado_em'])} for r in rows]})
 
         # PUT – ações de moderação
