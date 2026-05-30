@@ -2405,6 +2405,35 @@ def configuracoes():
 
 # ── ADMIN ─────────────────────────────────────────────────────────────────────
 
+@app.route('/admin/diag', methods=['GET', 'OPTIONS'])
+def admin_diag():
+    """Diagnóstico temporário — mostra qual query falha e quanto tempo demora."""
+    import time as _t
+    results = {}
+    db = get_db()
+    for label, sql in [
+        ('ping',        'SELECT 1'),
+        ('usuarios_count', 'SELECT COUNT(*) as n FROM usuarios'),
+        ('denuncias_count', 'SELECT COUNT(*) as n FROM denuncias_avaliacao'),
+        ('usuarios_cols', 'SELECT id, nome, email, papel, ativo, criado_em, bloco, apartamento FROM usuarios LIMIT 3'),
+        ('den_join', '''SELECT da.id, da.motivo, da.criado_em, a.nota, u_a.nome as autor, ud.nome as denunciado
+                        FROM denuncias_avaliacao da
+                        JOIN avaliacoes a ON da.avaliacao_id = a.id
+                        JOIN usuarios u_a ON a.avaliador_id = u_a.id
+                        JOIN usuarios ud ON a.avaliado_id = ud.id
+                        LIMIT 5'''),
+    ]:
+        t0 = _t.monotonic()
+        try:
+            with db.cursor() as c:
+                c.execute(sql)
+                rows = c.fetchall()
+            results[label] = {'ok': True, 'rows': len(rows), 'ms': round((_t.monotonic()-t0)*1000)}
+        except Exception as ex:
+            results[label] = {'ok': False, 'error': str(ex), 'ms': round((_t.monotonic()-t0)*1000)}
+    return ok(results)
+
+
 @app.route('/admin/produtos', methods=['GET', 'PUT', 'OPTIONS'])
 def admin_produtos():
     uid, e = require_admin()
@@ -2417,9 +2446,9 @@ def admin_produtos():
             status = request.args.get('status', 'todos').strip()
             with db.cursor() as c:
                 if status in ('todos', ''):
-                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id ORDER BY p.criado_em DESC")
+                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, p.foto_principal, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id ORDER BY p.criado_em DESC")
                 else:
-                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.status=%s ORDER BY p.criado_em DESC", (status,))
+                    c.execute("SELECT p.id, p.titulo, p.preco, p.categoria, p.status, p.criado_em, p.foto_principal, u.nome as vendedor_nome, u.id as vendedor_id FROM produtos p JOIN usuarios u ON p.usuario_id=u.id WHERE p.status=%s ORDER BY p.criado_em DESC", (status,))
                 produtos = c.fetchall()
             return ok({'produtos': [{**p, 'preco': float(p['preco']), 'criado_em': str(p['criado_em'])} for p in produtos]})
 
