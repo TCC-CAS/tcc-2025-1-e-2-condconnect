@@ -12,8 +12,9 @@ async function exportarExcel() {
     const cabFato = [
         'Nº Pedido', 'Data da Venda', 'Produto', 'Descrição', 'Categoria', 'Condição',
         'Preço Anunciado (R$)', 'Preço de Venda (R$)', 'Custo Unitário (R$)',
-        'Qtd. Vendida', 'Receita Total (R$)', 'Lucro Unitário (R$)', 'Lucro Total (R$)',
-        'Margem de Lucro (%)', 'Via Proposta', 'Avaliação (0–5)', 'Nº Avaliações',
+        'Qtd. Vendida', 'Receita Total (R$)', 'Taxa Plataforma 5% (R$)', 'Receita Líquida (R$)',
+        'Lucro Bruto (R$)', 'Lucro Líq. após Taxa (R$)', 'Margem Líq. (%)',
+        'Via Proposta', 'Avaliação (0–5)', 'Nº Avaliações',
         'Favoritos Recebidos', 'Qtd. de Insumos', 'Visualizações', 'Comprador',
     ];
     const fatoRows = [cabFato];
@@ -29,11 +30,13 @@ async function exportarExcel() {
         v.custo_unitario ?? '—',
         v.quantidade_vendida,
         v.receita_total,
-        v.lucro_unitario ?? '—',
-        v.lucro_total    ?? '—',
-        v.margem_pct     != null ? v.margem_pct + '%' : '—',
+        v.taxa_plataforma ?? +(v.receita_total * 0.05).toFixed(2),
+        v.receita_liquida ?? +(v.receita_total * 0.95).toFixed(2),
+        v.lucro_total        ?? '—',
+        v.lucro_liq_total    ?? '—',
+        v.margem_liq_pct     != null ? v.margem_liq_pct + '%' : '—',
         v.via_proposta,
-        v.avaliacao      != null ? v.avaliacao : 'Sem avaliação',
+        v.avaliacao          != null ? v.avaliacao : 'Sem avaliação',
         v.total_avaliacoes,
         v.total_favoritos,
         v.qtd_insumos,
@@ -42,28 +45,35 @@ async function exportarExcel() {
     ]));
 
     const wsVendas = XLSX.utils.aoa_to_sheet(fatoRows);
-    // Largura mínima de colunas para legibilidade
     wsVendas['!cols'] = cabFato.map((h, i) => ({
-        wch: [10,18,30,40,15,12,20,20,20,12,20,18,15,18,14,16,14,18,14,14,25][i] || 15
+        wch: [10,18,30,40,15,12,20,20,20,12,20,22,20,18,22,16,14,16,14,18,14,14,25][i] || 15
     }));
     XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas Detalhadas');
 
     // ── Aba 2: Visão Financeira ───────────────────────────────────────────────
     const f = _relData.financeiro;
-    const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : '—';
+    const taxaPlat = f.taxa_plataforma ?? +(f.faturamento * 0.05).toFixed(2);
+    const recLiq   = f.receita_liquida ?? +(f.faturamento * 0.95).toFixed(2);
+    const lucroAposTaxa = f.lucro_apos_taxa ?? f.lucro_liquido;
+    const margemLiq = recLiq > 0 && f.has_custo ? ((lucroAposTaxa / recLiq) * 100).toFixed(1) : '—';
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
         ['Indicador', 'Valor'],
-        ['Faturamento Total', f.faturamento],
-        ['Ticket Médio', f.ticket_medio],
+        ['Faturamento Bruto (R$)', f.faturamento],
+        ['Taxa da Plataforma 5% (R$)', taxaPlat],
+        ['Receita Líquida (R$)', recLiq],
+        ['Ticket Médio (R$)', f.ticket_medio],
         ['Total de Pedidos', f.total_pedidos],
-        ['Lucro Estimado', f.has_custo ? f.lucro_liquido : '—'],
-        ['Margem (%)', f.has_custo ? margem : '—'],
+        ['Lucro Estimado Bruto (R$)', f.has_custo ? f.lucro_liquido : '—'],
+        ['Lucro Líq. após Taxa da Plataforma (R$)', f.has_custo ? lucroAposTaxa : '—'],
+        ['Margem Líquida (%)', f.has_custo ? margemLiq : '—'],
     ]), 'Financeiro');
 
     // ── Aba 3: Produtos ───────────────────────────────────────────────────────
-    const prodRows = [['Produto', 'Categoria', 'Pedidos', 'Unidades', 'Receita (R$)', 'Margem (%)', 'Visualizações']];
+    const prodRows = [['Produto', 'Categoria', 'Pedidos', 'Unidades', 'Receita Bruta (R$)', 'Taxa Plataforma 5% (R$)', 'Receita Líquida (R$)', 'Margem (%)', 'Visualizações']];
     (_relData.produtos || []).forEach(p => {
-        prodRows.push([p.titulo, p.categoria, p.total_vendas, p.unidades, p.receita, p.margem_pct ?? '—', p.visualizacoes]);
+        const pTaxa = p.taxa_plataforma ?? +(p.receita * 0.05).toFixed(2);
+        const pLiq  = p.receita_liquida ?? +(p.receita * 0.95).toFixed(2);
+        prodRows.push([p.titulo, p.categoria, p.total_vendas, p.unidades, p.receita, pTaxa, pLiq, p.margem_pct ?? '—', p.visualizacoes]);
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(prodRows), 'Produtos');
 

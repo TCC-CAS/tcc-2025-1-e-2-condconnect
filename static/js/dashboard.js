@@ -99,15 +99,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         set('an-faturamento', brl(f.faturamento));
         set('an-ticket', brl(f.ticket_medio));
         set('an-pedidos', f.total_pedidos);
+        set('an-taxa-plat', brl(f.taxa_plataforma ?? f.faturamento * 0.05));
+        set('an-receita-liq', brl(f.receita_liquida ?? f.faturamento * 0.95));
 
         const lucroCard = document.getElementById('an-lucro-card');
         const margemCard = document.getElementById('an-margem-card');
         if (f.has_custo && lucroCard) {
             lucroCard.style.display = 'block';
-            set('an-lucro', brl(f.lucro_liquido));
+            const lucroExibir = f.lucro_apos_taxa ?? f.lucro_liquido;
+            set('an-lucro', brl(lucroExibir));
             if (margemCard) {
                 margemCard.style.display = 'block';
-                const margem = f.faturamento > 0 ? ((f.lucro_liquido / f.faturamento) * 100).toFixed(1) : '0.0';
+                const margem = f.receita_liquida > 0 ? ((lucroExibir / f.receita_liquida) * 100).toFixed(1) : '0.0';
                 set('an-margem', margem + '%');
             }
         }

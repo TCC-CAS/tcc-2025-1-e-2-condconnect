@@ -896,9 +896,18 @@ def me_export():
             # Venda via proposta: preço negociado difere do anunciado em >1 %
             via_proposta = preco_venda < preco_anunc * 0.99
 
+            TAXA_PLAT    = 0.05
+            taxa_plat    = round(preco_total * TAXA_PLAT, 2)
+            receita_liq  = round(preco_total * (1 - TAXA_PLAT), 2)
+            preco_liq_u  = round(preco_venda * (1 - TAXA_PLAT), 2)
+
             lucro_unit  = round(preco_venda - custo_unit, 2)        if custo_unit is not None else None
             lucro_total = round(lucro_unit  * qtd, 2)               if lucro_unit  is not None else None
             margem      = round(lucro_unit / preco_venda * 100, 1)  if (lucro_unit is not None and preco_venda > 0) else None
+
+            lucro_liq_unit  = round(preco_liq_u - custo_unit, 2)       if custo_unit is not None else None
+            lucro_liq_total = round(lucro_liq_unit * qtd, 2)           if lucro_liq_unit is not None else None
+            margem_liq      = round(lucro_liq_unit / preco_liq_u * 100, 1) if (lucro_liq_unit is not None and preco_liq_u > 0) else None
 
             vendas.append({
                 'pedido_id':          int(r['pedido_id']),
@@ -912,9 +921,14 @@ def me_export():
                 'custo_unitario':     custo_unit,
                 'quantidade_vendida': qtd,
                 'receita_total':      preco_total,
+                'taxa_plataforma':    taxa_plat,
+                'receita_liquida':    receita_liq,
                 'lucro_unitario':     lucro_unit,
                 'lucro_total':        lucro_total,
                 'margem_pct':         margem,
+                'lucro_liq_unitario': lucro_liq_unit,
+                'lucro_liq_total':    lucro_liq_total,
+                'margem_liq_pct':     margem_liq,
                 'via_proposta':       'Sim' if via_proposta else 'Não',
                 'avaliacao':          float(r['avaliacao']) if r['avaliacao'] else None,
                 'total_avaliacoes':   int(r['total_avaliacoes'] or 0),
@@ -1093,12 +1107,22 @@ def me_analytics():
             por_mes = [{'mes': r['mes'], 'receita': float(r['receita']), 'pedidos': int(r['pedidos'])}
                        for r in c.fetchall()]
 
+        TAXA_PLAT = 0.05
+        fat = float(financeiro['faturamento'])
+        taxa_plat_total = round(fat * TAXA_PLAT, 2)
+        receita_liq_total = round(fat * (1 - TAXA_PLAT), 2)
+        lucro_bruto = float(custo_row['lucro'])
+        lucro_apos_taxa = round(lucro_bruto - taxa_plat_total, 2) if float(custo_row['fat_com_custo']) > 0 else lucro_bruto
+
         return ok({
             'financeiro': {
-                'faturamento': float(financeiro['faturamento']),
+                'faturamento': fat,
                 'ticket_medio': float(financeiro['ticket_medio']),
                 'total_pedidos': int(financeiro['total_pedidos']),
-                'lucro_liquido': float(custo_row['lucro']),
+                'taxa_plataforma': taxa_plat_total,
+                'receita_liquida': receita_liq_total,
+                'lucro_liquido': lucro_bruto,
+                'lucro_apos_taxa': lucro_apos_taxa,
                 'has_custo': float(custo_row['fat_com_custo']) > 0,
             },
             'produtos': [{
@@ -1109,6 +1133,8 @@ def me_analytics():
                 'total_vendas': int(p['total_vendas']),
                 'unidades': int(p['unidades']),
                 'receita': float(p['receita']),
+                'taxa_plataforma': round(float(p['receita']) * TAXA_PLAT, 2),
+                'receita_liquida': round(float(p['receita']) * (1 - TAXA_PLAT), 2),
                 'margem_pct': round((1 - float(p['custo']) / float(p['preco'])) * 100, 1)
                              if p['custo'] and float(p['preco']) > 0 else None,
             } for p in produtos_perf],
@@ -2506,6 +2532,7 @@ def admin_stats():
             'usuarios_suspensos': suspensos,
             'denuncias_pendentes': denuncias_pendentes,
             'faturamento': faturamento,
+            'faturamento_plataforma': round(faturamento * 0.05, 2),
             'por_condominio': por_condo,
         })
     except Exception as ex:

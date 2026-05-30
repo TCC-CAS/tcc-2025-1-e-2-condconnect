@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.getElementById('s-produtos').textContent  = fmt(s.total_produtos);
             document.getElementById('s-pedidos').textContent   = fmt(s.total_pedidos);
             document.getElementById('s-fat').textContent       = fmtBRL(s.faturamento);
+            document.getElementById('s-fat-plat').textContent  = fmtBRL(s.faturamento_plataforma ?? s.faturamento * 0.05);
             document.getElementById('s-susp').textContent      = fmt(s.usuarios_suspensos);
             document.getElementById('s-banidos').textContent   = fmt(s.usuarios_banidos);
             document.getElementById('s-den').textContent       = fmt(s.denuncias_pendentes);
