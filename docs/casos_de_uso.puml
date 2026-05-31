@@ -1,21 +1,22 @@
 @startuml DiagramaCasosDeUso_CondConnect
 
 left to right direction
-
+skinparam actorStyle awesome
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
+skinparam defaultFontSize 12
 
 skinparam usecase {
     BackgroundColor #1B4F8A
     FontColor white
     BorderColor #0D3369
     FontSize 13
-    Padding 10
+    Padding 12
 }
 skinparam actor {
-    BackgroundColor #2D6CC0
+    BackgroundColor #1B4F8A
     FontColor white
-    BorderColor #1B4F8A
+    BorderColor #0D3369
     FontSize 13
     FontStyle bold
 }
@@ -25,78 +26,74 @@ skinparam rectangle {
     FontColor #1B4F8A
     FontSize 12
     FontStyle bold
-    RoundCorner 12
+    RoundCorner 10
 }
-skinparam ArrowColor #4A4A4A
+skinparam ArrowColor #555555
 skinparam ArrowFontSize 10
-skinparam ArrowThickness 1
 
 title Diagrama de Casos de Uso — CondConnect
 
-' ── Atores (todos à esquerda) ────────────────────────────────────────────────
+' ── Atores ───────────────────────────────────────────────────────────────────
 actor "Morador" as M
-actor "Vendedor" as V
-actor "Comprador" as C
+actor "Vendedor\n(papel do Morador)" as V
+actor "Comprador\n(papel do Morador)" as C
 actor "Administrador" as A
 
-M <|-- V
-M <|-- C
+' ── Sistema ──────────────────────────────────────────────────────────────────
+rectangle "  CondConnect — Sistema  " {
 
-' ── Sistema ─────────────────────────────────────────────────────────────────
-rectangle "CondConnect — Sistema" {
-
-    rectangle "Autenticação e Conta" {
-        usecase "UC01  Cadastrar usuário" as UC01
-        usecase "UC02  Realizar login com 2FA" as UC02
-        usecase "UC03  Recuperar senha" as UC03
-        usecase "UC04  Editar perfil" as UC04
-        usecase "UC05  Gerenciar configurações" as UC05
+    rectangle "Autenticação e Conta" as gr1 {
+        (UC01 Cadastrar usuário) as UC01
+        (UC02 Realizar login com 2FA) as UC02
+        (UC03 Recuperar senha) as UC03
+        (UC04 Editar perfil) as UC04
+        (UC05 Gerenciar configurações) as UC05
     }
 
-    rectangle "Marketplace" {
-        usecase "UC06  Cadastrar produto/serviço" as UC06
-        usecase "UC07  Editar produto" as UC07
-        usecase "UC08  Remover produto" as UC08
-        usecase "UC09  Buscar produto" as UC09
-        usecase "UC10  Favoritar produto" as UC10
+    rectangle "Marketplace" as gr2 {
+        (UC06 Cadastrar produto/serviço) as UC06
+        (UC07 Editar produto) as UC07
+        (UC08 Remover produto) as UC08
+        (UC09 Buscar produto) as UC09
+        (UC10 Favoritar produto) as UC10
     }
 
-    rectangle "Negociação e Compra" {
-        usecase "UC11  Adicionar ao carrinho" as UC11
-        usecase "UC12  Fazer proposta de preço" as UC12
-        usecase "UC13  Responder proposta" as UC13
-        usecase "UC14  Finalizar compra" as UC14
+    rectangle "Negociação e Compra" as gr3 {
+        (UC11 Adicionar ao carrinho) as UC11
+        (UC12 Fazer proposta de preço) as UC12
+        (UC13 Responder proposta) as UC13
+        (UC14 Finalizar compra) as UC14
     }
 
-    rectangle "Pedidos e Pós-Venda" {
-        usecase "UC15  Acompanhar pedidos" as UC15
-        usecase "UC16  Confirmar entrega" as UC16
-        usecase "UC17  Enviar mensagem" as UC17
-        usecase "UC18  Avaliar vendedor" as UC18
-        usecase "UC19  Denunciar produto ou usuário" as UC19
+    rectangle "Pedidos e Pós-Venda" as gr4 {
+        (UC15 Acompanhar pedidos) as UC15
+        (UC16 Confirmar entrega) as UC16
+        (UC17 Enviar mensagem) as UC17
+        (UC18 Avaliar vendedor) as UC18
+        (UC19 Denunciar produto ou usuário) as UC19
     }
 
-    rectangle "Analytics e Relatórios" {
-        usecase "UC20  Visualizar dashboard de vendas" as UC20
-        usecase "UC21  Visualizar relatório completo" as UC21
-        usecase "UC22  Exportar relatório em Excel" as UC22
+    rectangle "Analytics e Relatórios" as gr5 {
+        (UC20 Visualizar dashboard de vendas) as UC20
+        (UC21 Visualizar relatório completo) as UC21
+        (UC22 Exportar relatório em Excel) as UC22
     }
 
-    rectangle "Acessibilidade" {
-        usecase "UC28  Utilizar recursos de acessibilidade" as UC28
+    rectangle "Acessibilidade" as gr6 {
+        (UC28 Utilizar recursos de acessibilidade) as UC28
     }
 
-    rectangle "Administração" {
-        usecase "UC23  Gerenciar produtos" as UC23
-        usecase "UC24  Gerenciar usuários" as UC24
-        usecase "UC25  Suspender ou banir usuário" as UC25
-        usecase "UC26  Resolver denúncias" as UC26
-        usecase "UC27  Visualizar estatísticas globais" as UC27
-        usecase "UC29  Moderar denúncias de usuários e chat" as UC29
+    rectangle "Administração" as gr7 {
+        (UC23 Gerenciar produtos) as UC23
+        (UC24 Gerenciar usuários) as UC24
+        (UC25 Suspender ou banir usuário) as UC25
+        (UC26 Resolver denúncias) as UC26
+        (UC27 Visualizar estatísticas globais) as UC27
+        (UC29 Moderar denúncias de usuários e chat) as UC29
     }
 }
 
-' ── Associações: Morador ─────────────────────────────────────────────────────
+' ── Morador ──────────────────────────────────────────────────────────────────
 M --> UC01
 M --> UC02
 M --> UC03
@@ -109,7 +106,7 @@ M --> UC17
 M --> UC19
 M --> UC28
 
-' ── Associações: Vendedor ────────────────────────────────────────────────────
+' ── Vendedor ─────────────────────────────────────────────────────────────────
 V --> UC06
 V --> UC07
 V --> UC08
@@ -119,13 +116,13 @@ V --> UC20
 V --> UC21
 V --> UC22
 
-' ── Associações: Comprador ───────────────────────────────────────────────────
+' ── Comprador ────────────────────────────────────────────────────────────────
 C --> UC11
 C --> UC12
 C --> UC14
 C --> UC18
 
-' ── Associações: Administrador ───────────────────────────────────────────────
+' ── Administrador ────────────────────────────────────────────────────────────
 A --> UC23
 A --> UC24
 A --> UC25
