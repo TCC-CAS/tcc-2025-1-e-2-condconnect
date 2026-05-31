@@ -1,6 +1,21 @@
 let _relData = null;
 let _relInsumos = null;
 
+// Multi-select toggle — definido no topo para estar disponível antes do DOMContentLoaded
+window.msRelToggle = function(id) {
+    const list = document.getElementById(id + '-list');
+    if (!list) return;
+    const aberto = list.classList.contains('open');
+    document.querySelectorAll('.ms-list.open').forEach(function(l){ l.classList.remove('open'); });
+    if (!aberto) list.classList.add('open');
+};
+window.relOnAnoChange  = function() {};
+window.msRelAplicar    = function() {};
+document.addEventListener('click', function(e){
+    if (!e.target.closest('.ms-box'))
+        document.querySelectorAll('.ms-list.open').forEach(function(l){ l.classList.remove('open'); });
+});
+
 async function exportarExcel() {
     if (!_relData) return alert('Carregue o relatório antes de exportar.');
     const wb = XLSX.utils.book_new();

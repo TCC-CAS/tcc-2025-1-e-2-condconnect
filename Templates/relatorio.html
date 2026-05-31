@@ -34,11 +34,11 @@
                       background:white;cursor:pointer;font-size:13px;color:#374151;
                       min-width:148px;user-select:none; }
         .ms-trigger:hover { border-color:#00a6a6; }
-        .ms-list { display:none;position:absolute;top:calc(100% + 4px);left:0;
+        .ms-list { display:none !important;position:absolute;top:calc(100% + 4px);left:0;
                    background:white;border:1px solid #e2e8f0;border-radius:10px;
                    box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;
                    max-height:210px;overflow-y:auto;min-width:160px; }
-        .ms-list.open { display:block; }
+        .ms-list.open { display:block !important; }
         .ms-item { display:flex;align-items:center;gap:8px;padding:9px 14px;
                    font-size:13px;color:#374151;cursor:pointer; }
         .ms-item:hover { background:#f8fafc; }
@@ -175,27 +175,21 @@
                 <option value="servicos">Serviços</option>
                 <option value="outros">Outros</option>
             </select>
-            <div>
-                <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Ano</div>
-                <div class="ms-box" id="rel-ms-anos">
-                    <div class="ms-trigger" onclick="msRelToggle('rel-ms-anos')">
-                        <span id="rel-ms-anos-lbl">Todos os anos</span>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                    </div>
-                    <div class="ms-list" id="rel-ms-anos-list"></div>
+            <div class="ms-box" id="rel-ms-anos">
+                <div class="ms-trigger" onclick="msRelToggle('rel-ms-anos')">
+                    <span id="rel-ms-anos-lbl">Todos os anos</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
+                <div class="ms-list" id="rel-ms-anos-list"></div>
             </div>
-            <div>
-                <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Mês</div>
-                <div class="ms-box" id="rel-ms-meses">
-                    <div class="ms-trigger" onclick="msRelToggle('rel-ms-meses')">
-                        <span id="rel-ms-meses-lbl">Todos os meses</span>
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                    </div>
-                    <div class="ms-list" id="rel-ms-meses-list"></div>
+            <div class="ms-box" id="rel-ms-meses">
+                <div class="ms-trigger" onclick="msRelToggle('rel-ms-meses')">
+                    <span id="rel-ms-meses-lbl">Todos os meses</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
+                <div class="ms-list" id="rel-ms-meses-list"></div>
             </div>
-            <button onclick="msRelAplicar()" style="padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;align-self:flex-end;">Aplicar</button>
+            <button onclick="msRelAplicar()" style="padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Aplicar</button>
             <button id="btn-exportar" onclick="exportarExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Exportar Excel
