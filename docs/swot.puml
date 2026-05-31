@@ -1,0 +1,72 @@
+@startuml SWOT_CondConnect
+
+skinparam backgroundColor #FFF8F0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam noteShadowing false
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderThickness 2
+
+title SWOT Analysis — CondConnect
+
+' ── STRENGTHS (rosa) ────────────────────────────────────────────────────────
+note as S #FFB3C6
+<b><color:#CC0044>STRENGTHS</color></b>
+----
+• Plataforma exclusiva por condomínio — marketplace\n  isolado, cada morador vê apenas vizinhos;
+• Autenticação obrigatória em dois fatores (2FA)\n  com código por e-mail, 10 min, 3 tentativas;
+• Senhas armazenadas com bcrypt (rounds=10);\n  sessões invalidáveis em todos os dispositivos;
+• Moderação automática: AWS Rekognition (imagens)\n  + filtro de palavras proibidas com auto-denúncia;
+• Confirmação de entrega por código de 4 dígitos\n  entre vizinhos, sem necessidade de frete;
+• Sistema de propostas com negociação integrada\n  (mínimo 70%, máx 3 pendentes por produto);
+• Dashboard analítico + relatório exportável\n  em Excel (8 abas, margem, taxa, receita);
+• Painel admin completo: moderação, suspensão,\n  banimento com bloqueio de CPF;
+• Acessibilidade (WCAG): alto contraste, fonte\n  grande, leitura em voz alta (Web Speech API);
+• LGPD: exclusão de conta, privacidade de endereço,\n  bloqueio de dados pessoais em mensagens;
+• Interface responsiva sem frameworks externos;\n  stack enxuta facilitando manutenção.
+end note
+
+' ── WEAKNESSES (laranja) ────────────────────────────────────────────────────
+note as W #FFD9A0
+<b><color:#CC6600>WEAKNESSES</color></b>
+----
+• Ausência de gateway de pagamento integrado —\n  PIX e boleto não processados pela plataforma;
+• Armazenamento de imagens em sistema de arquivos\n  local, sem escalabilidade para alto volume;
+• Chat baseado em polling (10s), sem conexão\n  em tempo real via WebSocket;
+• Dependência de adesão inicial dos moradores\n  para atingir massa crítica de anúncios;
+• Sem autenticação social (Google, Apple)\n  que reduziria a fricção no cadastro;
+• Ausência de aplicativo mobile nativo —\n  acesso apenas via navegador web responsivo.
+end note
+
+' ── THREATS (azul) ──────────────────────────────────────────────────────────
+note as T #A8D5F5
+<b><color:#0055AA>THREATS</color></b>
+----
+• Concorrência com marketplaces consolidados\n  (OLX, Mercado Livre, Facebook Marketplace)\n  com ampla base de usuários e reconhecimento;
+• Resistência dos moradores à adoção de nova\n  plataforma em condomínios com cultura\n  estabelecida de uso de grupos de WhatsApp;
+• Baixo engajamento inicial se o volume de\n  anúncios for insuficiente para movimentar\n  o marketplace;
+• Dependência da qualidade da convivência\n  comunitária para o funcionamento saudável;
+• Necessidade de migração de infraestrutura\n  (nuvem, WebSocket, app nativo) para escalar\n  além de um único condomínio.
+end note
+
+' ── OPPORTUNITIES (verde) ───────────────────────────────────────────────────
+note as O #B2F0C8
+<b><color:#007744>OPPORTUNITIES</color></b>
+----
+• Crescimento do comércio digital no Brasil\n  e aumento do consumo colaborativo;
+• Expansão para outros condomínios e comunidades\n  fechadas após validação do modelo;
+• Integração futura com sistemas de gestão\n  condominial (boletos, reservas, assembleias);
+• Monetização via planos premium para vendedores\n  ou destaque de anúncios;
+• Interesse crescente por economia circular,\n  reuso de bens e consumo local sustentável;
+• Parcerias com administradoras de condomínios\n  para distribuição em escala;
+• Integração futura com API do PIX via Banco\n  Central para fechar o ciclo de compra;
+• Dados analíticos dos vendedores como insumo\n  para decisões de gestão do condomínio.
+end note
+
+' ── Layout 2×2 ──────────────────────────────────────────────────────────────
+S -[hidden]right- W
+T -[hidden]right- O
+S -[hidden]down- T
+W -[hidden]down- O
+
+@enduml
