@@ -1,0 +1,77 @@
+@startuml UC_Morador
+
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+
+skinparam usecase {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 13
+    Padding 12
+}
+skinparam actor {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 14
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #EEF4FF
+    BorderColor #1B4F8A
+    FontColor #1B4F8A
+    FontSize 12
+    FontStyle bold
+    RoundCorner 10
+}
+skinparam ArrowColor #555555
+skinparam ArrowFontSize 10
+
+title Casos de Uso — Morador
+
+actor "Morador" as M
+
+rectangle "CondConnect — Sistema" {
+
+    rectangle "Autenticação e Conta" {
+        (UC01 Cadastrar usuário) as UC01
+        (UC02 Realizar login com 2FA) as UC02
+        (UC03 Recuperar senha) as UC03
+        (UC04 Editar perfil) as UC04
+        (UC05 Gerenciar configurações) as UC05
+    }
+
+    rectangle "Marketplace" {
+        (UC09 Buscar produto) as UC09
+        (UC10 Favoritar produto) as UC10
+    }
+
+    rectangle "Pedidos e Comunicação" {
+        (UC15 Acompanhar pedidos) as UC15
+        (UC17 Enviar mensagem) as UC17
+        (UC19 Denunciar produto ou usuário) as UC19
+    }
+
+    rectangle "Acessibilidade" {
+        (UC28 Utilizar recursos de acessibilidade) as UC28
+    }
+}
+
+M --> UC01
+M --> UC02
+M --> UC03
+M --> UC04
+M --> UC05
+M --> UC09
+M --> UC10
+M --> UC15
+M --> UC17
+M --> UC19
+M --> UC28
+
+UC03 ..> UC02 : <<extend>>
+
+@enduml

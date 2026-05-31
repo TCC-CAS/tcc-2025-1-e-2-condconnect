@@ -1,0 +1,60 @@
+@startuml UC_Comprador
+
+left to right direction
+skinparam actorStyle awesome
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+
+skinparam usecase {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 13
+    Padding 12
+}
+skinparam actor {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 14
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #EEF4FF
+    BorderColor #1B4F8A
+    FontColor #1B4F8A
+    FontSize 12
+    FontStyle bold
+    RoundCorner 10
+}
+skinparam ArrowColor #555555
+skinparam ArrowFontSize 10
+
+title Casos de Uso — Comprador (papel do Morador)
+
+actor "Comprador" as C
+
+rectangle "CondConnect — Sistema" {
+
+    rectangle "Negociação e Compra" {
+        (UC11 Adicionar ao carrinho) as UC11
+        (UC12 Fazer proposta de preço) as UC12
+        (UC14 Finalizar compra) as UC14
+    }
+
+    rectangle "Pós-Venda" {
+        (UC15 Acompanhar pedidos) as UC15
+        (UC18 Avaliar vendedor) as UC18
+    }
+}
+
+C --> UC11
+C --> UC12
+C --> UC14
+C --> UC15
+C --> UC18
+
+UC14 ..> UC11 : <<include>>
+UC18 ..> UC15 : <<include>>
+
+@enduml
