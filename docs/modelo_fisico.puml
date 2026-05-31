@@ -1,0 +1,307 @@
+@startuml ModeloFisico_CondConnect
+
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+
+skinparam entity {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 11
+    FontStyle bold
+    AttributeBackgroundColor #EEF4FF
+    AttributeFontColor #1e293b
+    AttributeFontSize 10
+}
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 9
+
+title Modelo Físico do Banco de Dados — CondConnect (MySQL)
+
+' ════════════════════════════════════════════════════════
+' BLOCO CENTRAL
+' ════════════════════════════════════════════════════════
+entity "usuarios" as U {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    nome : VARCHAR(255) NOT NULL
+    email : VARCHAR(255) UNIQUE NOT NULL
+    senha : VARCHAR(255) NOT NULL
+    cpf : VARCHAR(14)
+    telefone : VARCHAR(15)
+    apartamento : VARCHAR(20)
+    bloco : VARCHAR(10)
+    condominio : VARCHAR(100)
+    cep : VARCHAR(9)
+    logradouro : VARCHAR(255)
+    numero : VARCHAR(20)
+    bairro / cidade / estado : VARCHAR
+    foto_url : VARCHAR(500)
+    bio : TEXT
+    pix_key : VARCHAR(255)
+    rating : DECIMAL(3,2) DEFAULT 0
+    total_vendas / total_compras : INT DEFAULT 0
+    papel : ENUM('usuario','admin') DEFAULT 'usuario'
+    ativo : TINYINT(1) DEFAULT 1
+    suspenso_ate : DATETIME
+    total_suspensoes : INT DEFAULT 0
+    codigo_2fa : VARCHAR(6)
+    codigo_2fa_expira : DATETIME
+    session_version : INT DEFAULT 0
+    criado_em : TIMESTAMP
+    atualizado_em : TIMESTAMP
+}
+
+' ════════════════════════════════════════════════════════
+' PRODUTOS
+' ════════════════════════════════════════════════════════
+entity "produtos" as P {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *usuario_id* : INT FK → usuarios.id
+    titulo : VARCHAR(255) NOT NULL
+    descricao : TEXT
+    preco : DECIMAL(10,2) NOT NULL
+    custo : DECIMAL(10,2)
+    categoria : VARCHAR(50) NOT NULL
+    condicao : ENUM('Novo','Seminovo','Usado')
+    status : ENUM('pendente','disponivel','vendido','rejeitado')
+    foto_principal : VARCHAR(500)
+    motivo_rejeicao : TEXT
+    quantidade : INT DEFAULT 1
+    visualizacoes : INT DEFAULT 0
+    criado_em : TIMESTAMP
+    atualizado_em : TIMESTAMP
+}
+
+entity "imagens_produto" as IP {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *produto_id* : INT FK → produtos.id
+    url : VARCHAR(500) NOT NULL
+    ordem : INT DEFAULT 0
+}
+
+entity "produto_insumos" as PIN {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *produto_id* : INT FK → produtos.id
+    nome : VARCHAR(100) NOT NULL
+    quantidade : DECIMAL(10,3) NOT NULL
+    unidade : VARCHAR(20) NOT NULL
+    custo : DECIMAL(10,2) NOT NULL
+}
+
+' ════════════════════════════════════════════════════════
+' COMPRAS
+' ════════════════════════════════════════════════════════
+entity "favoritos" as F {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *usuario_id* : INT FK → usuarios.id
+    *produto_id* : INT FK → produtos.id
+    criado_em : TIMESTAMP
+    UNIQUE (usuario_id, produto_id)
+}
+
+entity "itens_carrinho" as IC {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *usuario_id* : INT FK → usuarios.id
+    *produto_id* : INT FK → produtos.id
+    quantidade : INT DEFAULT 1
+    preco_negociado : DECIMAL(10,2)
+    criado_em : TIMESTAMP
+    UNIQUE (usuario_id, produto_id)
+}
+
+entity "propostas" as PR {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *produto_id* : INT FK → produtos.id
+    *comprador_id* : INT FK → usuarios.id
+    *vendedor_id* : INT FK → usuarios.id
+    valor_proposto : DECIMAL(10,2) NOT NULL
+    quantidade : INT DEFAULT 1
+    mensagem : TEXT
+    status : ENUM('pendente','aceita','recusada','cancelada')
+    criado_em : DATETIME
+    atualizado_em : DATETIME
+}
+
+entity "pedidos" as PED {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *comprador_id* : INT FK → usuarios.id
+    *vendedor_id* : INT FK → usuarios.id
+    *produto_id* : INT FK → produtos.id
+    quantidade : INT DEFAULT 1
+    preco_total : DECIMAL(10,2) NOT NULL
+    status : ENUM('aguardando','confirmado','enviado','entregue','cancelado')
+    codigo_entrega : CHAR(4)
+    criado_em : TIMESTAMP
+    atualizado_em : TIMESTAMP
+}
+
+' ════════════════════════════════════════════════════════
+' COMUNICAÇÃO
+' ════════════════════════════════════════════════════════
+entity "conversas" as CV {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *usuario1_id* : INT FK → usuarios.id
+    *usuario2_id* : INT FK → usuarios.id
+    produto_id : INT FK → produtos.id
+    ultima_mensagem : TEXT
+    ultima_mensagem_em : TIMESTAMP
+    criado_em : TIMESTAMP
+}
+
+entity "mensagens" as MSG {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *conversa_id* : INT FK → conversas.id
+    *remetente_id* : INT FK → usuarios.id
+    texto : TEXT NOT NULL
+    lida : TINYINT(1) DEFAULT 0
+    criado_em : TIMESTAMP
+}
+
+' ════════════════════════════════════════════════════════
+' PÓS-VENDA
+' ════════════════════════════════════════════════════════
+entity "avaliacoes" as AV {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *avaliador_id* : INT FK → usuarios.id
+    *avaliado_id* : INT FK → usuarios.id
+    produto_id : INT FK → produtos.id
+    pedido_id : INT FK → pedidos.id
+    nota : INT NOT NULL (1-5)
+    comentario : TEXT
+    criado_em : TIMESTAMP
+}
+
+entity "notificacoes" as NOT {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *usuario_id* : INT FK → usuarios.id
+    tipo : VARCHAR(50) NOT NULL
+    titulo : VARCHAR(255) NOT NULL
+    mensagem : TEXT
+    lida : TINYINT(1) DEFAULT 0
+    link : VARCHAR(500)
+    criado_em : TIMESTAMP
+}
+
+' ════════════════════════════════════════════════════════
+' CONFIGURAÇÕES
+' ════════════════════════════════════════════════════════
+entity "configuracoes_usuario" as CFG {
+    * **usuario_id** : INT PK FK → usuarios.id
+    ==
+    notif_email : TINYINT(1) DEFAULT 1
+    notif_sms : TINYINT(1) DEFAULT 1
+    tema : VARCHAR(20) DEFAULT 'light'
+    idioma : VARCHAR(10) DEFAULT 'pt-BR'
+    privacidade_endereco : TINYINT(1) DEFAULT 0
+    metodo_2fa : ENUM('email','sms') DEFAULT 'email'
+    dois_fatores : TINYINT(1) DEFAULT 1
+}
+
+' ════════════════════════════════════════════════════════
+' MODERAÇÃO
+' ════════════════════════════════════════════════════════
+entity "relatorios" as R {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *reporter_id* : INT FK → usuarios.id
+    tipo : ENUM('produto','usuario') NOT NULL
+    alvo_id : INT NOT NULL
+    motivo : VARCHAR(255) NOT NULL
+    descricao : TEXT
+    status : ENUM('pendente','resolvido','rejeitado')
+    criado_em : TIMESTAMP
+}
+
+entity "denuncias_avaliacao" as DA {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *avaliacao_id* : INT FK → avaliacoes.id
+    *denunciante_id* : INT FK → usuarios.id
+    motivo : VARCHAR(100) NOT NULL
+    status : ENUM('pendente','ignorada','removida','suspendeu')
+    resolvido_por : INT
+    criado_em : TIMESTAMP
+    UNIQUE (avaliacao_id, denunciante_id)
+}
+
+entity "denuncias_produto" as DP {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    *produto_id* : INT FK → produtos.id
+    *denunciante_id* : INT FK → usuarios.id
+    motivo : VARCHAR(100) NOT NULL
+    status : ENUM('pendente','ignorada','removida')
+    resolvido_por : INT
+    criado_em : TIMESTAMP
+    UNIQUE (produto_id, denunciante_id)
+}
+
+entity "cpf_banidos" as CB {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    cpf : VARCHAR(20) NOT NULL UNIQUE
+    motivo : TEXT
+    criado_em : TIMESTAMP
+}
+
+entity "password_resets" as PSW {
+    * **id** : INT PK AUTO_INCREMENT
+    ==
+    email : VARCHAR(255)
+    token : VARCHAR(64)
+    expira_em : DATETIME
+    usado : TINYINT(1)
+    criado_em : DATETIME
+}
+
+' ════════════════════════════════════════════════════════
+' RELACIONAMENTOS
+' ════════════════════════════════════════════════════════
+
+' Usuário
+U ||--o{ P     : "vende (1,N)"
+U ||--o{ F     : "(1,N)"
+U ||--o{ IC    : "(1,N)"
+U ||--o{ PED   : "compra (1,N)"
+U ||--o{ PED   : "vende (1,N)"
+U ||--o{ PR    : "(1,N)"
+U ||--o{ CV    : "(1,N)"
+U ||--o{ AV    : "avalia (1,N)"
+U ||--o{ NOT   : "recebe (1,N)"
+U ||--|| CFG   : "configura (1,1)"
+U ||--o{ R     : "denuncia (1,N)"
+U ||--o{ DA    : "(1,N)"
+
+' Produto
+P ||--o{ IP    : "possui (1,N)"
+P ||--o{ PIN   : "composto de (1,N)"
+P ||--o{ F     : "(1,N)"
+P ||--o{ IC    : "(1,N)"
+P ||--o{ PED   : "(1,N)"
+P ||--o{ PR    : "(1,N)"
+P ||--o{ CV    : "(1,N)"
+P ||--o{ AV    : "(1,N)"
+P ||--o{ DP    : "(1,N)"
+
+' Pedido / Avaliação
+PED ||--o{ AV  : "origina (1,N)"
+AV  ||--o{ DA  : "(1,N)"
+
+' Conversa
+CV  ||--o{ MSG : "contém (1,N)"
+
+@enduml
