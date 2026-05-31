@@ -6,11 +6,15 @@ function _msRelClose() {
     document.querySelectorAll('.ms-list').forEach(function(l){ l.style.display = 'none'; });
 }
 function _msRelToggle(id) {
-    var list = document.getElementById(id + '-list');
-    if (!list) return;
+    var list    = document.getElementById(id + '-list');
+    var trigger = document.getElementById(id + '-trigger');
+    if (!list || !trigger) return;
     var visible = list.style.display === 'block';
     _msRelClose();
-    if (!visible) { list.style.display = 'block'; list.style.position = 'absolute'; list.style.zIndex = '9999'; }
+    if (!visible) {
+        var r = trigger.getBoundingClientRect();
+        list.style.cssText = 'display:block;position:fixed;top:' + (r.bottom + 4) + 'px;left:' + r.left + 'px;min-width:' + r.width + 'px;z-index:99999;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:210px;overflow-y:auto;';
+    }
 }
 window.msRelAplicar = function() {};
 document.addEventListener('click', function(e){
