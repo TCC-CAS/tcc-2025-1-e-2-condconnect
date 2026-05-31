@@ -532,87 +532,34 @@ document.addEventListener('DOMContentLoaded', async function () {
                         'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     let _relPeriodos = [];
 
-    // Portal: move as listas para body, escapando qualquer overflow:hidden pai
-    ['rel-ms-anos-list', 'rel-ms-meses-list'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.style.cssText = 'display:none;position:fixed;z-index:99999;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:210px;overflow-y:auto;min-width:160px;';
-            document.body.appendChild(el);
-        }
-    });
-
-    function msClose() {
-        ['rel-ms-anos-list', 'rel-ms-meses-list'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        });
-    }
-    window.msRelToggle = function(id) {
-        const list    = document.getElementById(id + '-list');
-        const trigger = document.getElementById(id + '-trigger');
-        if (!list || !trigger) return;
-        const aberto = list.style.display === 'block';
-        msClose();
-        if (!aberto) {
-            const r = trigger.getBoundingClientRect();
-            list.style.top      = (r.bottom + 4) + 'px';
-            list.style.left     = r.left + 'px';
-            list.style.minWidth = r.width + 'px';
-            list.style.display  = 'block';
-        }
-    };
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.ms-box') &&
-            !document.getElementById('rel-ms-anos-list')?.contains(e.target) &&
-            !document.getElementById('rel-ms-meses-list')?.contains(e.target))
-            msClose();
-    });
-    ['rel-ms-anos', 'rel-ms-meses'].forEach(id => {
-        const trigger = document.getElementById(id + '-trigger');
-        if (trigger) trigger.addEventListener('click', e => {
-            e.stopPropagation();
-            window.msRelToggle(id);
-        });
-    });
-
     function msRelGetSelected(id) {
-        const l = document.getElementById(id + '-list');
-        return l ? [...l.querySelectorAll('input:checked')].map(c => c.value) : [];
-    }
-    function msRelSetLabel(id, sel, placeholder) {
-        const lbl = document.getElementById(id + '-lbl');
-        if (lbl) lbl.textContent = sel.length ? sel.length + ' selecionado' + (sel.length > 1 ? 's' : '') : placeholder;
+        const sel = document.getElementById(id);
+        return sel ? [...sel.selectedOptions].map(o => o.value) : [];
     }
     function relRenderMeses(anosSelected) {
         const filtrados = anosSelected.length
             ? _relPeriodos.filter(p => anosSelected.includes(String(p.ano)))
             : _relPeriodos;
-        const meses = [...new Set(filtrados.map(p => p.mes))].sort((a,b)=>a-b);
-        const prevSel = msRelGetSelected('rel-ms-meses');
-        const list = document.getElementById('rel-ms-meses-list');
-        if (!list) return;
-        list.innerHTML = meses.map(m => `
-            <label class="ms-item">
-                <input type="checkbox" value="${m}" ${prevSel.includes(String(m)) ? 'checked' : ''}>
-                ${_MESES_REL[m-1]}
-            </label>
-        `).join('');
-        msRelSetLabel('rel-ms-meses', msRelGetSelected('rel-ms-meses'), 'Todos os meses');
+        const meses = [...new Set(filtrados.map(p => p.mes))].sort((a,b) => a-b);
+        const prevSel = msRelGetSelected('rel-meses');
+        const sel = document.getElementById('rel-meses');
+        if (!sel) return;
+        sel.innerHTML = meses.map(m =>
+            `<option value="${m}" ${prevSel.includes(String(m)) ? 'selected' : ''}>${_MESES_REL[m-1]}</option>`
+        ).join('');
+        sel.size = Math.min(Math.max(meses.length, 1), 4);
     }
-    window.relOnAnoChange = function() {
-        const sel = msRelGetSelected('rel-ms-anos');
-        msRelSetLabel('rel-ms-anos', sel, 'Todos os anos');
-        relRenderMeses(sel);
-    };
+    document.getElementById('rel-anos')?.addEventListener('change', () => {
+        relRenderMeses(msRelGetSelected('rel-anos'));
+    });
     window.msRelAplicar = function() { carregarRelatorio(); };
 
     function getFiltros() {
-        const anos  = msRelGetSelected('rel-ms-anos');
-        const meses = msRelGetSelected('rel-ms-meses');
         return {
             produto_id: document.getElementById('rel-produto')?.value   || '',
             categoria:  document.getElementById('rel-categoria')?.value || '',
-            anos, meses,
+            anos:  msRelGetSelected('rel-anos'),
+            meses: msRelGetSelected('rel-meses'),
         };
     }
 
@@ -657,15 +604,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function popularPeriodosMulti() {
         try {
             _relPeriodos = await CondConnect.api('/me/periodos');
-            const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b)=>b-a);
-            const listAnos = document.getElementById('rel-ms-anos-list');
-            if (listAnos) {
-                listAnos.innerHTML = anos.map(a => `
-                    <label class="ms-item">
-                        <input type="checkbox" value="${a}" onchange="relOnAnoChange()">
-                        ${a}
-                    </label>
-                `).join('');
+            const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b) => b-a);
+            const sel = document.getElementById('rel-anos');
+            if (sel) {
+                sel.innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
+                sel.size = Math.min(Math.max(anos.length, 1), 4);
             }
             relRenderMeses([]);
         } catch(e) { console.warn('periodos error', e); }
