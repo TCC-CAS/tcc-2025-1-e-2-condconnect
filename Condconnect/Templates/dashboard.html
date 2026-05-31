@@ -296,7 +296,7 @@
         <section class="page-title-area" style="margin-bottom: 32px;">
             <h1
                 style="font-size: 34px; font-weight: 800; color: var(--foreground); margin: 0 0 8px 0; letter-spacing: -1px;">
-                Olá, <span class="welcome-name">...</span>! 👋</h1>
+                Olá, Gabriela! 👋</h1>
             <p style="color: var(--text-muted); font-size: 16px; margin: 0;">Bem-vindo ao seu painel. Veja suas
                 atividades e explore o marketplace.</p>
         </section>
@@ -332,12 +332,14 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <span>Produtos Anunciados</span>
-                    <strong id="stat-produtos">—</strong>
+                    <strong id="stat-products-count">8</strong>
                 </div>
                 <div class="stat-icon blue">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                        </path>
                         <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
                     </svg>
@@ -347,7 +349,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <span>Pedidos Ativos</span>
-                    <strong id="stat-pedidos">—</strong>
+                    <strong>0</strong>
                 </div>
                 <div class="stat-icon orange">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -362,7 +364,7 @@
             <div class="stat-card">
                 <div class="stat-info">
                     <span>Vendas Realizadas</span>
-                    <strong id="stat-vendas">—</strong>
+                    <strong>0</strong>
                 </div>
                 <div class="stat-icon green">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -375,27 +377,14 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Favoritos nos seus produtos</span>
-                    <strong id="stat-favoritos">—</strong>
+                    <span>Favoritos</span>
+                    <strong id="stat-favorites-count">1</strong>
                 </div>
                 <div class="stat-icon purple">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-info">
-                    <span>Faturamento Total</span>
-                    <strong id="stat-faturamento">—</strong>
-                </div>
-                <div class="stat-icon green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 </div>
             </div>
@@ -418,76 +407,6 @@
                     <p>Descubra ofertas incríveis dos seus vizinhos</p>
                 </div>
                 <a href="/Templates/marketplace.html" class="btn-white">Ver Produtos →</a>
-            </div>
-        </section>
-
-        <!-- RELATÓRIO DE VENDAS -->
-        <section style="margin-bottom: 40px;">
-            <div class="section-header" style="margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <h2>Relatório de Vendas</h2>
-                    <span class="subtitle">Desempenho dos seus anúncios no período</span>
-                </div>
-                <select id="analytics-periodo" style="padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #374151; background: white; cursor: pointer;">
-                    <option value="30">Últimos 30 dias</option>
-                    <option value="90">Últimos 90 dias</option>
-                    <option value="365">Último ano</option>
-                    <option value="all">Todo período</option>
-                </select>
-            </div>
-
-            <!-- Métricas financeiras -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                <div class="stat-card">
-                    <div class="stat-info"><span>Faturamento</span><strong id="an-faturamento">—</strong></div>
-                    <div class="stat-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info"><span>Ticket Médio</span><strong id="an-ticket">—</strong></div>
-                    <div class="stat-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info"><span>Pedidos no Período</span><strong id="an-pedidos">—</strong></div>
-                    <div class="stat-icon orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info"><span>Taxa Plataforma (5%)</span><strong id="an-taxa-plat">—</strong></div>
-                    <div class="stat-icon purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info"><span>Receita Líquida</span><strong id="an-receita-liq">—</strong></div>
-                    <div class="stat-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
-                </div>
-                <div class="stat-card" id="an-lucro-card" style="display:none;">
-                    <div class="stat-info"><span>Lucro Estimado</span><strong id="an-lucro">—</strong></div>
-                    <div class="stat-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
-                </div>
-                <div class="stat-card" id="an-margem-card" style="display:none;">
-                    <div class="stat-info"><span>Margem Líquida</span><strong id="an-margem">—</strong></div>
-                    <div class="stat-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
-                </div>
-            </div>
-
-            <!-- Gráficos -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
-                    <h3 style="margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #1e293b;">Top Produtos por Receita</h3>
-                    <div style="height: 220px; position: relative;"><canvas id="chart-top-produtos"></canvas></div>
-                </div>
-                <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
-                    <h3 style="margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #1e293b;">Funil de Conversão</h3>
-                    <div style="height: 220px; position: relative;"><canvas id="chart-funil"></canvas></div>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-                <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
-                    <h3 style="margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #1e293b;">Vendas por Dia da Semana</h3>
-                    <div style="height: 200px; position: relative;"><canvas id="chart-dias"></canvas></div>
-                </div>
-                <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
-                    <h3 style="margin: 0 0 16px; font-size: 15px; font-weight: 700; color: #1e293b;">Perfil de Clientes</h3>
-                    <div id="clientes-stats" style="display: flex; flex-direction: column; gap: 14px;"></div>
-                </div>
             </div>
         </section>
 
@@ -626,8 +545,6 @@
         </button>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="/static/js/main.js"></script>
     <script src="/static/js/dashboard.js"></script>
 </body>
