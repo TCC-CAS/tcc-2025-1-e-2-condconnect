@@ -12,13 +12,8 @@
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <style>
         .stat-tip {
-            display: inline-block;
-            width: 13px; height: 13px; line-height: 13px;
-            border-radius: 50%; text-align: center;
-            background: #cbd5e1; color: white;
-            font-size: 9px; font-weight: 800; font-style: italic; font-family: Georgia, serif;
             cursor: help; vertical-align: middle; margin-left: 4px;
-            flex-shrink: 0; user-select: none; box-sizing: content-box;
+            flex-shrink: 0; user-select: none; display: inline-block;
         }
         #dash-tooltip {
             position: fixed; z-index: 9999; pointer-events: none;
@@ -368,7 +363,7 @@
         <section class="stats-grid">
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Produtos Anunciados <span class="stat-tip" data-tip="<strong>O que é:</strong> Total de anúncios publicados por você.<br><strong>Como é calculado:</strong><ul><li>COUNT de produtos vinculados ao seu usuário</li><li>Inclui todos os status (ativo, vendido, inativo)</li></ul>">i</span></span>
+                    <span>Produtos Anunciados <svg class="stat-tip" data-tip="<strong>O que é:</strong> Total de anúncios publicados por você.<br><strong>Como é calculado:</strong><ul><li>COUNT de produtos vinculados ao seu usuário</li><li>Inclui todos os status (ativo, vendido, inativo)</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></span>
                     <strong id="stat-produtos">—</strong>
                 </div>
                 <div class="stat-icon blue">
@@ -380,7 +375,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Pedidos Ativos <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos em andamento como comprador.<br><strong>Como é calculado:</strong><ul><li>Pedidos com status aguardando, confirmado ou enviado</li><li>Exclui entregues e cancelados</li></ul>">i</span></span>
+                    <span>Pedidos Ativos <svg class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos em andamento como comprador.<br><strong>Como é calculado:</strong><ul><li>Pedidos com status aguardando, confirmado ou enviado</li><li>Exclui entregues e cancelados</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></span>
                     <strong id="stat-pedidos">—</strong>
                 </div>
                 <div class="stat-icon orange">
@@ -392,7 +387,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Vendas Realizadas <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos finalizados onde você é o vendedor.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Apenas pedidos onde você é o vendedor</li></ul>">i</span></span>
+                    <span>Vendas Realizadas <svg class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos finalizados onde você é o vendedor.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Apenas pedidos onde você é o vendedor</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></span>
                     <strong id="stat-vendas">—</strong>
                 </div>
                 <div class="stat-icon green">
@@ -404,7 +399,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Favoritos <span class="stat-tip" data-tip="<strong>O que é:</strong> Seus produtos salvos por outros usuários.<br><strong>Como é calculado:</strong><ul><li>COUNT de favoritos vinculados aos seus produtos</li><li>Contagem acumulada de todos os períodos</li></ul>">i</span></span>
+                    <span>Favoritos <svg class="stat-tip" data-tip="<strong>O que é:</strong> Seus produtos salvos por outros usuários.<br><strong>Como é calculado:</strong><ul><li>COUNT de favoritos vinculados aos seus produtos</li><li>Contagem acumulada de todos os períodos</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></span>
                     <strong id="stat-favoritos">—</strong>
                 </div>
                 <div class="stat-icon purple">
@@ -419,7 +414,7 @@
         <section style="margin-bottom: 28px;">
             <div class="stat-card" style="max-width: 280px;">
                 <div class="stat-info">
-                    <span>Faturamento Total <span class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta acumulada de todas as vendas.<br><strong>Como é calculado:</strong><ul><li>SUM do valor de todos os pedidos entregues</li><li>Sem dedução de taxas ou custos</li><li>Todo o histórico da conta</li></ul>">i</span></span>
+                    <span>Faturamento Total <svg class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta acumulada de todas as vendas.<br><strong>Como é calculado:</strong><ul><li>SUM do valor de todos os pedidos entregues</li><li>Sem dedução de taxas ou custos</li><li>Todo o histórico da conta</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></span>
                     <strong id="stat-faturamento">—</strong>
                 </div>
                 <div class="stat-icon green">
@@ -468,31 +463,31 @@
             <!-- Métricas financeiras -->
             <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Faturamento <span class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta do período.<br><strong>Como é calculado:</strong><ul><li>SUM do valor dos pedidos entregues</li><li>Filtrado pelo período selecionado</li><li>Sem dedução de taxas</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Faturamento <svg class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta do período.<br><strong>Como é calculado:</strong><ul><li>SUM do valor dos pedidos entregues</li><li>Filtrado pelo período selecionado</li><li>Sem dedução de taxas</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-faturamento">—</div>
                 </div>
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket Médio <span class="stat-tip" data-tip="<strong>O que é:</strong> Valor médio por pedido no período.<br><strong>Como é calculado:</strong><ul><li>Faturamento ÷ número de pedidos entregues</li><li>Reflete o preço médio praticado</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket Médio <svg class="stat-tip" data-tip="<strong>O que é:</strong> Valor médio por pedido no período.<br><strong>Como é calculado:</strong><ul><li>Faturamento ÷ número de pedidos entregues</li><li>Reflete o preço médio praticado</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-ticket">—</div>
                 </div>
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:100px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pedidos <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos entregues no período.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Filtrado pelo período selecionado</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pedidos <svg class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos entregues no período.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Filtrado pelo período selecionado</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-pedidos">—</div>
                 </div>
                 <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:150px;flex:1;">
-                    <div style="font-size:11px;color:#c2410c;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Taxa da Plataforma (5%) <span class="stat-tip" data-tip="<strong>O que é:</strong> Custo do serviço da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,05</li><li>Deduzida automaticamente da receita</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#c2410c;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Taxa da Plataforma (5%) <svg class="stat-tip" data-tip="<strong>O que é:</strong> Custo do serviço da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,05</li><li>Deduzida automaticamente da receita</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#c2410c;" id="an-taxa-plat">—</div>
                 </div>
                 <div style="background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:140px;flex:1;">
-                    <div style="font-size:11px;color:#0f766e;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Receita Líquida <span class="stat-tip" data-tip="<strong>O que é:</strong> O que fica após a taxa da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,95</li><li>95% do faturamento bruto</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#0f766e;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Receita Líquida <svg class="stat-tip" data-tip="<strong>O que é:</strong> O que fica após a taxa da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,95</li><li>95% do faturamento bruto</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#0f766e;" id="an-receita-liq">—</div>
                 </div>
                 <div id="an-lucro-card" style="display:none;background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Lucro Estimado <span class="stat-tip" data-tip="<strong>O que é:</strong> Ganho real após custos e taxa.<br><strong>Como é calculado:</strong><ul><li>Receita líquida − (custo × unidades vendidas)</li><li>Só aparece se você cadastrou custo nos produtos</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Lucro Estimado <svg class="stat-tip" data-tip="<strong>O que é:</strong> Ganho real após custos e taxa.<br><strong>Como é calculado:</strong><ul><li>Receita líquida − (custo × unidades vendidas)</li><li>Só aparece se você cadastrou custo nos produtos</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-lucro">—</div>
                 </div>
                 <div id="an-margem-card" style="display:none;background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:120px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Margem de Lucro <span class="stat-tip" data-tip="<strong>O que é:</strong> Percentual de retorno sobre a receita.<br><strong>Como é calculado:</strong><ul><li>(Lucro estimado ÷ Receita líquida) × 100</li><li>Após dedução de custos e taxa da plataforma</li></ul>">i</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Margem de Lucro <svg class="stat-tip" data-tip="<strong>O que é:</strong> Percentual de retorno sobre a receita.<br><strong>Como é calculado:</strong><ul><li>(Lucro estimado ÷ Receita líquida) × 100</li><li>Após dedução de custos e taxa da plataforma</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-margem">—</div>
                 </div>
             </div>
@@ -502,14 +497,14 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Produtos mais vendidos</h3>
-                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Top 5 produtos por faturamento.<br><strong>Como é calculado:</strong><ul><li>Preço × unidades vendidas por produto</li><li>Apenas pedidos entregues</li><li>Ordenado do maior para o menor</li></ul>">i</span>
+                        <svg class="stat-tip" data-tip="<strong>O que é:</strong> Top 5 produtos por faturamento.<br><strong>Como é calculado:</strong><ul><li>Preço × unidades vendidas por produto</li><li>Apenas pedidos entregues</li><li>Ordenado do maior para o menor</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg>
                     </div>
                     <div style="height: 220px; position: relative;"><canvas id="chart-top-produtos"></canvas></div>
                 </div>
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Funil de conversão</h3>
-                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Conversão do catálogo em vendas.<br><strong>Como é calculado:</strong><ul><li>Visualizações: acessos às páginas dos produtos</li><li>Favoritos: vezes que seus produtos foram salvos</li><li>Pedidos iniciados: compras realizadas</li><li>Pedidos entregues: compras concluídas</li></ul>">i</span>
+                        <svg class="stat-tip" data-tip="<strong>O que é:</strong> Conversão do catálogo em vendas.<br><strong>Como é calculado:</strong><ul><li>Visualizações: acessos às páginas dos produtos</li><li>Favoritos: vezes que seus produtos foram salvos</li><li>Pedidos iniciados: compras realizadas</li><li>Pedidos entregues: compras concluídas</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg>
                     </div>
                     <div style="height: 220px; position: relative;"><canvas id="chart-funil"></canvas></div>
                 </div>
@@ -518,7 +513,7 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Pico de vendas por dia</h3>
-                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Seus melhores dias para vender.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos entregues por dia da semana</li><li>Agrupado por DAYOFWEEK() do MySQL</li><li>Identifica picos para planejar anúncios</li></ul>">i</span>
+                        <svg class="stat-tip" data-tip="<strong>O que é:</strong> Seus melhores dias para vender.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos entregues por dia da semana</li><li>Agrupado por DAYOFWEEK() do MySQL</li><li>Identifica picos para planejar anúncios</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg>
                     </div>
                     <p style="font-size:12px;color:#94a3b8;margin:0 0 14px;">Pedidos entregues por dia da semana</p>
                     <div style="height: 200px; position: relative;"><canvas id="chart-dias"></canvas></div>
@@ -526,7 +521,7 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Comportamento de clientes</h3>
-                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Perfil dos seus compradores.<br><strong>Como é calculado:</strong><ul><li>Novos: 1ª compra com você no período</li><li>Recorrentes: já compraram antes do período</li><li>LTV médio: faturamento total ÷ compradores únicos</li></ul>">i</span>
+                        <svg class="stat-tip" data-tip="<strong>O que é:</strong> Perfil dos seus compradores.<br><strong>Como é calculado:</strong><ul><li>Novos: 1ª compra com você no período</li><li>Recorrentes: já compraram antes do período</li><li>LTV médio: faturamento total ÷ compradores únicos</li></ul>" width="14" height="14" viewBox="0 0 14 14" style="cursor:help;vertical-align:middle;margin-left:4px;flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="#cbd5e1"/><text x="7" y="10.5" text-anchor="middle" fill="#475569" font-size="8" font-style="italic" font-family="Georgia,serif">i</text></svg>
                     </div>
                     <div id="clientes-stats" style="display: flex; flex-direction: column; gap: 14px;"></div>
                 </div>
