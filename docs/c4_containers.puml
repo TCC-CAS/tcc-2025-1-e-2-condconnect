@@ -1,0 +1,33 @@
+@startuml C4_Containers_CondConnect
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+title C4 — Diagrama de Contêineres (CondConnect)
+
+Person(morador, "Morador", "Usa o navegador para cadastrar,\nanunciar, comprar e avaliar produtos.")
+Person(admin, "Administrador", "Gerencia usuários, anúncios\ne a plataforma.")
+
+System_Boundary(s, "CondConnect [system]") {
+    Container(apache, "Apache HTTP Server", "mod_proxy / Linux", "Proxy reverso. Serve arquivos\nestáticos e encaminha requisições\nao Gunicorn.")
+    Container(frontend, "Frontend (Páginas Web Estáticas)", "HTML5 / CSS3 / Vanilla JavaScript", "Interface web responsiva para moradores\nde condomínios. Sem framework JS.\nComunica com a API via fetch (HTTPS/JSON).")
+    Container(gunicorn, "Gunicorn", "WSGI Server / Python", "Servidor WSGI que executa a\naplicação Flask em produção.")
+    Container(api, "API Backend (REST)", "Python / Flask", "Lógica de negócio: autenticação por sessão\ncom 2FA obrigatório, produtos, pedidos,\npropostas, avaliações, mensageria (chat),\nnotificações, filtro automático de palavras\nproibidas, auto-denúncia, analytics de vendas\ne upload de imagens.")
+    ContainerDb(db, "Banco de Dados MySQL", "MySQL", "Armazena usuários, produtos, pedidos,\navaliações, propostas, favoritos,\nnotificações, relatórios e configurações.\nServidor externo (thyagoquintas.com.br),\nbanco engenharia_16.")
+    Container(storage, "Armazenamento Local de Imagens", "Sistema de Arquivos", "Sistema de arquivos do servidor AWS Lightsail.\nDiretório /static/assets/uploads/.\nNomes únicos gerados via uuid.")
+}
+
+System_Ext(gmail, "Gmail SMTP", "Serviço de envio de e-mails transacionais:\ncódigo 2FA, redefinição de senha,\nnotificações de pedidos e moderação.")
+System_Ext(rekognition, "AWS Rekognition", "Moderação automática de imagens.\nAnalisa conteúdo inadequado no upload.")
+
+Rel(morador, apache, "Acessa via HTTPS")
+Rel(admin, apache, "Acessa via HTTPS")
+Rel(apache, frontend, "Serve HTML/CSS/JS")
+Rel(frontend, api, "Consome API REST (HTTPS/JSON)\nvia fetch API")
+Rel(apache, gunicorn, "Encaminha requisições /backend/api")
+Rel(gunicorn, api, "Executa aplicação")
+Rel(api, db, "Lê e grava dados via PyMySQL (SQL)")
+Rel(api, storage, "Faz upload e download de imagens")
+Rel(api, gmail, "Envia e-mails via SMTP SSL")
+Rel(api, rekognition, "Modera imagens no upload")
+
+@enduml

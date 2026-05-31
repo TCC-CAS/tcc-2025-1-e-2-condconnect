@@ -1,0 +1,48 @@
+@startuml C4_Nivel4_Backend_CondConnect
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+title C4 — Nível 4: Diagrama de Código (Backend CondConnect)
+
+Container_Boundary(api, "API Backend [container] — API Backend (Python / Flask) — app.py\n[Arquivo único com todas as rotas REST — sem camada de serviço separada, sem ORM, sem classes de modelo]") {
+
+    ' ── AUTENTICAÇÃO ────────────────────────────────────────────────────────
+    Component(rotas_auth, "Rotas de Autenticação", "rotas Flask", "/auth/login, /auth/cadastro, /auth/logout,\n/auth/logout-all, /auth/verificar-2fa,\n/auth/reenviar-2fa, /auth/esqueci-senha,\n/auth/redefinir-senha.\nRecebe credenciais, registra usuário, gerencia\n2FA (código 6 dígitos, 10 min, 3 tentativas)\ne recuperação de senha.")
+    Component(session_ctrl, "Controle de Sessão", "Flask session nativa", "Sessão server-side via cookie seguro.\nsession['user_id'] armazenado no cookie.\nFunção require_auth() protege rotas privadas.\nSem Flask-Login ou decorators externos.")
+    Component(hashing, "Hashing de Senha", "bcrypt", "Armazena senhas com bcrypt.hashpw\n(rounds=10). Verifica com bcrypt.checkpw.\nCompatibilidade $2y$ → $2b$ para hashes\nantigos. Sem tokens JWT ou OAuth2 externo.")
+
+    ' ── USUÁRIOS E PRODUTOS ─────────────────────────────────────────────────
+    Component(rotas_users, "Rotas de Usuários", "rotas Flask", "/me, /usuarios/perfil, PUT /me.\nCRUD de perfil, foto de perfil, chave PIX\ne controle de papel (membro / admin).\nInclui /me/analytics, /me/export,\n/me/periodos, /me/insumos/<id>.")
+    Component(rotas_products, "Rotas de Produtos", "rotas Flask", "GET/POST /produtos,\nGET/PUT/DELETE /produtos/item.\nListagem com filtros por categoria, condição\ne preço. Subquery SQL para rating médio e\ntotal de avaliações por produto.")
+    Component(upload, "Upload de Imagens", "lógica inline", "POST /upload/imagem — Werkzeug + uuid +\nfilesystem local. Recebe imagem, modera via\nAWS Rekognition (70% confiança), gera nome\núnico com uuid, salva em /static/assets/uploads/.\nMúltiplas fotos via tabela imagens_produto.")
+
+    ' ── SEGURANÇA DE CONTEÚDO ───────────────────────────────────────────────
+    Component(content_mod, "Moderação de Conteúdo", "lógica inline / funções utilitárias", "verificar_toxicidade(): lista de palavras\nproibidas com normalização leetspeak/acentos.\ncontem_dado_sensivel(): regex para e-mail,\nCPF, telefone e PIX em mensagens.\nauto_denunciar(): INSERT em relatorios quando\nconteúdo proibido é bloqueado.\nUsada em /conversas/mensagens e /avaliacoes.")
+
+    ' ── NEGOCIAÇÃO E PEDIDOS ────────────────────────────────────────────────
+    Component(rotas_proposals, "Rotas de Propostas", "rotas Flask", "GET/POST /propostas, PUT /propostas.\nComprador envia proposta com quantidade\ne valor (mín. 70%, máx 3 pendentes).\nVendedor aceita ou recusa. Proposta aceita\nadicionada ao carrinho com preco_negociado.")
+    Component(rotas_orders, "Rotas de Carrinho e Pedidos", "rotas Flask", "POST /carrinho, GET/POST /pedidos,\nPUT /pedidos/status.\nAdiciona ao carrinho, finaliza compra e registra\npedido. Vendedor atualiza status\n(aguardando → entregue via código de 4 dígitos).\nSem integração com gateway de pagamento.")
+    Component(rotas_chat, "Rotas de Mensageria (Chat)", "rotas Flask", "GET/POST/DELETE /conversas,\nGET/POST /conversas/mensagens.\nConversas entre dois usuários vinculadas\na produto. Bloqueio de dados pessoais e\npalavras proibidas. Denúncia automática\nquando conteúdo proibido é bloqueado.")
+    Component(calc_sales, "Cálculo de Vendas", "lógica inline", "SQL — COUNT pedidos WHERE status = 'entregue'.\nTotal de unidades vendidas calculado por query\nSQL na tabela pedidos. Exibido na página de\ndetalhes do produto.")
+
+    ' ── AVALIAÇÕES, NOTIF. E FAVORITOS ──────────────────────────────────────
+    Component(rotas_reviews, "Rotas de Avaliações", "rotas Flask", "POST /avaliacoes, GET /avaliacoes.\nComprador avalia produto após entrega\n(nota 1–5 + comentário). Verificação de\ntoxicidade antes de salvar. Auto-denúncia\nse conteúdo proibido detectado. Média por\nproduto via AVG em subquery SQL.")
+    Component(rotas_notif, "Rotas de Notificações", "rotas Flask", "GET/PUT /notificacoes.\nNotificações persistidas em tabela notificacoes\n(sem fila assíncrona, sem Celery/Redis).\nRespondem às preferências do usuário\n(notif_email / notif_sms). Badge com contador\nde não lidas. Marcação em lote como lidas.")
+    Component(rotas_favs, "Rotas de Favoritos", "rotas Flask", "GET/POST/DELETE /favoritos.\nAdiciona e remove produtos dos favoritos do\nusuário autenticado. Sincronizado com\nlocalStorage no frontend.")
+    Component(rotas_reports, "Rotas de Denúncias", "rotas Flask", "POST /relatorios, POST /denuncias/avaliacao,\nPOST /denuncias/produto.\nDenúncias manuais de usuários, avaliações\ne produtos. Denúncias automáticas geradas\npelo filtro de conteúdo.")
+
+    ' ── ANALYTICS ───────────────────────────────────────────────────────────
+    Component(rotas_analytics, "Rotas de Analytics e Relatórios", "rotas Flask", "GET /me/analytics (filtros: dias, produto,\ncategoria, anos, meses). GET /me/export\n(tabela fato com lucro e margem).\nGET /me/periodos, GET /me/insumos/<id>.\nCálculo de faturamento, taxa 5%, receita\nlíquida, lucro estimado e funil de conversão.")
+
+    ' ── ADMINISTRAÇÃO ───────────────────────────────────────────────────────
+    Component(rotas_admin, "Rotas Administrativas", "rotas Flask", "/admin/usuarios, /admin/produtos,\n/admin/denuncias, /admin/relatorios,\n/admin/stats, /admin/pedidos.\nAcessíveis apenas para usuarios.papel = 'admin'.\nGestão de usuários, moderação de anúncios,\nresolução de denúncias e visão geral de pedidos.")
+    Component(access_ctrl, "Controle de Acesso por Papel", "lógica inline", "require_admin(): verifica o campo papel\nna tabela usuarios. Retorna 403 se não for\nadmin. Sem Flask-Principal ou similar.")
+    Component(panel_stats, "Estatísticas do Painel", "lógica inline", "SQL — COUNT / SUM por tabela.\nContagem de usuários, produtos, pedidos,\ndenúncias pendentes (avaliações + relatorios)\ne receita total via queries SQL diretas.\nExibidos nos cards do dashboard admin.")
+
+    ' ── INFRAESTRUTURA COMPARTILHADA ────────────────────────────────────────
+    Component(db_conn, "Conexão com Banco de Dados", "infraestrutura", "PyMySQL / DictCursor / autocommit=True.\nHelper get_db() retorna conexão PyMySQL.\nQueries SQL puras via cursor.execute().\nResultados como dicionários (DictCursor).\nSem ORM, sem migrações automáticas.")
+    Component(session_mgmt, "Gerenciamento de Sessão", "infraestrutura", "Flask sessions nativas via cookie seguro.\nrequire_auth() verifica session['user_id']\ne session_version. Sem Flask-Login,\nsem user_loader, sem @login_required.\nSem JWT ou OAuth2.")
+    Component(cors_config, "CORS e Configurações", "infraestrutura", "Flask-CORS / variáveis de ambiente.\nCORS habilitado para comunicação\nfrontend → backend. Credenciais do banco\ne secret key configuradas via variáveis\nde ambiente no servidor.")
+}
+
+@enduml

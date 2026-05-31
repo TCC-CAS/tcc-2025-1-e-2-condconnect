@@ -1,0 +1,28 @@
+@startuml C4_Contexto_CondConnect
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+title C4 Model — Diagrama de Contexto do Sistema CondConnect
+
+Person(morador, "Morador", "Usuário do condomínio que compra,\nanuncia e avalia produtos.")
+Person(admin, "Administrador", "Responsável pela moderação\nde anúncios e gestão do sistema.")
+
+System_Boundary(s, "CondConnect Marketplace [system]") {
+    System(condconnect, "CondConnect", "Marketplace exclusivo para\ncondomínios residenciais.\nBackend Python/Flask +\nFrontend HTML/CSS/JS.")
+}
+
+System_Ext(mysql, "Banco de Dados Relacional (MySQL)", "Armazena dados de usuários,\nprodutos, pedidos, avaliações,\nnotificações e relatórios.\nHospedado em servidor externo.")
+System_Ext(lightsail, "AWS Lightsail (Servidor Linux/Ubuntu)", "Infraestrutura de hospedagem.\nExecuta Gunicorn + Apache\ncomo proxy reverso. Deploy via Git.")
+System_Ext(storage, "Armazenamento Local de Imagens", "Sistema de arquivos do servidor\npara fotos dos produtos.\nDiretório /static/assets/uploads/.")
+System_Ext(gmail, "Gmail SMTP", "Serviço de envio de e-mails\ntransacionais: código 2FA,\nredefinição de senha,\nnotificações de pedidos,\nsuspensão e banimento.")
+System_Ext(rekognition, "AWS Rekognition", "Serviço de moderação\nautomática de imagens.\nAnalisa conteúdo inadequado\nno upload de fotos.")
+
+Rel(morador, condconnect, "Acessa via navegador\nou dispositivo móvel")
+Rel(admin, condconnect, "Acessa painel\nadministrativo da plataforma")
+Rel(condconnect, mysql, "Armazena e consulta\ndados via PyMySQL (SQL)")
+Rel(condconnect, lightsail, "Hospedado e executado\nna instância Linux")
+Rel(condconnect, storage, "Grava e serve imagens\ndos produtos (upload)")
+Rel(condconnect, gmail, "Envia e-mails transacionais\nvia SMTP SSL (porta 465)")
+Rel(condconnect, rekognition, "Modera imagens enviadas\npelos usuários (upload)")
+
+@enduml

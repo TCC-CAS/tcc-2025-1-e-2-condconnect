@@ -1,0 +1,35 @@
+@startuml C4_Components_Backend_CondConnect
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+title Diagrama de Componentes — Backend CondConnect
+
+Container_Boundary(api, "API Backend [container]") {
+
+    ' ── INFRAESTRUTURA DE DADOS ─────────────────────────────────────────────
+    Component(db_access, "Camada de Acesso a Dados", "PyMySQL / DictCursor / SQL puro — sem ORM", "Executa queries SQL diretamente via PyMySQL\ncom DictCursor (resultados como dicionário).\nConexão configurada com autocommit=True.\nBanco MySQL externo em thyagoquintas.com.br,\nbanco engenharia_16.")
+
+    ' ── SEGURANÇA E USUÁRIOS ────────────────────────────────────────────────
+    Component(auth, "Autenticação e Sessões", "Flask / bcrypt / Sessões Nativas", "Login, logout e 2FA obrigatório (código 6 dígitos\nvia e-mail, 10 min, 3 tentativas). Hashing com\nbcrypt (rounds=10). Sessões server-side via\ncookies seguros (Flask session). reCAPTCHA no\nlogin e cadastro. Versionamento de sessão para\nlogout-all. Rotas: /auth/login, /auth/verificar-2fa,\n/auth/reenviar-2fa, /auth/logout, /auth/logout-all,\n/auth/register, /auth/esqueci-senha,\n/auth/redefinir-senha.")
+    Component(users, "Gerenciamento de Usuários", "Módulo de Serviço", "CRUD de usuários, edição de perfil, foto de perfil,\nchave PIX e controle de papel (membro/admin).\nRotas: /me, /usuarios/perfil.")
+    Component(moderation, "Moderação de Conteúdo", "Módulo de Segurança", "Verificação de toxicidade com lista de palavras\nproibidas e normalização de texto (leetspeak,\nacentos, símbolos). Detecção de dados pessoais\nem mensagens (e-mail, CPF, telefone, PIX).\nModeração de imagens via AWS Rekognition\n(70% de confiança). Auto-denúncia gerada\nautomaticamente quando conteúdo proibido é\nbloqueado. Funções: verificar_toxicidade,\ncontem_dado_sensivel, auto_denunciar,\nmoderar_imagem.")
+
+    ' ── MARKETPLACE ─────────────────────────────────────────────────────────
+    Component(products, "Gerenciamento de Produtos", "Módulo de Serviço", "Cadastro, edição, remoção e listagem de\nprodutos. Filtros por categoria, condição e\nfaixa de preço. Status: pendente → disponivel\n| rejeitado. Subquery SQL para rating médio\ne contagem de avaliações por produto.")
+    Component(images, "Upload de Imagens", "Werkzeug / uuid / Sistema de Arquivos Local", "Recebe imagens via multipart/form-data, modera\nvia AWS Rekognition, gera nome único com uuid\ne salva em /static/assets/uploads/. Suporte a\nmúltiplas fotos por produto (tabela imagens_produto).")
+    Component(favorites, "Favoritos", "Módulo de Serviço", "Adicionar e remover produtos dos favoritos do\nusuário. Sincronizado com localStorage no\nfrontend. Rotas: GET/POST/DELETE /favoritos.")
+    Component(proposals, "Sistema de Propostas", "Módulo de Serviço", "Comprador envia proposta com quantidade e valor\n(mínimo 70% do preço original, máx 3 pendentes).\nVendedor aceita ou recusa. Preço negociado\nregistrado em itens_carrinho.preco_negociado.\nTabela propostas.")
+    Component(chat, "Mensageria (Chat)", "Módulo de Serviço", "Conversas entre dois usuários vinculadas a um\nproduto. Mensagens persistidas no banco.\nBloqueio automático de dados pessoais e\npalavras proibidas antes de salvar. Denúncia\nautomática em caso de conteúdo bloqueado.\nRotas: GET/POST/DELETE /conversas,\nGET/POST /conversas/mensagens.")
+
+    ' ── PEDIDOS E PÓS-VENDA ─────────────────────────────────────────────────
+    Component(orders, "Gestão de Pedidos e Carrinho", "Módulo de Serviço", "Adição ao carrinho (tabela itens_carrinho),\nfinalização de compra, histórico de pedidos e\natualização de status (aguardando → entregue).\nCódigo de entrega de 4 dígitos para confirmação\npresencial. Total de unidades vendidas via\nCOUNT em pedidos.")
+    Component(reviews, "Avaliações", "Módulo de Serviço", "Comprador avalia produto após entrega\n(nota 1–5 + comentário). Verificação de\ntoxicidade antes de salvar. Média calculada\npor produto via subquery SQL. Distinção entre\nrating do produto e rating geral do vendedor.")
+    Component(notifications, "Notificações Internas", "Módulo de Serviço / tabela MySQL", "Notificações persistidas em tabela notificacoes\nno banco. Respeitam preferências do usuário\n(notif_email para mensagens, notif_sms para\npedidos). Badge com contador de não lidas.\nRotas: GET/PUT /notificacoes.")
+    Component(analytics, "Analytics e Relatórios", "Módulo de Serviço", "Dashboard de vendas com faturamento, ticket\nmédio, funil de conversão, top produtos e\nsazonalidade. Filtros por produto, categoria,\nano e mês. Taxa de plataforma 5% informativa.\nExportação de tabela fato para Excel.\nRotas: /me/analytics, /me/export,\n/me/periodos, /me/insumos/<id>.")
+
+    ' ── ADMINISTRAÇÃO ───────────────────────────────────────────────────────
+    Component(admin_mod, "Administração e Moderação", "Módulo de Serviço", "Moderação de produtos (aprovar/rejeitar com\nmotivo). Gerenciamento de usuários (suspender,\nbanir, controle de CPF banido). Resolução de\ndenúncias de avaliações e de usuários/chat\n(incluindo automáticas). Estatísticas globais.\nRotas: /admin/produtos, /admin/usuarios,\n/admin/denuncias, /admin/relatorios, /admin/stats.")
+    Component(reports, "Denúncias", "Módulo de Serviço", "Denúncias manuais de produtos, avaliações e\nusuários. Denúncias automáticas geradas pelo\nfiltro de conteúdo. Rotas: POST /relatorios,\nPOST /denuncias/avaliacao,\nPOST /denuncias/produto.")
+}
+
+@enduml
