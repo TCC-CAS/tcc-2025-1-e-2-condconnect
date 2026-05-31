@@ -18,7 +18,8 @@
         `).join('');
 
         try {
-            const favorites = await CondConnect.api('/favoritos');
+            const data = await CondConnect.api('/favoritos');
+            const favorites = data.favoritos || [];
 
             if (favorites.length === 0) {
                 favoritesGrid.style.display = 'none';
