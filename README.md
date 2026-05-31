@@ -1,54 +1,131 @@
 # CondConnect
 
-Marketplace digital exclusivo para moradores de condomínios residenciais. Permite a compra e venda de produtos entre vizinhos com segurança, moderação automática de conteúdo e painel analítico de vendas.
+> Marketplace digital exclusivo para moradores de condomínios residenciais.
 
-> Trabalho de Conclusão de Curso — Sistemas de Informação · Centro Universitário Senac · 2025
+O **CondConnect** permite a compra e venda de produtos entre vizinhos do mesmo condomínio, com autenticação em dois fatores, moderação automática de conteúdo por inteligência artificial, sistema de propostas de negociação, confirmação de entrega presencial e painel analítico de vendas com exportação em Excel.
 
----
-
-## Acesso
+Desenvolvido como Trabalho de Conclusão de Curso — Sistemas de Informação · Centro Universitário Senac · 2025.
 
 **Produção:** https://condconnect.duckdns.org
 
-**Admin padrão**
-- E-mail: `admin@condconnect.com`
-- Senha: `admin123`
-
 ---
 
-## Stack
+## Tecnologias
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0.3-000000?style=flat&logo=flask&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS_Lightsail-FF9900?style=flat&logo=amazonaws&logoColor=white)
+![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=flat&logo=gunicorn&logoColor=white)
+![Apache](https://img.shields.io/badge/Apache-D22128?style=flat&logo=apache&logoColor=white)
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | HTML5, CSS3, JavaScript ES6+ (sem frameworks) |
+| Frontend | HTML5, CSS3, JavaScript ES6+ (sem frameworks externos) |
 | Backend | Python 3 + Flask (API REST) |
+| Banco de dados | MySQL 8.0 |
 | Servidor de aplicação | Gunicorn (WSGI) |
 | Proxy reverso | Apache HTTP Server |
-| Banco de dados | MySQL (host externo) |
 | Hospedagem | AWS Lightsail (Ubuntu) |
 | Moderação de imagens | AWS Rekognition |
-| E-mail | Gmail SMTP (porta 465) |
-| DNS | DuckDNS |
-| SSL | Let's Encrypt / Certbot |
+| E-mail transacional | Gmail SMTP (porta 465 SSL) |
+| DNS dinâmico | DuckDNS |
+| SSL/HTTPS | Let's Encrypt / Certbot |
 
 ---
 
-## Funcionalidades principais
+## Pré-requisitos
 
-- Autenticação obrigatória em dois fatores (2FA) com código por e-mail
-- Marketplace isolado por condomínio — cada morador vê apenas produtos de vizinhos
-- Cadastro, edição e remoção de anúncios com fotos e composição de custos
-- Sistema de propostas de negociação (mínimo 70% do preço anunciado)
-- Carrinho de compras e finalização de pedidos
-- Confirmação de entrega presencial por código de 4 dígitos
-- Chat interno com bloqueio automático de dados pessoais e palavras proibidas
-- Avaliações de vendedores com detecção de toxicidade
-- Denúncias manuais e automáticas com painel de moderação para admin
-- Dashboard analítico de vendas com gráficos e filtros por período
-- Relatório completo exportável em Excel (8 abas)
-- Painel administrativo: aprovar/rejeitar produtos, suspender/banir usuários
-- Recursos de acessibilidade: alto contraste, fonte grande, leitura em voz alta (WCAG)
-- Conformidade com a LGPD
+- Python 3.10 ou superior
+- MySQL 8.0 (local ou remoto)
+- Git
+
+---
+
+## Instalação (local)
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/TCC-CAS/tcc-2025-1-e-2-condconnect.git
+cd tcc-2025-1-e-2-condconnect
+
+# 2. Criar e ativar o ambiente virtual
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Linux/Mac
+
+# 3. Instalar as dependências
+pip install -r backend/python/requirements.txt
+
+# 4. Criar o banco de dados
+mysql -u root -p < backend/db_setup.sql
+
+# 5. Configurar variáveis de ambiente
+# Crie backend/python/.env com o conteúdo abaixo:
+```
+
+```env
+DB_HOST=localhost
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+DB_NAME=condconnect
+FLASK_SECRET_KEY=sua_chave_secreta
+
+# Opcionais (moderação de imagens via AWS Rekognition)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+```
+
+```bash
+# 6. Iniciar o servidor
+cd backend/python
+python app.py
+```
+
+A API ficará disponível em `http://localhost:5000`.
+Abra qualquer página da pasta `Templates/` no navegador para acessar o frontend.
+
+**Credenciais do administrador padrão:**
+- E-mail: `admin@condconnect.com`
+- Senha: `admin123`
+
+### Deploy em produção (servidor)
+
+```bash
+cd /var/www/html/condconnect
+git pull origin master
+
+# Necessário apenas quando app.py for alterado
+sudo systemctl restart condconnect-flask
+```
+
+> O script de configuração inicial do servidor está em `backend/python/setup_server.sh`.
+
+---
+
+## Exemplos de uso
+
+### Cadastro e login com 2FA
+O morador se cadastra informando nome, e-mail, senha com checklist de força em tempo real, CPF, telefone e identificação no condomínio (bloco e apartamento). Em cada login, um código de 6 dígitos é enviado ao e-mail com validade de 10 minutos.
+
+### Publicar um anúncio
+O vendedor acessa **Meus Produtos > Novo Anúncio**, preenche título, descrição, preço, categoria, condição e faz upload de fotos. O produto entra como **pendente** e só aparece no marketplace após aprovação do administrador.
+
+### Negociar com proposta
+O comprador pode enviar uma proposta de preço (mínimo 70% do valor anunciado). Se aceita pelo vendedor, o produto é adicionado automaticamente ao carrinho com o preço negociado travado.
+
+### Confirmar entrega
+Ao entregar o produto, o vendedor informa ao comprador um código de 4 dígitos gerado pelo sistema. O comprador valida o código no app, confirmando o recebimento e concluindo a transação.
+
+### Dashboard analítico
+O vendedor acessa o painel com faturamento, ticket médio, funil de conversão, top produtos e evolução mensal — filtráveis por ano e mês. Os dados são exportáveis em Excel com 8 abas detalhadas.
+
+### Painel administrativo
+O administrador acessa `/Templates/admin.html` para aprovar ou rejeitar anúncios, suspender ou banir usuários (com bloqueio de CPF) e resolver denúncias, incluindo as geradas automaticamente pelo filtro de palavras proibidas.
 
 ---
 
@@ -56,151 +133,56 @@ Marketplace digital exclusivo para moradores de condomínios residenciais. Permi
 
 ```
 /
-├── Templates/          # Páginas HTML (frontend)
+├── Templates/               # Páginas HTML (frontend)
 ├── static/
-│   ├── css/            # Estilos globais e por página
-│   ├── js/             # Scripts por página
-│   └── assets/         # Imagens estáticas e uploads
+│   ├── css/                 # Estilos globais e por página
+│   ├── js/                  # Scripts por página
+│   └── assets/              # Imagens e uploads
 ├── backend/
+│   ├── db_setup.sql         # Schema completo (DROP + CREATE)
+│   ├── db_setup_v2.sql      # Schema incremental (IF NOT EXISTS)
 │   └── python/
-│       ├── app.py           # API Flask (todas as rotas)
+│       ├── app.py           # API Flask — todas as rotas REST
 │       ├── email_helper.py  # Envio de e-mails via SMTP
-│       └── requirements.txt
-├── docs/               # Diagramas C4, DER, modelo físico, casos de uso
-└── tests/              # Testes automatizados e gerador de relatório
+│       ├── requirements.txt
+│       └── setup_server.sh  # Configuração inicial do servidor
+├── docs/                    # Diagramas C4, DER, modelo físico, casos de uso
+└── tests/                   # Testes automatizados
 ```
 
 ---
 
-## Instalação local
+## Contribuindo
 
-### Pré-requisitos
+1. Faça um **fork** do repositório
+2. Crie uma branch para sua feature:
+   ```bash
+   git checkout -b feature/minha-feature
+   ```
+3. Faça commit das alterações:
+   ```bash
+   git commit -m "feat: descrição da feature"
+   ```
+4. Envie para o repositório remoto:
+   ```bash
+   git push origin feature/minha-feature
+   ```
+5. Abra um **Pull Request** descrevendo as mudanças
 
-- Python 3.10+
-- MySQL (local ou remoto)
-- Git
+**Padrão de commits:**
 
-### Passos
-
-```bash
-# 1. Clonar o repositório
-git clone https://github.com/TCC-CAS/tcc-2025-1-e-2-condconnect.git
-cd tcc-2025-1-e-2-condconnect
-
-# 2. Criar e ativar ambiente virtual
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # Linux/Mac
-
-# 3. Instalar dependências
-pip install -r backend/python/requirements.txt
-
-# 4. Configurar variáveis de ambiente
-# Crie um arquivo .env ou exporte as variáveis abaixo
-
-# 5. Executar
-cd backend/python
-python app.py
-```
-
-A API ficará disponível em `http://localhost:5000`.  
-As páginas HTML podem ser abertas diretamente no navegador ou servidas por um servidor estático.
-
----
-
-## Variáveis de ambiente
-
-| Variável | Obrigatória | Descrição |
-|---|---|---|
-| `DB_HOST` | Sim | Host do banco MySQL |
-| `DB_USER` | Sim | Usuário do banco |
-| `DB_PASSWORD` | Sim | Senha do banco |
-| `DB_NAME` | Sim | Nome do banco |
-| `FLASK_SECRET_KEY` | Sim | Chave secreta para sessões Flask |
-| `AWS_ACCESS_KEY_ID` | Não | Credencial AWS (Rekognition) |
-| `AWS_SECRET_ACCESS_KEY` | Não | Credencial AWS (Rekognition) |
-| `AWS_REGION` | Não | Região AWS (padrão: us-east-1) |
-| `PERSPECTIVE_API_KEY` | Não | API Google Perspective (moderação de texto) |
-
----
-
-## Banco de dados
-
-O schema completo está em:
-
-- `backend/db_setup.sql` — criação completa (DROP + CREATE)
-- `backend/db_setup_v2.sql` — criação incremental (IF NOT EXISTS)
-- Migrations automáticas executadas pelo `init_db()` em `app.py` na inicialização
-
----
-
-## Deploy (servidor)
-
-```bash
-# Atualizar código
-cd /var/www/html/condconnect
-git pull origin master
-
-# Reiniciar o Flask (obrigatório apenas quando app.py mudar)
-sudo systemctl restart condconnect-flask
-
-# Verificar status
-sudo systemctl status condconnect-flask
-```
-
----
-
-## Dependências Python
-
-```
-flask==3.0.3
-flask-cors==4.0.1
-PyMySQL==1.1.1
-bcrypt==4.1.3
-Pillow==10.3.0
-gunicorn==22.0.0
-```
-
----
-
-## Diagramas (pasta `/docs`)
-
-| Arquivo | Conteúdo |
+| Prefixo | Uso |
 |---|---|
-| `c4_contexto.puml` | C4 Level 1 — Diagrama de Contexto |
-| `c4_containers.puml` | C4 Level 2 — Diagrama de Contêineres |
-| `c4_components.puml` | C4 Level 3 — Diagrama de Componentes |
-| `c4_codigo.puml` | C4 Level 4 — Diagrama de Código |
-| `der_condconnect.puml` | Diagrama Entidade-Relacionamento (DER) |
-| `modelo_fisico.puml` | Modelo Físico do Banco de Dados |
-| `uc_morador.puml` | Casos de Uso — Morador |
-| `uc_vendedor.puml` | Casos de Uso — Vendedor |
-| `uc_comprador.puml` | Casos de Uso — Comprador |
-| `uc_administrador.puml` | Casos de Uso — Administrador |
-| `swot.puml` | Análise SWOT |
-| `gerar_diagramas.py` | Renderiza todos os `.puml` e gera PNGs automaticamente |
-
-Para gerar todos os diagramas como imagem:
-
-```bash
-pip install Pillow
-cd docs
-python gerar_diagramas.py
-```
-
----
-
-## Testes
-
-```bash
-cd tests
-pytest --tb=short
-python generate_report.py   # gera relatório visual em PNG
-```
+| `feat:` | Nova funcionalidade |
+| `fix:` | Correção de bug |
+| `docs:` | Alteração em documentação |
+| `refactor:` | Refatoração sem mudança de comportamento |
+| `test:` | Adição ou correção de testes |
 
 ---
 
 ## Licença
 
-Projeto acadêmico — Centro Universitário Senac, 2025.  
-Uso restrito a fins educacionais.
+Este projeto foi desenvolvido exclusivamente para fins acadêmicos como Trabalho de Conclusão de Curso no Centro Universitário Senac (2025).
+
+O uso, cópia, modificação e distribuição do código são permitidos apenas para fins educacionais e não comerciais, com obrigatória atribuição de crédito aos autores originais.
