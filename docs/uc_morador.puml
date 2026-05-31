@@ -49,9 +49,27 @@ rectangle "CondConnect — Sistema" {
         (UC10 Favoritar produto) as UC10
     }
 
-    rectangle "Pedidos e Comunicação" {
+    rectangle "Anúncios" {
+        (UC06 Cadastrar produto/serviço) as UC06
+        (UC07 Editar produto) as UC07
+        (UC08 Remover produto) as UC08
+    }
+
+    rectangle "Negociação" {
+        (UC12 Fazer proposta de preço) as UC12
+        (UC13 Responder proposta) as UC13
+    }
+
+    rectangle "Compra e Pedidos" {
+        (UC11 Adicionar ao carrinho) as UC11
+        (UC14 Finalizar compra) as UC14
         (UC15 Acompanhar pedidos) as UC15
+        (UC16 Confirmar entrega) as UC16
+    }
+
+    rectangle "Pós-Venda e Comunicação" {
         (UC17 Enviar mensagem) as UC17
+        (UC18 Avaliar vendedor) as UC18
         (UC19 Denunciar produto ou usuário) as UC19
     }
 
@@ -65,13 +83,25 @@ M --> UC02
 M --> UC03
 M --> UC04
 M --> UC05
+M --> UC06
+M --> UC07
+M --> UC08
 M --> UC09
 M --> UC10
+M --> UC11
+M --> UC12
+M --> UC13
+M --> UC14
 M --> UC15
+M --> UC16
 M --> UC17
+M --> UC18
 M --> UC19
 M --> UC28
 
 UC03 ..> UC02 : <<extend>>
+UC14 ..> UC11 : <<include>>
+UC16 ..> UC15 : <<include>>
+UC18 ..> UC15 : <<include>>
 
 @enduml
