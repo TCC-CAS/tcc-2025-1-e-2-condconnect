@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const toggles = {
                 'toggle-notif-email':          cfg.notif_email,
                 'toggle-notif-sms':            cfg.notif_sms,
-                'toggle-notif-marketing':      cfg.notif_marketing,
                 'toggle-privacidade-endereco': cfg.privacidade_endereco,
+                'toggle-dois-fatores':         cfg.dois_fatores ?? 1,
             };
             Object.entries(toggles).forEach(([id, val]) => {
                 const el = document.getElementById(id);
@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const body = {};
             if (g('toggle-notif-email'))          body.notif_email          = g('toggle-notif-email').checked ? 1 : 0;
             if (g('toggle-notif-sms'))             body.notif_sms            = g('toggle-notif-sms').checked ? 1 : 0;
-            if (g('toggle-notif-marketing'))       body.notif_marketing      = g('toggle-notif-marketing').checked ? 1 : 0;
             if (g('toggle-privacidade-endereco'))  body.privacidade_endereco = g('toggle-privacidade-endereco').checked ? 1 : 0;
+            if (g('toggle-dois-fatores'))           body.dois_fatores         = g('toggle-dois-fatores').checked ? 1 : 0;
 
             try {
                 await CondConnect.api('/configuracoes', { method: 'PUT', body });

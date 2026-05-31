@@ -323,6 +323,10 @@ def init_db():
             except Exception:
                 pass
             try:
+                c.execute("ALTER TABLE configuracoes_usuario ADD COLUMN dois_fatores TINYINT(1) NOT NULL DEFAULT 1")
+            except Exception:
+                pass
+            try:
                 c.execute("ALTER TABLE usuarios ADD COLUMN cpf VARCHAR(14) NULL DEFAULT NULL")
             except Exception:
                 pass
@@ -2417,7 +2421,7 @@ def configuracoes():
             return ok(config)
 
         body = get_body()
-        permitidos = ['notif_email', 'notif_sms', 'notif_marketing', 'tema', 'idioma', 'privacidade_endereco', 'metodo_2fa']
+        permitidos = ['notif_email', 'notif_sms', 'tema', 'idioma', 'privacidade_endereco', 'metodo_2fa', 'dois_fatores']
         campos, valores = [], []
         for campo in permitidos:
             if campo in body:
