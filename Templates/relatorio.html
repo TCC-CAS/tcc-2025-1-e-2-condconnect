@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/static/css/accessibility.css">
     <style>
         .rel-card { background:white; border-radius:16px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin-bottom:20px; }
-        .rel-label { font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+        .rel-label { font-size:12px; color:#64748b; font-weight:600; }
         .rel-value { font-size:26px; font-weight:800; color:#1e293b; margin-top:4px; }
         .rel-value.green { color:#16a34a; }
         .badge-privado { font-size:11px; background:#f0fafa; color:#00a6a6; border:1px solid #b2e8e8; border-radius:99px; padding:2px 8px; font-weight:600; }
@@ -199,7 +199,7 @@
     <div id="rel-content" style="display:none;">
 
         <!-- 1. VISÃO FINANCEIRA -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">1. Visão Geral Financeira</h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;">1. Visão Geral Financeira</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
             <div class="rel-card">
                 <div class="rel-label">Faturamento Total</div>
@@ -229,7 +229,7 @@
         </div>
 
         <!-- 2. PERFORMANCE DE PRODUTOS -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">2. Performance de Produtos</h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;">2. Performance de Produtos</h2>
         <div class="rel-card" style="margin-bottom:24px;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
                 <div>
@@ -237,7 +237,7 @@
                     <div style="position:relative;height:220px;"><canvas id="chart-r-top"></canvas></div>
                 </div>
                 <div>
-                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:12px;">Tabela de produtos</div>
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:12px;" class="chart-info-wrap">Tabela de produtos <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Desempenho individual de cada produto no período.<br><br><strong>Colunas:</strong><br>• <strong>Vendas:</strong> pedidos entregues e unidades<br>• <strong>Receita:</strong> faturamento bruto do produto<br>• <strong>Taxa 5%:</strong> valor retido pela plataforma<br>• <strong>Rec. Líquida:</strong> receita após a taxa<br>• <strong>Margem:</strong> % de lucro (se custo cadastrado)<br>• <strong>Views:</strong> acessos à página do produto</span></span></div>
                     <div style="overflow-x:auto;">
                         <table id="tabela-produtos">
                             <thead>
@@ -261,7 +261,7 @@
 
         <!-- 2b. CUSTO POR INSUMO -->
         <div id="insumos-section" style="display:none;margin-bottom:24px;">
-            <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">Custo por Insumo</h2>
+            <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;">Custo por Insumo</h2>
             <div class="rel-card">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="grid-2">
                     <div>
@@ -297,7 +297,7 @@
         </div>
 
         <!-- 3. COMPORTAMENTO DE CLIENTES -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">3. Comportamento de Clientes</h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;">3. Comportamento de Clientes</h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;" class="grid-2">
             <div class="rel-card">
                 <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:20px;" class="chart-info-wrap">Novos vs Recorrentes <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Perfil dos compradores no período.<br><br><strong>Categorias:</strong><br>• <strong>Novos:</strong> 1º pedido entregue com você<br>• <strong>Recorrentes:</strong> já compraram antes</span></span></div>
@@ -305,11 +305,11 @@
             </div>
             <div class="rel-card" style="display:flex;flex-direction:column;gap:20px;">
                 <div>
-                    <div class="rel-label">Total de Compradores (período)</div>
+                    <div class="rel-label chart-info-wrap">Total de compradores no período <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Compradores únicos que fizeram ao menos 1 pedido entregue com você no período.<br><br><strong>Como é calculado:</strong><br>• COUNT DISTINCT de comprador_id nos pedidos entregues<br>• Filtrado pelo período selecionado</span></span></div>
                     <div class="rel-value" id="r-total-compradores">—</div>
                 </div>
                 <div>
-                    <div class="rel-label">LTV Médio (tempo de vida)</div>
+                    <div class="rel-label chart-info-wrap">LTV médio (tempo de vida) <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Valor médio que cada comprador gerou ao longo de todo o histórico.<br><br><strong>Como é calculado:</strong><br>• Faturamento total histórico ÷ compradores únicos históricos<br>• Não é limitado pelo período selecionado</span></span></div>
                     <div class="rel-value" id="r-ltv">—</div>
                 </div>
                 <div>
@@ -326,14 +326,14 @@
         </div>
 
         <!-- 4. FUNIL DE CONVERSÃO -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;" class="chart-info-wrap">4. Funil de Conversão <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Quantos usuários avançaram em cada etapa dos seus produtos.<br><br><strong>Etapas:</strong><br>• <strong>Visualizações:</strong> acessos às páginas<br>• <strong>Favoritos:</strong> vezes que foram salvos<br>• <strong>Pedidos iniciados:</strong> pedidos criados<br>• <strong>Pedidos entregues:</strong> concluídos com código</span></span></h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;" class="chart-info-wrap">4. Funil de Conversão <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Quantos usuários avançaram em cada etapa dos seus produtos.<br><br><strong>Etapas:</strong><br>• <strong>Visualizações:</strong> acessos às páginas<br>• <strong>Favoritos:</strong> vezes que foram salvos<br>• <strong>Pedidos iniciados:</strong> pedidos criados<br>• <strong>Pedidos entregues:</strong> concluídos com código</span></span></h2>
         <div class="rel-card" style="margin-bottom:24px;">
             <div style="position:relative;height:160px;"><canvas id="chart-r-funil"></canvas></div>
             <div id="funil-taxas" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;text-align:center;"></div>
         </div>
 
         <!-- 5. SAZONALIDADE -->
-        <h2 style="font-size:16px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;" class="chart-info-wrap">5. Temporal e Sazonalidade <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Padrões de venda ao longo do tempo.<br><br><strong>Contém:</strong><br>• Pico por dia da semana<br>• Faturamento mês a mês (6 meses)<br>• Identifica os melhores momentos para anunciar</span></span></h2>
+        <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;" class="chart-info-wrap">5. Temporal e Sazonalidade <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Padrões de venda ao longo do tempo.<br><br><strong>Contém:</strong><br>• Pico por dia da semana<br>• Faturamento mês a mês (6 meses)<br>• Identifica os melhores momentos para anunciar</span></span></h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;" class="grid-2">
             <div class="rel-card">
                 <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:4px;" class="chart-info-wrap">Pico por dia da semana <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Dias com mais pedidos entregues no histórico total.<br><br><strong>Como usar:</strong><br>• Programe promoções nos dias de maior movimento<br>• Planeje sua disponibilidade para entregas</span></span></div>
