@@ -6,7 +6,7 @@ O **CondConnect** permite a compra e venda de produtos entre vizinhos do mesmo c
 
 Desenvolvido como Trabalho de Conclusão de Curso — Sistemas de Informação · Centro Universitário Senac · 2025.
 
-**Produção:** https://condconnect.duckdns.org
+**Produção:** https://condconnect.duckdns.org/Templates/index.html
 
 ---
 
@@ -88,10 +88,6 @@ python app.py
 
 A API ficará disponível em `http://localhost:5000`.
 Abra qualquer página da pasta `Templates/` no navegador para acessar o frontend.
-
-**Credenciais do administrador padrão:**
-- E-mail: `admin@condconnect.com`
-- Senha: `admin123`
 
 ### Deploy em produção (servidor)
 
