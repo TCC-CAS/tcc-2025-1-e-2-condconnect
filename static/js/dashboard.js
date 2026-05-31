@@ -268,21 +268,62 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    async function carregarAnalytics(dias = 30) {
+    // ── Chips de período ──────────────────────────────────────────────────────
+    const _DASH_MESES_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    let _dashPeriodos  = [];
+    let _dashAnosAtiv  = new Set();
+    let _dashMesesAtiv = new Set();
+
+    function dashRenderAnos() {
+        const el = document.getElementById('dash-anos-chips');
+        if (!el) return;
+        const anos = [...new Set(_dashPeriodos.map(p => p.ano))].sort((a,b) => b-a);
+        el.innerHTML = anos.map(a =>
+            `<button type="button" class="fchip${_dashAnosAtiv.has(a) ? ' sel' : ''}" onclick="dashToggleAno(${a})">${a}</button>`
+        ).join('');
+    }
+    function dashRenderMeses() {
+        const el = document.getElementById('dash-meses-chips');
+        if (!el) return;
+        const pool = _dashAnosAtiv.size ? _dashPeriodos.filter(p => _dashAnosAtiv.has(p.ano)) : _dashPeriodos;
+        const meses = [...new Set(pool.map(p => p.mes))].sort((a,b) => a-b);
+        _dashMesesAtiv = new Set([..._dashMesesAtiv].filter(m => meses.includes(m)));
+        el.innerHTML = meses.map(m =>
+            `<button type="button" class="fchip${_dashMesesAtiv.has(m) ? ' sel' : ''}" onclick="dashToggleMes(${m})">${_DASH_MESES_SHORT[m-1]}</button>`
+        ).join('');
+    }
+    window.dashToggleAno = function(ano) {
+        _dashAnosAtiv.has(ano) ? _dashAnosAtiv.delete(ano) : _dashAnosAtiv.add(ano);
+        dashRenderAnos(); dashRenderMeses();
+    };
+    window.dashToggleMes = function(mes) {
+        _dashMesesAtiv.has(mes) ? _dashMesesAtiv.delete(mes) : _dashMesesAtiv.add(mes);
+        dashRenderMeses();
+    };
+    window.dashAplicar = function() { carregarAnalytics(); };
+
+    async function carregarAnalytics() {
         try {
-            const data = await CondConnect.api(`/me/analytics?dias=${dias}`);
+            const params = new URLSearchParams();
+            if (_dashAnosAtiv.size || _dashMesesAtiv.size) {
+                if (_dashAnosAtiv.size)  params.set('anos',  [..._dashAnosAtiv].join(','));
+                if (_dashMesesAtiv.size) params.set('meses', [..._dashMesesAtiv].join(','));
+            } else {
+                params.set('dias', '30');
+            }
+            const data = await CondConnect.api(`/me/analytics?${params}`);
             renderAnalytics(data);
         } catch (err) {
             console.error('Erro analytics:', err);
         }
     }
 
-    const periodoSelect = document.getElementById('analytics-periodo');
-    if (periodoSelect) {
-        periodoSelect.addEventListener('change', () => carregarAnalytics(periodoSelect.value));
-    }
-
     await carregarDashboard();
     renderRecentProducts();
+    try {
+        _dashPeriodos = await CondConnect.api('/me/periodos');
+        dashRenderAnos();
+        dashRenderMeses();
+    } catch(e) {}
     carregarAnalytics();
 });

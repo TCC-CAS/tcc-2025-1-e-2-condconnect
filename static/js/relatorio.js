@@ -527,39 +527,48 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // ── Multi-select helpers ──────────────────────────────────────────────────
-    const _MESES_REL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                        'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    // ── Filtros de período (chips) ────────────────────────────────────────────
+    const _MESES_REL   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                          'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const _MESES_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     let _relPeriodos = [];
+    let _anosAtivos  = new Set();
+    let _mesesAtivos = new Set();
 
-    function msRelGetSelected(id) {
-        const sel = document.getElementById(id);
-        return sel ? [...sel.selectedOptions].map(o => o.value) : [];
-    }
-    function relRenderMeses(anosSelected) {
-        const filtrados = anosSelected.length
-            ? _relPeriodos.filter(p => anosSelected.includes(String(p.ano)))
-            : _relPeriodos;
-        const meses = [...new Set(filtrados.map(p => p.mes))].sort((a,b) => a-b);
-        const prevSel = msRelGetSelected('rel-meses');
-        const sel = document.getElementById('rel-meses');
-        if (!sel) return;
-        sel.innerHTML = meses.map(m =>
-            `<option value="${m}" ${prevSel.includes(String(m)) ? 'selected' : ''}>${_MESES_REL[m-1]}</option>`
+    function relRenderAnosChips() {
+        const el = document.getElementById('rel-anos-chips');
+        if (!el) return;
+        const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b) => b-a);
+        el.innerHTML = anos.map(a =>
+            `<button type="button" class="fchip${_anosAtivos.has(a) ? ' sel' : ''}" onclick="relToggleAno(${a})">${a}</button>`
         ).join('');
-        sel.size = Math.min(Math.max(meses.length, 1), 4);
     }
-    document.getElementById('rel-anos')?.addEventListener('change', () => {
-        relRenderMeses(msRelGetSelected('rel-anos'));
-    });
+    function relRenderMesesChips() {
+        const el = document.getElementById('rel-meses-chips');
+        if (!el) return;
+        const pool = _anosAtivos.size ? _relPeriodos.filter(p => _anosAtivos.has(p.ano)) : _relPeriodos;
+        const meses = [...new Set(pool.map(p => p.mes))].sort((a,b) => a-b);
+        _mesesAtivos = new Set([..._mesesAtivos].filter(m => meses.includes(m)));
+        el.innerHTML = meses.map(m =>
+            `<button type="button" class="fchip${_mesesAtivos.has(m) ? ' sel' : ''}" onclick="relToggleMes(${m})">${_MESES_SHORT[m-1]}</button>`
+        ).join('');
+    }
+    window.relToggleAno = function(ano) {
+        _anosAtivos.has(ano) ? _anosAtivos.delete(ano) : _anosAtivos.add(ano);
+        relRenderAnosChips(); relRenderMesesChips();
+    };
+    window.relToggleMes = function(mes) {
+        _mesesAtivos.has(mes) ? _mesesAtivos.delete(mes) : _mesesAtivos.add(mes);
+        relRenderMesesChips();
+    };
     window.msRelAplicar = function() { carregarRelatorio(); };
 
     function getFiltros() {
         return {
             produto_id: document.getElementById('rel-produto')?.value   || '',
             categoria:  document.getElementById('rel-categoria')?.value || '',
-            anos:  msRelGetSelected('rel-anos'),
-            meses: msRelGetSelected('rel-meses'),
+            anos:  [..._anosAtivos].map(String),
+            meses: [..._mesesAtivos].map(String),
         };
     }
 
@@ -604,13 +613,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function popularPeriodosMulti() {
         try {
             _relPeriodos = await CondConnect.api('/me/periodos');
-            const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b) => b-a);
-            const sel = document.getElementById('rel-anos');
-            if (sel) {
-                sel.innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
-                sel.size = Math.min(Math.max(anos.length, 1), 4);
-            }
-            relRenderMeses([]);
+            relRenderAnosChips();
+            relRenderMesesChips();
         } catch(e) { console.warn('periodos error', e); }
     }
 

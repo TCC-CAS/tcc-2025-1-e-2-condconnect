@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="/static/css/accessibility.css">
     <style>
         @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr !important; } }
+        .fchip { padding:4px 12px;border:1px solid #e2e8f0;border-radius:99px;font-size:12px;cursor:pointer;background:white;color:#374151;user-select:none;line-height:1.4;font-family:inherit; }
+        .fchip.sel { background:#00a6a6;color:white;border-color:#00a6a6; }
+        .fchip-group { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+        .fchip-label { font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap; }
         .stat-card { position: relative; }
         .stat-card:hover { z-index: 10000; }
         .stat-info span.chart-info-icon { display: inline-flex !important; align-items: center; justify-content: center; width: 16px !important; height: 16px !important; min-height: 0 !important; border-radius: 50%; flex-shrink: 0; vertical-align: middle; }
@@ -507,12 +511,10 @@
                     <h2>Desempenho de Vendas</h2>
                     <span class="subtitle">Resumo dos últimos 30 dias · <a href="/Templates/relatorio.html" style="color:var(--primary);font-weight:600;">Ver relatório completo →</a></span>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;">
-                    <select id="analytics-periodo" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;">
-                        <option value="30">Últimos 30 dias</option>
-                        <option value="90">Últimos 90 dias</option>
-                        <option value="365">Último ano</option>
-                    </select>
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                    <div class="fchip-group"><span class="fchip-label">Ano</span><div id="dash-anos-chips"></div></div>
+                    <div class="fchip-group"><span class="fchip-label">Mês</span><div id="dash-meses-chips"></div></div>
+                    <button onclick="dashAplicar()" style="padding:6px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Aplicar</button>
                 </div>
             </div>
 
