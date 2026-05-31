@@ -30,8 +30,9 @@
         @media (max-width:768px) { .grid-2 { grid-template-columns:1fr !important; } }
         .fchip { padding:4px 12px;border:1px solid #e2e8f0;border-radius:99px;font-size:12px;cursor:pointer;background:white;color:#374151;user-select:none;line-height:1.4;font-family:inherit; }
         .fchip.sel { background:#00a6a6;color:white;border-color:#00a6a6; }
-        .fchip-group { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
-        .fchip-label { font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap; }
+        .fchip-group { display:flex;flex-direction:column;gap:4px; }
+        .fchip-label { font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px; }
+        .fchip-inner { display:flex;gap:4px;flex-wrap:wrap;align-items:center;min-height:30px; }
         .chart-info-wrap { display:inline-flex; align-items:center; gap:6px; }
         .chart-info-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:#e2e8f0; color:#64748b; font-size:10px; font-weight:700; cursor:default; position:relative; flex-shrink:0; }
         .chart-info-icon:hover .chart-tooltip { display:block; }
@@ -170,8 +171,8 @@
                 <option value="outros">Outros</option>
             </select>
             </div>
-            <div class="fchip-group"><span class="fchip-label">Ano</span><div id="rel-anos-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>
-            <div class="fchip-group"><span class="fchip-label">Mês</span><div id="rel-meses-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>
+            <div class="fchip-group"><span class="fchip-label">Ano</span><div id="rel-anos-chips" class="fchip-inner"></div></div>
+            <div class="fchip-group"><span class="fchip-label">Mês</span><div id="rel-meses-chips" class="fchip-inner"></div></div>
             <button onclick="msRelAplicar()" style="padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Aplicar</button>
             <button id="btn-exportar" onclick="exportarExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

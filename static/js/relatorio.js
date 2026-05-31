@@ -611,11 +611,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     async function popularPeriodosMulti() {
-        try {
-            _relPeriodos = await CondConnect.api('/me/periodos');
-            relRenderAnosChips();
-            relRenderMesesChips();
-        } catch(e) { console.warn('periodos error', e); }
+        try { _relPeriodos = await CondConnect.api('/me/periodos'); } catch(e) { console.warn('periodos:', e); }
+        relRenderAnosChips();
+        relRenderMesesChips();
     }
 
     ['rel-produto', 'rel-categoria'].forEach(id => {

@@ -320,10 +320,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     await carregarDashboard();
     renderRecentProducts();
-    try {
-        _dashPeriodos = await CondConnect.api('/me/periodos');
-        dashRenderAnos();
-        dashRenderMeses();
-    } catch(e) {}
+    try { _dashPeriodos = await CondConnect.api('/me/periodos'); } catch(e) { console.warn('periodos:', e); }
+    dashRenderAnos();
+    dashRenderMeses();
     carregarAnalytics();
 });
