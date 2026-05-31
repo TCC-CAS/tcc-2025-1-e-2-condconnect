@@ -156,44 +156,89 @@ document.addEventListener('DOMContentLoaded', async function () {
         const el = document.getElementById('den-list');
         el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Carregando...</p>';
         try {
-            const { denuncias } = await CondConnect.api(`/admin/denuncias?${params}`, { _timeout: 10000 });
-            if (!denuncias.length) {
+            const [{ denuncias }, relData] = await Promise.all([
+                CondConnect.api(`/admin/denuncias?${params}`, { _timeout: 10000 }),
+                CondConnect.api('/admin/relatorios').catch(() => ({ relatorios: [] })),
+            ]);
+            const relatorios = relData.relatorios || [];
+
+            let html = '';
+
+            // ── Seção 1: Denúncias de avaliações ──────────────────────────
+            if (denuncias.length) {
+                html += `<h3 style="font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 12px;">Denúncias de Avaliações</h3>`;
+                html += denuncias.map(d => {
+                    const susp = d.total_suspensoes || 0;
+                    const alertaSusp = susp >= 2 ? `<span style="color:#dc2626;font-weight:700;font-size:12px;">⚠️ ${susp} suspensão(ões)</span>` : '';
+                    const acoes = d.status === 'pendente' ? `
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
+                            <button class="action-btn neutral" onclick="denIgnorar(${d.id})">Ignorar</button>
+                            <button class="action-btn warn"    onclick="denRemover(${d.id})">Remover comentário</button>
+                            <button class="action-btn danger"  onclick="denSuspender(${d.id}, '${(d.autor_nome||'').replace(/'/g,"\\'")}')">Suspender autor</button>
+                            ${susp >= 2 ? `<button class="action-btn danger" style="background:#7f1d1d;color:white;" onclick="denBanir(${d.id}, '${(d.autor_nome||'').replace(/'/g,"\\'")}')">Banir permanentemente</button>` : ''}
+                        </div>` : '';
+                    return `
+                    <div class="den-card ${d.status}">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <div>
+                                <span class="den-badge ${d.status}">${{pendente:'Em avaliação',ignorada:'Ignorada',removida:'Removida',suspendeu:'Suspendeu'}[d.status]||d.status}</span>
+                                <span style="font-size:12px;color:#94a3b8;margin-left:8px;">${new Date(d.criado_em).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:12px;color:#64748b;">Motivo: <strong>${d.motivo}</strong></span>
+                                ${d.total_denuncias_avaliacao > 1 ? `<br><span style="font-size:11px;color:#dc2626;">${d.total_denuncias_avaliacao} denúncias neste comentário</span>` : ''}
+                            </div>
+                        </div>
+                        <div style="margin-top:10px;background:#f8fafc;border-radius:8px;padding:12px;">
+                            <p style="margin:0;font-size:13px;font-style:italic;color:#475569;">"${d.comentario || '(sem comentário)'}"</p>
+                        </div>
+                        <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:#64748b;">Autor: <strong>${d.autor_nome}</strong> ${alertaSusp}</span>
+                            <span style="font-size:12px;color:#64748b;">Condo: <strong>${d.autor_condo||'–'}</strong></span>
+                            <span style="font-size:12px;color:#64748b;">Avaliado: <strong>${d.denunciado_nome}</strong></span>
+                        </div>
+                        ${acoes}
+                    </div>`;
+                }).join('');
+            }
+
+            // ── Seção 2: Denúncias de usuários (relatorios) ───────────────
+            const relFiltrados = status === 'todos' ? relatorios : relatorios.filter(r => r.status === status || (status === 'pendente' && r.status === 'pendente'));
+            if (relFiltrados.length) {
+                html += `<h3 style="font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:${denuncias.length ? '28px' : '0'} 0 12px;">Denúncias de Usuários e Chat</h3>`;
+                html += relFiltrados.map(r => {
+                    const isAuto = r.motivo?.startsWith('[AUTO]');
+                    const acoes = r.status === 'pendente' ? `
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
+                            <button class="action-btn neutral" onclick="relIgnorar(${r.id})">Ignorar</button>
+                            <button class="action-btn danger"  onclick="relSuspender(${r.id}, '${(r.usuario_nome||'').replace(/'/g,"\\'")}')">Suspender</button>
+                            <button class="action-btn danger" style="background:#7f1d1d;" onclick="relBanir(${r.id}, '${(r.usuario_nome||'').replace(/'/g,"\\'")}')">Banir</button>
+                        </div>` : '';
+                    return `
+                    <div class="den-card ${r.status}" style="border-left-color:${isAuto ? '#f59e0b' : '#ef4444'};">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                            <div>
+                                <span class="den-badge pendente" style="${r.status !== 'pendente' ? 'background:#e2e8f0;color:#64748b;' : ''}">${r.status === 'pendente' ? (isAuto ? '🤖 Automático' : 'Em avaliação') : 'Resolvido'}</span>
+                                <span style="font-size:12px;color:#94a3b8;margin-left:8px;">${new Date(r.criado_em).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <span style="font-size:12px;color:#64748b;">Motivo: <strong>${r.motivo}</strong></span>
+                        </div>
+                        ${r.descricao ? `<div style="margin-top:10px;background:#fef9c3;border-radius:8px;padding:12px;"><p style="margin:0;font-size:13px;color:#92400e;">${r.descricao}</p></div>` : ''}
+                        <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:#64748b;">Usuário: <strong>${r.usuario_nome||'–'}</strong></span>
+                            <span style="font-size:12px;color:#64748b;">E-mail: <strong>${r.usuario_email||'–'}</strong></span>
+                            <span style="font-size:12px;color:#64748b;">Condo: <strong>${r.usuario_condo||'–'}</strong></span>
+                        </div>
+                        ${acoes}
+                    </div>`;
+                }).join('');
+            }
+
+            if (!html) {
                 el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Nenhuma denúncia neste filtro.</p>';
                 return;
             }
-            el.innerHTML = denuncias.map(d => {
-                const susp = d.total_suspensoes || 0;
-                const alertaSusp = susp >= 2 ? `<span style="color:#dc2626;font-weight:700;font-size:12px;">⚠️ ${susp} suspensão(ões)</span>` : '';
-                const acoes = d.status === 'pendente' ? `
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
-                        <button class="action-btn neutral" onclick="denIgnorar(${d.id})">Ignorar</button>
-                        <button class="action-btn warn"    onclick="denRemover(${d.id})">Remover comentário</button>
-                        <button class="action-btn danger"  onclick="denSuspender(${d.id}, '${(d.autor_nome||'').replace(/'/g,"\\'")}')">Suspender autor</button>
-                        ${susp >= 2 ? `<button class="action-btn danger" style="background:#7f1d1d;color:white;" onclick="denBanir(${d.id}, '${(d.autor_nome||'').replace(/'/g,"\\'")}')">Banir permanentemente</button>` : ''}
-                    </div>` : '';
-                return `
-                <div class="den-card ${d.status}">
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-                        <div>
-                            <span class="den-badge ${d.status}">${{pendente:'Em avaliação',ignorada:'Ignorada',removida:'Removida',suspendeu:'Suspendeu'}[d.status]||d.status}</span>
-                            <span style="font-size:12px;color:#94a3b8;margin-left:8px;">${new Date(d.criado_em).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:12px;color:#64748b;">Motivo: <strong>${d.motivo}</strong></span>
-                            ${d.total_denuncias_avaliacao > 1 ? `<br><span style="font-size:11px;color:#dc2626;">${d.total_denuncias_avaliacao} denúncias neste comentário</span>` : ''}
-                        </div>
-                    </div>
-                    <div style="margin-top:10px;background:#f8fafc;border-radius:8px;padding:12px;">
-                        <p style="margin:0;font-size:13px;font-style:italic;color:#475569;">"${d.comentario || '(sem comentário)'}"</p>
-                    </div>
-                    <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;">
-                        <span style="font-size:12px;color:#64748b;">Autor: <strong>${d.autor_nome}</strong> ${alertaSusp}</span>
-                        <span style="font-size:12px;color:#64748b;">Condo: <strong>${d.autor_condo||'–'}</strong></span>
-                        <span style="font-size:12px;color:#64748b;">Avaliado: <strong>${d.denunciado_nome}</strong></span>
-                    </div>
-                    ${acoes}
-                </div>`;
-            }).join('');
+            el.innerHTML = html;
         } catch (e) {
             erroComRetry(el, carregarDenuncias, e.message);
         }
@@ -231,6 +276,32 @@ document.addEventListener('DOMContentLoaded', async function () {
             corBotao: '#7f1d1d',
             labelBotao: 'Banir permanentemente',
             onConfirm: () => chamarAdmin('/admin/denuncias', { denuncia_id: id, acao: 'banir' }),
+        });
+    };
+
+    // ── Ações para relatorios (denúncias de usuários/chat) ───────────────────
+    window.relIgnorar = (id) => chamarAdmin('/admin/relatorios', { relatorio_id: id, acao: 'ignorar' });
+    window.relSuspender = (id, nome) => {
+        abrirModal({
+            titulo: `Suspender ${nome}`,
+            desc: 'O usuário será suspenso temporariamente.',
+            mostarDuracao: true,
+            corBotao: '#dc2626',
+            labelBotao: 'Suspender',
+            onConfirm: () => {
+                const dias = parseInt(document.getElementById('modal-duracao').value);
+                return chamarAdmin('/admin/relatorios', { relatorio_id: id, acao: 'suspender', duracao_dias: dias });
+            },
+        });
+    };
+    window.relBanir = (id, nome) => {
+        abrirModal({
+            titulo: `Banir permanentemente ${nome}`,
+            desc: 'O usuário será banido definitivamente. Esta ação é irreversível.',
+            mostarDuracao: false,
+            corBotao: '#7f1d1d',
+            labelBotao: 'Banir permanentemente',
+            onConfirm: () => chamarAdmin('/admin/relatorios', { relatorio_id: id, acao: 'banir' }),
         });
     };
 

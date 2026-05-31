@@ -2697,6 +2697,7 @@ def admin_stats():
 
             try:
                 denuncias_pendentes = q("SELECT COUNT(*) as n FROM denuncias_avaliacao WHERE status='pendente'")['n']
+                denuncias_pendentes += q("SELECT COUNT(*) as n FROM relatorios WHERE status='pendente'")['n']
             except Exception:
                 denuncias_pendentes = 0
 
