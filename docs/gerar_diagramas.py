@@ -101,13 +101,11 @@ def _add_title(img: Image.Image, text: str) -> Image.Image:
 
 
 def combine(left: Image.Image, right: Image.Image, out_path: str) -> None:
-    # iguala alturas
     th = max(left.height, right.height)
     def fit(img):
         r = th / img.height
         return img.resize((int(img.width * r), th), Image.LANCZOS)
     left, right = fit(left), fit(right)
-
     W = MARGIN + left.width + PADDING + right.width + MARGIN
     H = MARGIN + th + MARGIN
     canvas = Image.new('RGB', (W, H), BG)
@@ -117,37 +115,67 @@ def combine(left: Image.Image, right: Image.Image, out_path: str) -> None:
     print(f'  Salvo → {out_path}')
 
 
+def single(img: Image.Image, out_path: str) -> None:
+    """Salva uma imagem individual com margens."""
+    W = MARGIN + img.width + MARGIN
+    H = MARGIN + img.height + MARGIN
+    canvas = Image.new('RGB', (W, H), BG)
+    canvas.paste(img, (MARGIN, MARGIN))
+    canvas.save(out_path, dpi=(300, 300))
+    print(f'  Salvo → {out_path}')
+
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    files = {
-        'morador':       'uc_morador.puml',
-        'comprador':     'uc_comprador.puml',
-        'vendedor':      'uc_vendedor.puml',
-        'administrador': 'uc_administrador.puml',
-    }
-    labels = {
-        'morador':       'Casos de Uso — Morador',
-        'comprador':     'Casos de Uso — Comprador (papel do Morador)',
-        'vendedor':      'Casos de Uso — Vendedor (papel do Morador)',
-        'administrador': 'Casos de Uso — Administrador',
-    }
 
-    imgs = {}
-    for key, fname in files.items():
+    # ── Casos de Uso ─────────────────────────────────────────────────────────
+    uc_files = {
+        'morador':       ('uc_morador.puml',       'Casos de Uso — Morador'),
+        'comprador':     ('uc_comprador.puml',      'Casos de Uso — Comprador (papel do Morador)'),
+        'vendedor':      ('uc_vendedor.puml',       'Casos de Uso — Vendedor (papel do Morador)'),
+        'administrador': ('uc_administrador.puml',  'Casos de Uso — Administrador'),
+    }
+    uc_imgs = {}
+    for key, (fname, label) in uc_files.items():
         print(f'Renderizando {fname}...')
-        raw  = render_puml(read(fname))
-        imgs[key] = _add_title(raw, labels[key])
+        uc_imgs[key] = _add_title(render_puml(read(fname)), label)
 
-    print('\nCombinando imagens...')
+    print('\nCombinando diagramas de casos de uso...')
+    combine(uc_imgs['morador'],   uc_imgs['comprador'],
+            os.path.join(BASE, 'uc_morador_comprador.png'))
+    combine(uc_imgs['vendedor'],  uc_imgs['administrador'],
+            os.path.join(BASE, 'uc_vendedor_administrador.png'))
 
-    combine(
-        imgs['morador'], imgs['comprador'],
-        os.path.join(BASE, 'uc_morador_comprador.png')
+    # ── C4 Diagramas ─────────────────────────────────────────────────────────
+    c4_files = {
+        'contexto':    ('c4_contexto.puml',    'C4 — Diagrama de Contexto'),
+        'containers':  ('c4_containers.puml',  'C4 — Diagrama de Contêineres'),
+        'components':  ('c4_components.puml',  'C4 — Diagrama de Componentes'),
+        'codigo':      ('c4_codigo.puml',       'C4 — Diagrama de Código'),
+    }
+    c4_imgs = {}
+    for key, (fname, label) in c4_files.items():
+        print(f'Renderizando {fname}...')
+        c4_imgs[key] = _add_title(render_puml(read(fname)), label)
+
+    print('\nCombinando diagramas C4...')
+    combine(c4_imgs['contexto'],   c4_imgs['containers'],
+            os.path.join(BASE, 'c4_contexto_containers.png'))
+    combine(c4_imgs['components'], c4_imgs['codigo'],
+            os.path.join(BASE, 'c4_componentes_codigo.png'))
+
+    # ── DER e Modelo Físico ───────────────────────────────────────────────────
+    print('\nRenderizando DER e Modelo Físico...')
+    single(
+        _add_title(render_puml(read('der_condconnect.puml')),
+                   'Diagrama Entidade-Relacionamento (DER) — CondConnect'),
+        os.path.join(BASE, 'der_condconnect.png')
     )
-    combine(
-        imgs['vendedor'], imgs['administrador'],
-        os.path.join(BASE, 'uc_vendedor_administrador.png')
+    single(
+        _add_title(render_puml(read('modelo_fisico.puml')),
+                   'Modelo Físico do Banco de Dados — CondConnect (MySQL)'),
+        os.path.join(BASE, 'modelo_fisico.png')
     )
 
-    print('\nPronto! Arquivos gerados na pasta docs/')
+    print('\nPronto! Todos os arquivos gerados na pasta docs/')
