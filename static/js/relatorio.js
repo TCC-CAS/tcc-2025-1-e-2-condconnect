@@ -532,30 +532,40 @@ document.addEventListener('DOMContentLoaded', async function () {
                         'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     let _relPeriodos = [];
 
+    // Portal: move as listas para body, escapando qualquer overflow:hidden pai
+    ['rel-ms-anos-list', 'rel-ms-meses-list'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.cssText = 'display:none;position:fixed;z-index:99999;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:210px;overflow-y:auto;min-width:160px;';
+            document.body.appendChild(el);
+        }
+    });
+
     function msClose() {
-        document.querySelectorAll('.ms-list.open').forEach(l => {
-            l.classList.remove('open');
-            l.style.cssText = '';
+        ['rel-ms-anos-list', 'rel-ms-meses-list'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
         });
     }
     window.msRelToggle = function(id) {
         const list    = document.getElementById(id + '-list');
         const trigger = document.getElementById(id + '-trigger');
         if (!list || !trigger) return;
-        const aberto = list.classList.contains('open');
+        const aberto = list.style.display === 'block';
         msClose();
         if (!aberto) {
             const r = trigger.getBoundingClientRect();
-            list.style.setProperty('position', 'fixed', 'important');
-            list.style.setProperty('top',      (r.bottom + 4) + 'px', 'important');
-            list.style.setProperty('left',     r.left + 'px', 'important');
-            list.style.setProperty('min-width', r.width + 'px', 'important');
-            list.style.setProperty('z-index',  '99999', 'important');
-            list.classList.add('open');
+            list.style.top      = (r.bottom + 4) + 'px';
+            list.style.left     = r.left + 'px';
+            list.style.minWidth = r.width + 'px';
+            list.style.display  = 'block';
         }
     };
     document.addEventListener('click', e => {
-        if (!e.target.closest('.ms-box')) msClose();
+        if (!e.target.closest('.ms-box') &&
+            !document.getElementById('rel-ms-anos-list')?.contains(e.target) &&
+            !document.getElementById('rel-ms-meses-list')?.contains(e.target))
+            msClose();
     });
     ['rel-ms-anos', 'rel-ms-meses'].forEach(id => {
         const trigger = document.getElementById(id + '-trigger');
