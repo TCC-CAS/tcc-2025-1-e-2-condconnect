@@ -472,7 +472,7 @@
                     <div>
                         <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Ano</div>
                         <div class="ms-box" id="ms-anos">
-                            <div class="ms-trigger" onclick="msToggle('ms-anos')">
+                            <div class="ms-trigger" id="ms-anos-trigger">
                                 <span id="ms-anos-lbl">Todos os anos</span>
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
@@ -482,7 +482,7 @@
                     <div>
                         <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Mês</div>
                         <div class="ms-box" id="ms-meses">
-                            <div class="ms-trigger" onclick="msToggle('ms-meses')">
+                            <div class="ms-trigger" id="ms-meses-trigger">
                                 <span id="ms-meses-lbl">Todos os meses</span>
                                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
@@ -686,18 +686,31 @@
                             'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         let _periodos = [];
 
-        // Toggle dropdown
-        window.msToggle = function(id) {
+        function msToggleById(id) {
             const list = document.getElementById(id + '-list');
             if (!list) return;
             const aberto = list.classList.contains('open');
             document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
             if (!aberto) list.classList.add('open');
-        };
-        document.addEventListener('click', e => {
+        }
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', function(e) {
             if (!e.target.closest('.ms-box'))
                 document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
         });
+
+        // Adicionar listeners com stopPropagation após DOM pronto
+        function initTriggers() {
+            ['ms-anos', 'ms-meses'].forEach(function(id) {
+                var trigger = document.getElementById(id + '-trigger');
+                if (!trigger) return;
+                trigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    msToggleById(id);
+                });
+            });
+        }
 
         function msGetSelected(id) {
             const l = document.getElementById(id + '-list');
@@ -787,11 +800,16 @@
             } catch(e) { console.warn('periodos error', e); }
         }
 
-        // Carregar períodos após dashboard.js inicializar
-        if (document.readyState === 'loading')
-            document.addEventListener('DOMContentLoaded', msCarregarPeriodos);
-        else
+        // Inicializar triggers e carregar períodos após DOM pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initTriggers();
+                msCarregarPeriodos();
+            });
+        } else {
+            initTriggers();
             setTimeout(msCarregarPeriodos, 200);
+        }
     })();
     </script>
 </body>
