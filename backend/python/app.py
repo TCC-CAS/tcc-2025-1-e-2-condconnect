@@ -114,7 +114,7 @@ def require_auth():
     return uid, None
 
 def verificar_toxicidade(texto):
-    """Detecta linguagem ofensiva via lista de palavras com normalização de texto."""
+    """Detecta linguagem ofensiva e conteúdo proibido com normalização de texto."""
     if not texto or len(texto.strip()) < 3:
         return 0.0
 
@@ -123,7 +123,7 @@ def verificar_toxicidade(texto):
     def _norm(s):
         s = s.lower()
         s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
-        for old, new in {'@': 'a', '3': 'e', '1': 'i', '0': 'o', '$': 's', '5': 's', '4': 'a', '7': 't'}.items():
+        for old, new in {'@':'a','3':'e','1':'i','0':'o','$':'s','5':'s','4':'a','7':'t','€':'e','ø':'o'}.items():
             s = s.replace(old, new)
         s = re.sub(r'[^a-z0-9\s]', '', s)
         s = re.sub(r'(.)\1{2,}', r'\1', s)
@@ -132,39 +132,65 @@ def verificar_toxicidade(texto):
     t = _norm(texto)
 
     _TERMOS = [
-        r'\bputa\b', r'\bputinha\b', r'\bputo\b', r'\bputas\b',
-        r'\bvadia\b', r'\bvagabunda\b', r'\bvagabundo\b',
-        r'\bviado\b', r'\bviadinho\b', r'\bviada\b',
-        r'\bcuzao\b', r'\bcuzoes\b', r'\bcu\b',
-        r'\bbuceta\b', r'\bbct\b',
+        # ── Insultos ──────────────────────────────────────────────────────────
+        r'\bidiota\b', r'\bimbecil\b', r'\bburro\b', r'\bestupido\b', r'\binutil\b',
+        r'\blixo\b', r'\bescoria\b', r'\bverme\b', r'\bparasita\b', r'\bcanalha\b',
+        r'\bsafado\b', r'\bsafada\b', r'\bvagabundo\b', r'\bvagabunda\b',
+        r'\bmiseravel\b', r'\botario\b', r'\botaria\b', r'\bbabaca\b',
+        r'\bcretino\b', r'\bcretina\b', r'\bpatife\b', r'\bsem.?vergonha\b',
+        r'\bcorno\b', r'\bcorna\b', r'\btraira\b',
+        r'\blazarento\b', r'\blazarenta\b', r'\bmaldito\b', r'\bmaldita\b',
+        r'\bdesgracado\b', r'\bdesgracada\b', r'\bdesgraca\b', r'\bmaldizente\b',
+        r'\bordinario\b', r'\bordinaria\b', r'\bvigarista\b', r'\bpilantra\b',
+        r'\bbandido\b', r'\bbandida\b', r'\bladrao\b', r'\bgolpista\b',
+        r'\bestelionatario\b', r'\bfavelado\b', r'\bfavelada\b',
+        r'\bcrioulo\b', r'\brapariga\b', r'\bpalhaço\b', r'\bpalhaco\b',
+        r'\bnojento\b', r'\bnojenta\b', r'\bescroto\b', r'\bescrotа\b',
+        r'\bretardado\b', r'\bretardada\b', r'\bprostituta\b', r'\bpiranha\b',
+        # ── Palavrões ─────────────────────────────────────────────────────────
+        r'\bporra\b', r'\bmerda\b', r'\bbosta\b',
         r'\bcaralho\b', r'\bkrl\b', r'\bcrl\b',
-        r'\bfodase\b', r'foda.?se', r'\bfoder\b', r'\bfodido\b', r'\bfodida\b', r'\bfoda\b',
-        r'\bporra\b',
-        r'\bmerda\b',
+        r'\bputa\b', r'\bputinha\b', r'\bputo\b', r'\bputas\b', r'\bputaria\b',
+        r'\bfodase\b', r'foda.?se', r'\bfoder\b', r'\bfodido\b', r'\bfodida\b',
+        r'\bviado\b', r'\bviadinho\b', r'\bviada\b', r'\bbicha\b', r'\bsapatao\b',
+        r'\bboceta\b', r'\bbuceta\b', r'\bbct\b',
+        r'\bpinto\b', r'\brola\b', r'\bxoxota\b',
+        r'\bcuzao\b', r'\bcu\b',
         r'\barrombado\b', r'\barrombada\b',
-        r'\bbabaca\b',
-        r'\bretardado\b', r'\bretardada\b',
-        r'\bcorno\b', r'\bcorna\b',
-        r'\bprostituta\b', r'\bpiranha\b',
-        r'\bbosta\b', r'\bbostinha\b',
-        r'\bdesgraca\b', r'\bdesgraçado\b', r'\bdesgraçada\b',
-        r'\bfdp\b', r'filho.?da.?puta', r'filha.?da.?puta',
-        r'\bvsf\b', r'vai.?se.?foder',
-        r'\bcacete\b',
-        r'\botario\b', r'\botaria\b',
-        r'\blazarento\b', r'\blazarenta\b',
-        r'\bsafado\b', r'\bsafada\b',
-        r'\bescroto\b',
-        r'\bcanalha\b',
-        r'\bnojento\b', r'\bnojenta\b',
-        r'\bidiota\b', r'\bimbecil\b',
-        r'\bpalhaço\b', r'\bpalhaco\b',
+        r'\bfudido\b', r'\bfudida\b', r'\bcacete\b',
+        # ── Frases compostas graves ───────────────────────────────────────────
+        r'puta.?que.?pariu', r'vai.?se.?foder', r'vai.?tomar.?no.?cu',
+        r'filho.?da.?puta', r'filha.?da.?puta',
+        r'\bfdp\b', r'\bvsf\b',
+        # ── Ameaças e assédio ─────────────────────────────────────────────────
+        r'vou.?te.?matar', r'vou.?te.?encontrar', r'te.?pego.?la.?fora',
+        r'me.?manda.?nude', r'manda.?nude',
+        r'quero.?te.?comer', r'vou.?te.?estuprar',
+        r'sua.?puta',
+        # ── Tentativa de desviar transação da plataforma ──────────────────────
+        r'\bwhatsapp\b', r'\bwhats\b', r'\btelegram\b',
+        r'pague.?direto', r'fora.?da.?plataforma', r'outro.?site',
+        r'pix.?fora',
     ]
 
     for termo in _TERMOS:
         if re.search(termo, t):
             return 1.0
     return 0.0
+
+
+def auto_denunciar(db, uid, conteudo, contexto='mensagem'):
+    """Registra denúncia automática quando conteúdo proibido é detectado."""
+    try:
+        motivo = f'[AUTO] Conteúdo proibido bloqueado ({contexto})'
+        descricao = f'Tentativa bloqueada: {conteudo[:300]}'
+        with db.cursor() as c:
+            c.execute(
+                "INSERT INTO relatorios (reporter_id, tipo, alvo_id, motivo, descricao) VALUES (%s,'usuario',%s,%s,%s)",
+                (uid, uid, motivo, descricao)
+            )
+    except Exception as e:
+        print(f'auto_denunciar error: {e}')
 
 
 def contem_dado_sensivel(texto):
@@ -2108,6 +2134,10 @@ def mensagens():
         if contem_dado_sensivel(texto):
             return err('Por segurança, não é permitido compartilhar dados pessoais (e-mail, telefone, CPF ou chave PIX) pelo chat. Finalize a transação pela plataforma.', 422)
 
+        if verificar_toxicidade(texto) >= 1.0:
+            auto_denunciar(db, uid, texto, 'chat')
+            return err('Sua mensagem contém conteúdo proibido e foi bloqueada automaticamente.', 422)
+
         with db.cursor() as c:
             c.execute("INSERT INTO mensagens (conversa_id, remetente_id, texto) VALUES (%s,%s,%s)", (cid, uid, texto))
             mid = c.lastrowid
@@ -2218,6 +2248,7 @@ def avaliacoes():
         if comentario:
             score = verificar_toxicidade(comentario)
             if score is not None and score >= 0.80:
+                auto_denunciar(db, uid, comentario, 'avaliacao')
                 return err('Seu comentário contém linguagem inapropriada e não pode ser enviado. Por favor, revise o texto.', 422)
 
         if produto_id:
@@ -2877,6 +2908,69 @@ def admin_denuncias():
             send_email(den['email'], '⛔ Conta banida permanentemente - CondConnect', corpo)
             return ok({'message': 'Usuário banido permanentemente'})
 
+    finally:
+        db.close()
+
+
+# ── ADMIN: RELATÓRIOS AUTOMÁTICOS ────────────────────────────────────────────
+
+@app.route('/admin/relatorios', methods=['GET', 'PUT', 'OPTIONS'])
+def admin_relatorios():
+    uid, e = require_admin()
+    if e: return e
+    db = get_db()
+    try:
+        if request.method == 'GET':
+            with db.cursor() as c:
+                c.execute("""
+                    SELECT r.id, r.reporter_id, r.tipo, r.alvo_id, r.motivo, r.descricao,
+                           r.status, r.criado_em,
+                           u.nome as usuario_nome, u.email as usuario_email,
+                           u.condominio as usuario_condo
+                    FROM relatorios r
+                    JOIN usuarios u ON r.alvo_id = u.id
+                    ORDER BY r.criado_em DESC
+                    LIMIT 200
+                """)
+                rows = c.fetchall()
+            return ok({'relatorios': [{**r, 'criado_em': str(r['criado_em'])} for r in rows]})
+
+        body = get_body()
+        relatorio_id = int(body.get('relatorio_id', 0))
+        acao = body.get('acao', '')  # ignorar | suspender | banir
+        if not relatorio_id or acao not in ('ignorar', 'suspender', 'banir'):
+            return err('relatorio_id e acao valida sao obrigatorios')
+
+        with db.cursor() as c:
+            c.execute("SELECT * FROM relatorios r JOIN usuarios u ON r.alvo_id=u.id WHERE r.id=%s", (relatorio_id,))
+            rel = c.fetchone()
+        if not rel:
+            return err('Relatório não encontrado', 404)
+
+        alvo_id = rel['alvo_id']
+
+        if acao == 'ignorar':
+            with db.cursor() as c:
+                c.execute("UPDATE relatorios SET status='resolvido' WHERE id=%s", (relatorio_id,))
+            return ok({'message': 'Relatório ignorado'})
+
+        if acao == 'suspender':
+            duracao = int(body.get('duracao_dias', 3))
+            suspenso_ate = datetime.now() + timedelta(days=duracao)
+            with db.cursor() as c:
+                c.execute("UPDATE usuarios SET suspenso_ate=%s, total_suspensoes=total_suspensoes+1 WHERE id=%s", (suspenso_ate, alvo_id))
+                c.execute("UPDATE relatorios SET status='resolvido' WHERE id=%s", (relatorio_id,))
+            notificar(db, alvo_id, 'moderacao', 'Conta suspensa',
+                      f'Sua conta foi suspensa por {duracao} dias devido a violação das diretrizes.', '/Templates/configuracoes.html')
+            return ok({'message': f'Usuário suspenso por {duracao} dias'})
+
+        if acao == 'banir':
+            with db.cursor() as c:
+                c.execute("UPDATE usuarios SET ativo=0 WHERE id=%s", (alvo_id,))
+                c.execute("UPDATE relatorios SET status='resolvido' WHERE id=%s", (relatorio_id,))
+            notificar(db, alvo_id, 'moderacao', 'Conta banida',
+                      'Sua conta foi banida permanentemente por violação das diretrizes.', '/Templates/index.html')
+            return ok({'message': 'Usuário banido'})
     finally:
         db.close()
 
