@@ -26,6 +26,22 @@
         #dash-tooltip strong { display: block; margin-bottom: 3px; font-size: 12px; }
         #dash-tooltip ul { margin: 4px 0 0; padding-left: 14px; }
         #dash-tooltip ul li { margin-bottom: 2px; }
+        /* Multi-select filtro */
+        .ms-box { position:relative; }
+        .ms-trigger { display:flex;align-items:center;justify-content:space-between;gap:8px;
+                      padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;
+                      background:white;cursor:pointer;font-size:13px;color:#374151;
+                      min-width:148px;user-select:none; }
+        .ms-trigger:hover { border-color:#00a6a6; }
+        .ms-list { display:none;position:absolute;top:calc(100% + 4px);left:0;
+                   background:white;border:1px solid #e2e8f0;border-radius:10px;
+                   box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;
+                   max-height:210px;overflow-y:auto;min-width:160px; }
+        .ms-list.open { display:block; }
+        .ms-item { display:flex;align-items:center;gap:8px;padding:9px 14px;
+                   font-size:13px;color:#374151;cursor:pointer; }
+        .ms-item:hover { background:#f8fafc; }
+        .ms-item input { accent-color:#00a6a6;width:14px;height:14px;cursor:pointer;flex-shrink:0; }
     </style>
 </head>
 
@@ -447,17 +463,34 @@
 
         <!-- DESEMPENHO DE VENDAS -->
         <section style="margin-bottom: 40px;">
-            <div class="section-header" style="margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div class="section-header" style="margin-bottom: 16px; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
                 <div>
                     <h2>Desempenho de Vendas</h2>
-                    <span class="subtitle">Resumo dos últimos 30 dias &nbsp;·&nbsp; <a href="/Templates/relatorio.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">Ver relatório completo →</a></span>
+                    <span class="subtitle" id="dash-periodo-label">Carregando... &nbsp;·&nbsp; <a href="/Templates/relatorio.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">Ver relatório completo →</a></span>
                 </div>
-                <select id="analytics-periodo" style="padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #374151; background: white; cursor: pointer;">
-                    <option value="30">Últimos 30 dias</option>
-                    <option value="90">Últimos 90 dias</option>
-                    <option value="365">Último ano</option>
-                    <option value="all">Todo período</option>
-                </select>
+                <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Ano</div>
+                        <div class="ms-box" id="ms-anos">
+                            <div class="ms-trigger" onclick="msToggle('ms-anos')">
+                                <span id="ms-anos-lbl">Todos os anos</span>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <div class="ms-list" id="ms-anos-list"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">Mês</div>
+                        <div class="ms-box" id="ms-meses">
+                            <div class="ms-trigger" onclick="msToggle('ms-meses')">
+                                <span id="ms-meses-lbl">Todos os meses</span>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <div class="ms-list" id="ms-meses-list"></div>
+                        </div>
+                    </div>
+                    <button onclick="msAplicarDash()" style="padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;height:36px;">Aplicar</button>
+                </div>
             </div>
 
             <!-- Métricas financeiras -->
@@ -647,6 +680,120 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="/static/js/main.js"></script>
     <script src="/static/js/dashboard.js"></script>
+    <script>
+    (function(){
+        const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                            'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        let _periodos = [];
+
+        // Toggle dropdown
+        window.msToggle = function(id) {
+            const list = document.getElementById(id + '-list');
+            if (!list) return;
+            const aberto = list.classList.contains('open');
+            document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+            if (!aberto) list.classList.add('open');
+        };
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.ms-box'))
+                document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+        });
+
+        function msGetSelected(id) {
+            const l = document.getElementById(id + '-list');
+            return l ? [...l.querySelectorAll('input:checked')].map(c => c.value) : [];
+        }
+        function msSetLabel(id, sel, placeholder) {
+            const lbl = document.getElementById(id + '-lbl');
+            if (lbl) lbl.textContent = sel.length ? sel.length + ' selecionado' + (sel.length > 1 ? 's' : '') : placeholder;
+        }
+        function msRenderMeses(anosSelected) {
+            const filtrados = anosSelected.length
+                ? _periodos.filter(p => anosSelected.includes(String(p.ano)))
+                : _periodos;
+            const meses = [...new Set(filtrados.map(p => p.mes))].sort((a,b)=>a-b);
+            const prevSel = msGetSelected('ms-meses');
+            const list = document.getElementById('ms-meses-list');
+            if (!list) return;
+            list.innerHTML = meses.map(m => `
+                <label class="ms-item">
+                    <input type="checkbox" value="${m}" ${prevSel.includes(String(m)) ? 'checked' : ''}>
+                    ${MESES_NOME[m-1]}
+                </label>
+            `).join('');
+            msSetLabel('ms-meses', msGetSelected('ms-meses'), 'Todos os meses');
+        }
+        window.msOnAnoChange = function() {
+            const sel = msGetSelected('ms-anos');
+            msSetLabel('ms-anos', sel, 'Todos os anos');
+            msRenderMeses(sel);
+        };
+
+        // Substituir o carregarAnalytics do dashboard.js para aceitar string de params
+        const _origAnalytics = window.carregarAnalytics;
+        window.carregarAnalytics = async function(param) {
+            let qs;
+            if (param === undefined || param === null) qs = 'dias=30';
+            else if (typeof param === 'number' || /^\d+$/.test(String(param)))
+                qs = 'dias=' + param;
+            else qs = String(param);
+            try {
+                const data = await CondConnect.api('/me/analytics?' + qs);
+                renderAnalytics(data);
+                // Atualizar label de período
+                const lbl = document.getElementById('dash-periodo-label');
+                if (lbl) {
+                    const anos = msGetSelected('ms-anos');
+                    const meses = msGetSelected('ms-meses');
+                    let desc = 'Últimos 30 dias';
+                    if (anos.length || meses.length) {
+                        const partes = [];
+                        if (anos.length) partes.push(anos.join(', '));
+                        if (meses.length) partes.push(meses.map(m => MESES_NOME[+m-1]).join(', '));
+                        desc = partes.join(' · ');
+                    } else if (qs.startsWith('dias=')) {
+                        const d = parseInt(qs.split('=')[1]);
+                        desc = d >= 3600 ? 'Todo o período' : `Últimos ${d} dias`;
+                    }
+                    lbl.innerHTML = desc + ' &nbsp;·&nbsp; <a href="/Templates/relatorio.html" style="color:var(--primary);font-weight:600;text-decoration:none;">Ver relatório completo →</a>';
+                }
+            } catch(err) { console.error('analytics error', err); }
+        };
+
+        window.msAplicarDash = function() {
+            const anos  = msGetSelected('ms-anos');
+            const meses = msGetSelected('ms-meses');
+            let qs = '';
+            if (anos.length)  qs += 'anos='  + anos.join(',');
+            if (meses.length) qs += (qs ? '&' : '') + 'meses=' + meses.join(',');
+            if (!qs) qs = 'dias=30';
+            window.carregarAnalytics(qs);
+        };
+
+        async function msCarregarPeriodos() {
+            try {
+                _periodos = await CondConnect.api('/me/periodos');
+                const anos = [...new Set(_periodos.map(p => p.ano))].sort((a,b)=>b-a);
+                const listAnos = document.getElementById('ms-anos-list');
+                if (listAnos) {
+                    listAnos.innerHTML = anos.map(a => `
+                        <label class="ms-item">
+                            <input type="checkbox" value="${a}" onchange="msOnAnoChange()">
+                            ${a}
+                        </label>
+                    `).join('');
+                }
+                msRenderMeses([]);
+            } catch(e) { console.warn('periodos error', e); }
+        }
+
+        // Carregar períodos após dashboard.js inicializar
+        if (document.readyState === 'loading')
+            document.addEventListener('DOMContentLoaded', msCarregarPeriodos);
+        else
+            setTimeout(msCarregarPeriodos, 200);
+    })();
+    </script>
 </body>
 
 </html>

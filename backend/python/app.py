@@ -985,6 +985,25 @@ def me_export():
 
 # ── ANALYTICS ────────────────────────────────────────────────────────────────
 
+@app.route('/me/periodos', methods=['GET', 'OPTIONS'])
+def me_periodos():
+    """Retorna os pares (ano, mes) onde o vendedor tem ao menos 1 pedido entregue."""
+    uid, e = require_auth()
+    if e: return e
+    db = get_db()
+    try:
+        with db.cursor() as c:
+            c.execute("""
+                SELECT DISTINCT YEAR(criado_em) AS ano, MONTH(criado_em) AS mes
+                FROM pedidos WHERE vendedor_id=%s AND status='entregue'
+                ORDER BY ano DESC, mes ASC
+            """, (uid,))
+            rows = c.fetchall()
+        return ok([{'ano': int(r['ano']), 'mes': int(r['mes'])} for r in rows])
+    finally:
+        db.close()
+
+
 @app.route('/me/analytics', methods=['GET', 'OPTIONS'])
 def me_analytics():
     uid, e = require_auth()
@@ -1001,7 +1020,25 @@ def me_analytics():
     ano  = int(ano_raw)  if ano_raw.isdigit()  else None
     mes  = int(mes_raw)  if mes_raw.isdigit()  else None
 
-    if ano:
+    # Multi-select: anos=2024,2025 e meses=1,2,3
+    anos_raw   = request.args.get('anos', '').strip()
+    meses_raw  = request.args.get('meses', '').strip()
+    anos_list  = [int(a) for a in anos_raw.split(',')  if a.strip().isdigit()] if anos_raw  else []
+    meses_list = [int(m) for m in meses_raw.split(',') if m.strip().isdigit()] if meses_raw else []
+    anos_list  = [a for a in anos_list  if 2000 <= a <= 2100]
+    meses_list = [m for m in meses_list if 1    <= m <= 12  ]
+
+    if anos_list:
+        from calendar import monthrange as _mr
+        _min_ano = min(anos_list); _max_ano = max(anos_list)
+        if meses_list:
+            _min_mes = min(meses_list); _max_mes = max(meses_list)
+            data_inicio = datetime(_min_ano, _min_mes, 1)
+            data_fim    = datetime(_max_ano, _max_mes, _mr(_max_ano, _max_mes)[1], 23, 59, 59)
+        else:
+            data_inicio = datetime(_min_ano, 1, 1)
+            data_fim    = datetime(_max_ano, 12, 31, 23, 59, 59)
+    elif ano:
         from calendar import monthrange
         if mes:
             data_inicio = datetime(ano, mes, 1)
@@ -1022,6 +1059,14 @@ def me_analytics():
             filtros_extra.append("AND pe.produto_id=%s"); params_extra.append(produto_id)
         if categoria:
             filtros_extra.append("AND pr.categoria=%s"); params_extra.append(categoria)
+        if anos_list:
+            _ph = ','.join(['%s'] * len(anos_list))
+            filtros_extra.append(f"AND YEAR(pe.criado_em) IN ({_ph})")
+            params_extra.extend(anos_list)
+        if meses_list:
+            _ph = ','.join(['%s'] * len(meses_list))
+            filtros_extra.append(f"AND MONTH(pe.criado_em) IN ({_ph})")
+            params_extra.extend(meses_list)
         filtro_join_produto = "JOIN produtos pr ON pe.produto_id=pr.id" if categoria else ""
         filtro_str  = " ".join(filtros_extra)
         params_base = tuple(params_extra)

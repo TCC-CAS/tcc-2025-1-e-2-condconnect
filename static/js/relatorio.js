@@ -526,39 +526,89 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+    // ── Multi-select helpers ──────────────────────────────────────────────────
+    const _MESES_REL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                        'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    let _relPeriodos = [];
+
+    window.msRelToggle = function(id) {
+        const list = document.getElementById(id + '-list');
+        if (!list) return;
+        const aberto = list.classList.contains('open');
+        document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+        if (!aberto) list.classList.add('open');
+    };
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.ms-box'))
+            document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+    });
+
+    function msRelGetSelected(id) {
+        const l = document.getElementById(id + '-list');
+        return l ? [...l.querySelectorAll('input:checked')].map(c => c.value) : [];
+    }
+    function msRelSetLabel(id, sel, placeholder) {
+        const lbl = document.getElementById(id + '-lbl');
+        if (lbl) lbl.textContent = sel.length ? sel.length + ' selecionado' + (sel.length > 1 ? 's' : '') : placeholder;
+    }
+    function relRenderMeses(anosSelected) {
+        const filtrados = anosSelected.length
+            ? _relPeriodos.filter(p => anosSelected.includes(String(p.ano)))
+            : _relPeriodos;
+        const meses = [...new Set(filtrados.map(p => p.mes))].sort((a,b)=>a-b);
+        const prevSel = msRelGetSelected('rel-ms-meses');
+        const list = document.getElementById('rel-ms-meses-list');
+        if (!list) return;
+        list.innerHTML = meses.map(m => `
+            <label class="ms-item">
+                <input type="checkbox" value="${m}" ${prevSel.includes(String(m)) ? 'checked' : ''}>
+                ${_MESES_REL[m-1]}
+            </label>
+        `).join('');
+        msRelSetLabel('rel-ms-meses', msRelGetSelected('rel-ms-meses'), 'Todos os meses');
+    }
+    window.relOnAnoChange = function() {
+        const sel = msRelGetSelected('rel-ms-anos');
+        msRelSetLabel('rel-ms-anos', sel, 'Todos os anos');
+        relRenderMeses(sel);
+    };
+    window.msRelAplicar = function() { carregarRelatorio(); };
+
     function getFiltros() {
+        const anos  = msRelGetSelected('rel-ms-anos');
+        const meses = msRelGetSelected('rel-ms-meses');
         return {
-            dias:      document.getElementById('rel-periodo')?.value   || '30',
-            produto_id: document.getElementById('rel-produto')?.value  || '',
+            produto_id: document.getElementById('rel-produto')?.value   || '',
             categoria:  document.getElementById('rel-categoria')?.value || '',
-            ano:        document.getElementById('rel-ano')?.value       || '',
-            mes:        document.getElementById('rel-mes')?.value       || '',
+            anos, meses,
         };
     }
 
     async function carregarRelatorio() {
-        const { dias, produto_id, categoria, ano, mes } = getFiltros();
+        const { produto_id, categoria, anos, meses } = getFiltros();
         const loading = document.getElementById('rel-loading');
         const content = document.getElementById('rel-content');
         if (loading) loading.style.display = 'block';
         if (content) content.style.display = 'none';
 
         try {
-            const params = new URLSearchParams({ dias });
+            const params = new URLSearchParams();
             if (produto_id) params.set('produto_id', produto_id);
             if (categoria)  params.set('categoria', categoria);
-            if (ano)        params.set('ano', ano);
-            if (mes)        params.set('mes', mes);
+            if (anos.length)  params.set('anos', anos.join(','));
+            if (meses.length) params.set('meses', meses.join(','));
+            if (!anos.length && !meses.length) params.set('dias', '30');
 
             const data = await CondConnect.api(`/me/analytics?${params}`);
             const sub = document.getElementById('rel-subtitulo');
             if (sub) {
                 const agora = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
                 const partes = [];
-                if (ano && mes) partes.push(`${document.getElementById('rel-mes').options[document.getElementById('rel-mes').selectedIndex].text}/${ano}`);
-                else if (ano) partes.push(`ano ${ano}`);
-                else if (mes) partes.push(document.getElementById('rel-mes').options[document.getElementById('rel-mes').selectedIndex].text);
-                else partes.push(`últimos ${dias} dias`);
+                if (anos.length && meses.length)
+                    partes.push(meses.map(m => _MESES_REL[+m-1]).join(', ') + ' de ' + anos.join(', '));
+                else if (anos.length) partes.push('ano(s): ' + anos.join(', '));
+                else if (meses.length) partes.push(meses.map(m => _MESES_REL[+m-1]).join(', '));
+                else partes.push('últimos 30 dias');
                 if (categoria) partes.push(document.getElementById('rel-categoria').options[document.getElementById('rel-categoria').selectedIndex].text);
                 if (produto_id) partes.push('produto filtrado');
                 sub.textContent = `Gerado em ${agora} · ${partes.join(' · ')}`;
@@ -572,24 +622,28 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Preencher select de anos dinamicamente
-    function popularAnos() {
-        const sel = document.getElementById('rel-ano');
-        if (!sel) return;
-        const anoAtual = new Date().getFullYear();
-        for (let a = anoAtual; a >= anoAtual - 5; a--) {
-            const opt = document.createElement('option');
-            opt.value = a;
-            opt.textContent = a;
-            sel.appendChild(opt);
-        }
+    async function popularPeriodosMulti() {
+        try {
+            _relPeriodos = await CondConnect.api('/me/periodos');
+            const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b)=>b-a);
+            const listAnos = document.getElementById('rel-ms-anos-list');
+            if (listAnos) {
+                listAnos.innerHTML = anos.map(a => `
+                    <label class="ms-item">
+                        <input type="checkbox" value="${a}" onchange="relOnAnoChange()">
+                        ${a}
+                    </label>
+                `).join('');
+            }
+            relRenderMeses([]);
+        } catch(e) { console.warn('periodos error', e); }
     }
 
-    ['rel-periodo', 'rel-produto', 'rel-categoria', 'rel-ano', 'rel-mes'].forEach(id => {
+    ['rel-produto', 'rel-categoria'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', carregarRelatorio);
     });
 
-    popularAnos();
+    await popularPeriodosMulti();
     await carregarProdutos();
     await carregarRelatorio();
 });
