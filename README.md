@@ -6,8 +6,6 @@ O **CondConnect** permite a compra e venda de produtos entre vizinhos do mesmo c
 
 Desenvolvido como Trabalho de Conclusão de Curso — Sistemas de Informação · Centro Universitário Senac · 2025.
 
-**Produção:** https://condconnect.duckdns.org/Templates/index.html
-
 ---
 
 ## Tecnologias
@@ -22,30 +20,17 @@ Desenvolvido como Trabalho de Conclusão de Curso — Sistemas de Informação �
 ![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=flat&logo=gunicorn&logoColor=white)
 ![Apache](https://img.shields.io/badge/Apache-D22128?style=flat&logo=apache&logoColor=white)
 
-| Camada | Tecnologia |
-|---|---|
-| Frontend | HTML5, CSS3, JavaScript ES6+ (sem frameworks externos) |
-| Backend | Python 3 + Flask (API REST) |
-| Banco de dados | MySQL 8.0 |
-| Servidor de aplicação | Gunicorn (WSGI) |
-| Proxy reverso | Apache HTTP Server |
-| Hospedagem | AWS Lightsail (Ubuntu) |
-| Moderação de imagens | AWS Rekognition |
-| E-mail transacional | Gmail SMTP (porta 465 SSL) |
-| DNS dinâmico | DuckDNS |
-| SSL/HTTPS | Let's Encrypt / Certbot |
-
 ---
 
-## Pré-requisitos
+## Pré-requisitos e Instalação
+
+### Pré-requisitos
 
 - Python 3.10 ou superior
 - MySQL 8.0 (local ou remoto)
 - Git
 
----
-
-## Instalação (local)
+### Instalação local
 
 ```bash
 # 1. Clonar o repositório
@@ -64,7 +49,7 @@ pip install -r backend/python/requirements.txt
 mysql -u root -p < backend/db_setup.sql
 
 # 5. Configurar variáveis de ambiente
-# Crie backend/python/.env com o conteúdo abaixo:
+# Crie o arquivo backend/python/.env com o conteúdo abaixo:
 ```
 
 ```env
@@ -73,11 +58,6 @@ DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
 DB_NAME=condconnect
 FLASK_SECRET_KEY=sua_chave_secreta
-
-# Opcionais (moderação de imagens via AWS Rekognition)
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=us-east-1
 ```
 
 ```bash
@@ -89,7 +69,7 @@ python app.py
 A API ficará disponível em `http://localhost:5000`.
 Abra qualquer página da pasta `Templates/` no navegador para acessar o frontend.
 
-### Deploy em produção (servidor)
+### Deploy (produção)
 
 ```bash
 cd /var/www/html/condconnect
@@ -99,52 +79,27 @@ git pull origin master
 sudo systemctl restart condconnect-flask
 ```
 
-> O script de configuração inicial do servidor está em `backend/python/setup_server.sh`.
-
 ---
 
 ## Exemplos de uso
 
 ### Cadastro e login com 2FA
-O morador se cadastra informando nome, e-mail, senha com checklist de força em tempo real, CPF, telefone e identificação no condomínio (bloco e apartamento). Em cada login, um código de 6 dígitos é enviado ao e-mail com validade de 10 minutos.
+O morador se cadastra informando nome, e-mail, senha, CPF, telefone e identificação no condomínio. Em cada login, um código de 6 dígitos é enviado ao e-mail com validade de 10 minutos.
 
 ### Publicar um anúncio
-O vendedor acessa **Meus Produtos > Novo Anúncio**, preenche título, descrição, preço, categoria, condição e faz upload de fotos. O produto entra como **pendente** e só aparece no marketplace após aprovação do administrador.
+O vendedor acessa **Meus Produtos > Novo Anúncio**, preenche as informações e faz upload de fotos. O produto entra como **pendente** e só aparece no marketplace após aprovação do administrador.
 
 ### Negociar com proposta
-O comprador pode enviar uma proposta de preço (mínimo 70% do valor anunciado). Se aceita pelo vendedor, o produto é adicionado automaticamente ao carrinho com o preço negociado travado.
+O comprador pode enviar uma proposta de preço (mínimo 70% do valor anunciado). Se aceita, o produto é adicionado automaticamente ao carrinho com o preço negociado.
 
 ### Confirmar entrega
-Ao entregar o produto, o vendedor informa ao comprador um código de 4 dígitos gerado pelo sistema. O comprador valida o código no app, confirmando o recebimento e concluindo a transação.
+Ao entregar o produto, o vendedor informa ao comprador um código de 4 dígitos gerado pelo sistema. O comprador valida o código no app, confirmando o recebimento.
 
 ### Dashboard analítico
-O vendedor acessa o painel com faturamento, ticket médio, funil de conversão, top produtos e evolução mensal — filtráveis por ano e mês. Os dados são exportáveis em Excel com 8 abas detalhadas.
+O vendedor acessa o painel com faturamento, ticket médio, funil de conversão e top produtos — filtráveis por ano e mês — e exporta os dados em Excel com 8 abas.
 
 ### Painel administrativo
-O administrador acessa `/Templates/admin.html` para aprovar ou rejeitar anúncios, suspender ou banir usuários (com bloqueio de CPF) e resolver denúncias, incluindo as geradas automaticamente pelo filtro de palavras proibidas.
-
----
-
-## Estrutura do projeto
-
-```
-/
-├── Templates/               # Páginas HTML (frontend)
-├── static/
-│   ├── css/                 # Estilos globais e por página
-│   ├── js/                  # Scripts por página
-│   └── assets/              # Imagens e uploads
-├── backend/
-│   ├── db_setup.sql         # Schema completo (DROP + CREATE)
-│   ├── db_setup_v2.sql      # Schema incremental (IF NOT EXISTS)
-│   └── python/
-│       ├── app.py           # API Flask — todas as rotas REST
-│       ├── email_helper.py  # Envio de e-mails via SMTP
-│       ├── requirements.txt
-│       └── setup_server.sh  # Configuração inicial do servidor
-├── docs/                    # Diagramas C4, DER, modelo físico, casos de uso
-└── tests/                   # Testes automatizados
-```
+O administrador aprova ou rejeita anúncios, suspende ou bane usuários e resolve denúncias em `/Templates/admin.html`.
 
 ---
 
@@ -164,16 +119,6 @@ O administrador acessa `/Templates/admin.html` para aprovar ou rejeitar anúncio
    git push origin feature/minha-feature
    ```
 5. Abra um **Pull Request** descrevendo as mudanças
-
-**Padrão de commits:**
-
-| Prefixo | Uso |
-|---|---|
-| `feat:` | Nova funcionalidade |
-| `fix:` | Correção de bug |
-| `docs:` | Alteração em documentação |
-| `refactor:` | Refatoração sem mudança de comportamento |
-| `test:` | Adição ou correção de testes |
 
 ---
 
