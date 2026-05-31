@@ -87,19 +87,19 @@ sudo systemctl restart condconnect-flask
 O morador se cadastra informando nome, e-mail, senha, CPF, telefone e identificação no condomínio. Em cada login, um código de 6 dígitos é enviado ao e-mail com validade de 10 minutos.
 
 ### Publicar um anúncio
-O vendedor acessa **Meus Produtos > Novo Anúncio**, preenche as informações e faz upload de fotos. O produto entra como **pendente** e só aparece no marketplace após aprovação do administrador.
+O vendedor acessa **Meus Produtos > Novo Anúncio**, preenche as informações e faz upload de fotos.
 
 ### Negociar com proposta
 O comprador pode enviar uma proposta de preço (mínimo 70% do valor anunciado). Se aceita, o produto é adicionado automaticamente ao carrinho com o preço negociado.
 
 ### Confirmar entrega
-Ao entregar o produto, o vendedor informa ao comprador um código de 4 dígitos gerado pelo sistema. O comprador valida o código no app, confirmando o recebimento.
+Ao entregar o produto, o comprador informa ao vendedor um código de 4 dígitos gerado pelo sistema. O comprador valida o código no app, confirmando o recebimento.
 
 ### Dashboard analítico
 O vendedor acessa o painel com faturamento, ticket médio, funil de conversão e top produtos — filtráveis por ano e mês — e exporta os dados em Excel com 8 abas.
 
 ### Painel administrativo
-O administrador aprova ou rejeita anúncios, suspende ou bane usuários e resolve denúncias em `/Templates/admin.html`.
+O administrador pode remover anúncios, suspender ou banir usuários e resolver denúncias em `/Templates/admin.html`.
 
 ---
 
@@ -124,6 +124,8 @@ O administrador aprova ou rejeita anúncios, suspende ou bane usuários e resolv
 
 ## Licença
 
-Este projeto foi desenvolvido exclusivamente para fins acadêmicos como Trabalho de Conclusão de Curso no Centro Universitário Senac (2025).
+MIT License
 
-O uso, cópia, modificação e distribuição do código são permitidos apenas para fins educacionais e não comerciais, com obrigatória atribuição de crédito aos autores originais.
+O uso, cópia, modificação e distribuição deste projeto são permitidos, desde que mantida a devida atribuição de crédito aos autores originais.
+
+Desenvolvido para fins acadêmicos — Centro Universitário Senac, 2025.
