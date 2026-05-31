@@ -1,34 +1,6 @@
 let _relData = null;
 let _relInsumos = null;
 
-// ── Multi-select: usa style.display diretamente (máxima especificidade, ignora CSS externo) ──
-function _msRelClose() {
-    document.querySelectorAll('.ms-list').forEach(function(l){ l.style.display = 'none'; });
-}
-function _msRelToggle(id) {
-    var list    = document.getElementById(id + '-list');
-    var trigger = document.getElementById(id + '-trigger');
-    if (!list || !trigger) return;
-    var visible = list.style.display === 'block';
-    _msRelClose();
-    if (!visible) {
-        var r = trigger.getBoundingClientRect();
-        list.style.cssText = 'display:block;position:fixed;top:' + (r.bottom + 4) + 'px;left:' + r.left + 'px;min-width:' + r.width + 'px;z-index:99999;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-height:210px;overflow-y:auto;';
-    }
-}
-window.msRelAplicar = function() {};
-document.addEventListener('click', function(e){
-    if (!e.target.closest('.ms-box')) _msRelClose();
-});
-document.addEventListener('DOMContentLoaded', function() {
-    ['rel-ms-anos', 'rel-ms-meses'].forEach(function(id) {
-        var trigger = document.getElementById(id + '-trigger');
-        if (trigger) trigger.addEventListener('click', function(e) {
-            e.stopPropagation();
-            _msRelToggle(id);
-        });
-    });
-});
 
 async function exportarExcel() {
     if (!_relData) return alert('Carregue o relatório antes de exportar.');
@@ -570,6 +542,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.addEventListener('click', e => {
         if (!e.target.closest('.ms-box'))
             document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+    });
+    ['rel-ms-anos', 'rel-ms-meses'].forEach(id => {
+        const trigger = document.getElementById(id + '-trigger');
+        if (trigger) trigger.addEventListener('click', e => {
+            e.stopPropagation();
+            window.msRelToggle(id);
+        });
     });
 
     function msRelGetSelected(id) {
