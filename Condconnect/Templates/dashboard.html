@@ -686,18 +686,20 @@
                             'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         let _periodos = [];
 
+        function msCloseAll() {
+            document.querySelectorAll('.ms-list').forEach(function(l){ l.style.display = 'none'; });
+        }
         function msToggleById(id) {
-            const list = document.getElementById(id + '-list');
+            var list = document.getElementById(id + '-list');
             if (!list) return;
-            const aberto = list.classList.contains('open');
-            document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
-            if (!aberto) list.classList.add('open');
+            var visible = list.style.display === 'block';
+            msCloseAll();
+            if (!visible) { list.style.display = 'block'; list.style.position = 'absolute'; list.style.zIndex = '9999'; }
         }
 
         // Fechar ao clicar fora
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.ms-box'))
-                document.querySelectorAll('.ms-list.open').forEach(l => l.classList.remove('open'));
+            if (!e.target.closest('.ms-box')) msCloseAll();
         });
 
         // Adicionar listeners com stopPropagation após DOM pronto

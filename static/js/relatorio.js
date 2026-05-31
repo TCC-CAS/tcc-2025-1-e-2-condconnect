@@ -1,36 +1,29 @@
 let _relData = null;
 let _relInsumos = null;
 
-// Multi-select toggle — definido no topo, usa addEventListener para evitar interceptação
+// ── Multi-select: usa style.display diretamente (máxima especificidade, ignora CSS externo) ──
+function _msRelClose() {
+    document.querySelectorAll('.ms-list').forEach(function(l){ l.style.display = 'none'; });
+}
 function _msRelToggle(id) {
     var list = document.getElementById(id + '-list');
     if (!list) return;
-    var aberto = list.classList.contains('open');
-    document.querySelectorAll('.ms-list.open').forEach(function(l){ l.classList.remove('open'); });
-    if (!aberto) list.classList.add('open');
+    var visible = list.style.display === 'block';
+    _msRelClose();
+    if (!visible) { list.style.display = 'block'; list.style.position = 'absolute'; list.style.zIndex = '9999'; }
 }
 window.msRelAplicar = function() {};
 document.addEventListener('click', function(e){
-    if (!e.target.closest('.ms-box'))
-        document.querySelectorAll('.ms-list.open').forEach(function(l){ l.classList.remove('open'); });
+    if (!e.target.closest('.ms-box')) _msRelClose();
 });
-// Inicializar triggers com stopPropagation após DOM pronto
 document.addEventListener('DOMContentLoaded', function() {
     ['rel-ms-anos', 'rel-ms-meses'].forEach(function(id) {
         var trigger = document.getElementById(id + '-trigger');
-        if (!trigger) return;
-        trigger.addEventListener('click', function(e) {
+        if (trigger) trigger.addEventListener('click', function(e) {
             e.stopPropagation();
             _msRelToggle(id);
         });
     });
-    var btnAplicar = document.querySelector('[onclick="msRelAplicar()"]');
-    if (btnAplicar) {
-        btnAplicar.removeAttribute('onclick');
-        btnAplicar.addEventListener('click', function() {
-            if (typeof window.msRelAplicar === 'function') window.msRelAplicar();
-        });
-    }
 });
 
 async function exportarExcel() {
