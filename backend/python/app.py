@@ -2994,7 +2994,7 @@ def relatorios():
     db = get_db()
     try:
         with db.cursor() as c:
-            c.execute("INSERT INTO relatorios (usuario_id, tipo, alvo_id, motivo) VALUES (%s,%s,%s,%s)", (uid, tipo, alvo_id, motivo))
+            c.execute("INSERT INTO relatorios (reporter_id, tipo, alvo_id, motivo) VALUES (%s,%s,%s,%s)", (uid, tipo, alvo_id, motivo))
         return ok({'message': 'Denúncia registrada com sucesso'}, 201)
     finally:
         db.close()
