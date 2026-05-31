@@ -12,18 +12,19 @@
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <style>
         .stat-tip {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 13px; height: 13px; border-radius: 50%;
+            display: inline-block;
+            width: 13px; height: 13px; line-height: 13px;
+            border-radius: 50%; text-align: center;
             background: #cbd5e1; color: white;
-            font-size: 8px; font-weight: 800; font-style: italic; font-family: Georgia, serif;
+            font-size: 9px; font-weight: 800; font-style: italic; font-family: Georgia, serif;
             cursor: help; vertical-align: middle; margin-left: 4px;
-            flex-shrink: 0; line-height: 1; user-select: none;
+            flex-shrink: 0; user-select: none; box-sizing: content-box;
         }
         #dash-tooltip {
             position: fixed; z-index: 9999; pointer-events: none;
             background: #1e293b; color: white;
             padding: 10px 13px; border-radius: 10px;
-            font-size: 12px; line-height: 1.55; max-width: 240px;
+            font-size: 12px; line-height: 1.55; max-width: 220px;
             box-shadow: 0 8px 24px rgba(0,0,0,.25);
             display: none;
         }
@@ -671,21 +672,33 @@
     <script>
         (function(){
             const tip = document.getElementById('dash-tooltip');
-            document.addEventListener('mouseover', function(e){
-                const el = e.target.closest('.stat-tip[data-tip]');
-                if(!el) return;
-                tip.innerHTML = el.dataset.tip;
-                tip.style.display = 'block';
-            });
-            document.addEventListener('mousemove', function(e){
-                if(tip.style.display === 'none') return;
+            const SIDEBAR = 260; // largura da sidebar
+            function posicionar(cx, cy) {
                 const tw = tip.offsetWidth, th = tip.offsetHeight;
                 const vw = window.innerWidth, vh = window.innerHeight;
-                tip.style.left = (e.clientX + tw + 16 > vw ? e.clientX - tw - 8 : e.clientX + 12) + 'px';
-                tip.style.top  = (e.clientY + th + 12 > vh ? e.clientY - th - 8 : e.clientY + 12) + 'px';
+                let left = cx + 14;
+                if (left + tw > vw - 8) left = cx - tw - 10;
+                left = Math.max(SIDEBAR + 8, left);
+                let top = cy + 14;
+                if (top + th > vh - 8) top = cy - th - 10;
+                top = Math.max(8, top);
+                tip.style.left = left + 'px';
+                tip.style.top  = top + 'px';
+            }
+            let mx = 0, my = 0;
+            document.addEventListener('mousemove', function(e){
+                mx = e.clientX; my = e.clientY;
+                if (tip.style.display !== 'none') posicionar(mx, my);
+            });
+            document.addEventListener('mouseover', function(e){
+                const el = e.target.closest('.stat-tip[data-tip]');
+                if (!el) return;
+                tip.innerHTML = el.dataset.tip;
+                tip.style.display = 'block';
+                posicionar(mx, my);
             });
             document.addEventListener('mouseout', function(e){
-                if(e.target.closest('.stat-tip[data-tip]')) tip.style.display = 'none';
+                if (e.target.closest('.stat-tip[data-tip]')) tip.style.display = 'none';
             });
         })();
     </script>
