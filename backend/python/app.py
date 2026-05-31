@@ -194,6 +194,14 @@ def require_admin():
 
 def notificar(db, user_id, tipo, titulo, mensagem='', link=''):
     try:
+        # Respeita preferências: mensagem→notif_email, pedido→notif_sms
+        _pref = {'mensagem': 'notif_email', 'pedido': 'notif_sms'}.get(tipo)
+        if _pref:
+            with db.cursor() as c:
+                c.execute(f"SELECT {_pref} FROM configuracoes_usuario WHERE usuario_id=%s", (user_id,))
+                cfg = c.fetchone()
+            if cfg is not None and not cfg[_pref]:
+                return
         with db.cursor() as c:
             c.execute(
                 "INSERT INTO notificacoes (usuario_id, tipo, titulo, mensagem, link) VALUES (%s,%s,%s,%s,%s)",
@@ -324,6 +332,12 @@ def init_db():
                 pass
             try:
                 c.execute("ALTER TABLE configuracoes_usuario ADD COLUMN dois_fatores TINYINT(1) NOT NULL DEFAULT 1")
+            except Exception:
+                pass
+            try:
+                # notif_sms era DEFAULT 0 — corrige para 1 (Pedidos ON por padrão)
+                c.execute("ALTER TABLE configuracoes_usuario MODIFY COLUMN notif_sms TINYINT DEFAULT 1")
+                c.execute("UPDATE configuracoes_usuario SET notif_sms=1 WHERE notif_sms=0")
             except Exception:
                 pass
             try:
