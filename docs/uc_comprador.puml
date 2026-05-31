@@ -43,7 +43,6 @@ rectangle "CondConnect — Sistema" {
     }
 
     rectangle "Pós-Venda" {
-        (UC15 Acompanhar pedidos) as UC15
         (UC18 Avaliar vendedor) as UC18
     }
 }
@@ -51,10 +50,8 @@ rectangle "CondConnect — Sistema" {
 C --> UC11
 C --> UC12
 C --> UC14
-C --> UC15
 C --> UC18
 
 UC14 ..> UC11 : <<include>>
-UC18 ..> UC15 : <<include>>
 
 @enduml
