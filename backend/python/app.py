@@ -1095,7 +1095,7 @@ def me_analytics():
             """, (uid, data_inicio, data_fim) + params_base)
             custo_row = c.fetchone()
 
-        # Performance de produtos (top 10 por receita)
+        # Performance de produtos (top 15 por receita)
         cat_filtro = "AND pr.categoria=%s" if categoria else ""
         cat_param  = (categoria,) if categoria else ()
         with db.cursor() as c:
@@ -1108,7 +1108,7 @@ def me_analytics():
                 LEFT JOIN pedidos pe ON pe.produto_id=pr.id AND pe.status='entregue'
                   AND pe.criado_em >= %s AND pe.criado_em <= %s
                 WHERE pr.usuario_id=%s {cat_filtro}
-                GROUP BY pr.id ORDER BY receita DESC LIMIT 10
+                GROUP BY pr.id ORDER BY receita DESC LIMIT 15
             """, (data_inicio, data_fim, uid) + cat_param)
             produtos_perf = c.fetchall()
 
