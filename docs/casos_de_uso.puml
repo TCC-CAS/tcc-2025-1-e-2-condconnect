@@ -1,20 +1,22 @@
 @startuml DiagramaCasosDeUso_CondConnect
 
+left to right direction
+
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
-skinparam defaultFontSize 11
 
 skinparam usecase {
     BackgroundColor #1B4F8A
     FontColor white
     BorderColor #0D3369
-    FontSize 11
+    FontSize 13
+    Padding 10
 }
 skinparam actor {
     BackgroundColor #2D6CC0
     FontColor white
     BorderColor #1B4F8A
-    FontSize 12
+    FontSize 13
     FontStyle bold
 }
 skinparam rectangle {
@@ -27,71 +29,70 @@ skinparam rectangle {
 }
 skinparam ArrowColor #4A4A4A
 skinparam ArrowFontSize 10
+skinparam ArrowThickness 1
 
 title Diagrama de Casos de Uso — CondConnect
 
-' ── Atores ──────────────────────────────────────────────────────────────────
+' ── Atores (todos à esquerda) ────────────────────────────────────────────────
 actor "Morador" as M
 actor "Vendedor" as V
 actor "Comprador" as C
 actor "Administrador" as A
 
-note "Vendedor e Comprador\nsão papéis assumidos\npelo Morador." as N1
-
-M <|-- V : <<extend>>
-M <|-- C : <<extend>>
+M <|-- V
+M <|-- C
 
 ' ── Sistema ─────────────────────────────────────────────────────────────────
 rectangle "CondConnect — Sistema" {
 
-    rectangle "Autenticação e Conta" as Auth {
-        usecase "UC01\nCadastrar usuário" as UC01
-        usecase "UC02\nRealizar login com 2FA" as UC02
-        usecase "UC03\nRecuperar senha" as UC03
-        usecase "UC04\nEditar perfil" as UC04
-        usecase "UC05\nGerenciar configurações" as UC05
+    rectangle "Autenticação e Conta" {
+        usecase "UC01  Cadastrar usuário" as UC01
+        usecase "UC02  Realizar login com 2FA" as UC02
+        usecase "UC03  Recuperar senha" as UC03
+        usecase "UC04  Editar perfil" as UC04
+        usecase "UC05  Gerenciar configurações" as UC05
     }
 
-    rectangle "Marketplace" as Mkt {
-        usecase "UC06\nCadastrar produto/serviço" as UC06
-        usecase "UC07\nEditar produto" as UC07
-        usecase "UC08\nRemover produto" as UC08
-        usecase "UC09\nBuscar produto" as UC09
-        usecase "UC10\nFavoritar produto" as UC10
+    rectangle "Marketplace" {
+        usecase "UC06  Cadastrar produto/serviço" as UC06
+        usecase "UC07  Editar produto" as UC07
+        usecase "UC08  Remover produto" as UC08
+        usecase "UC09  Buscar produto" as UC09
+        usecase "UC10  Favoritar produto" as UC10
     }
 
-    rectangle "Negociação e Compra" as Neg {
-        usecase "UC11\nAdicionar produto ao carrinho" as UC11
-        usecase "UC12\nFazer proposta de preço" as UC12
-        usecase "UC13\nResponder proposta" as UC13
-        usecase "UC14\nFinalizar compra" as UC14
+    rectangle "Negociação e Compra" {
+        usecase "UC11  Adicionar ao carrinho" as UC11
+        usecase "UC12  Fazer proposta de preço" as UC12
+        usecase "UC13  Responder proposta" as UC13
+        usecase "UC14  Finalizar compra" as UC14
     }
 
-    rectangle "Pedidos e Pós-Venda" as Pos {
-        usecase "UC15\nAcompanhar pedidos" as UC15
-        usecase "UC16\nConfirmar entrega" as UC16
-        usecase "UC17\nEnviar mensagem" as UC17
-        usecase "UC18\nAvaliar vendedor" as UC18
-        usecase "UC19\nDenunciar produto ou usuário" as UC19
+    rectangle "Pedidos e Pós-Venda" {
+        usecase "UC15  Acompanhar pedidos" as UC15
+        usecase "UC16  Confirmar entrega" as UC16
+        usecase "UC17  Enviar mensagem" as UC17
+        usecase "UC18  Avaliar vendedor" as UC18
+        usecase "UC19  Denunciar produto ou usuário" as UC19
     }
 
-    rectangle "Analytics e Relatórios" as Rel {
-        usecase "UC20\nVisualizar dashboard de vendas" as UC20
-        usecase "UC21\nVisualizar relatório completo" as UC21
-        usecase "UC22\nExportar relatório em Excel" as UC22
+    rectangle "Analytics e Relatórios" {
+        usecase "UC20  Visualizar dashboard de vendas" as UC20
+        usecase "UC21  Visualizar relatório completo" as UC21
+        usecase "UC22  Exportar relatório em Excel" as UC22
     }
 
-    rectangle "Acessibilidade" as Acc {
-        usecase "UC28\nUtilizar recursos de acessibilidade" as UC28
+    rectangle "Acessibilidade" {
+        usecase "UC28  Utilizar recursos de acessibilidade" as UC28
     }
 
-    rectangle "Administração" as Adm {
-        usecase "UC23\nGerenciar produtos" as UC23
-        usecase "UC24\nGerenciar usuários" as UC24
-        usecase "UC25\nSuspender ou banir usuário" as UC25
-        usecase "UC26\nResolver denúncias" as UC26
-        usecase "UC27\nVisualizar estatísticas globais" as UC27
-        usecase "UC29\nModerar denúncias\nde usuários e chat" as UC29
+    rectangle "Administração" {
+        usecase "UC23  Gerenciar produtos" as UC23
+        usecase "UC24  Gerenciar usuários" as UC24
+        usecase "UC25  Suspender ou banir usuário" as UC25
+        usecase "UC26  Resolver denúncias" as UC26
+        usecase "UC27  Visualizar estatísticas globais" as UC27
+        usecase "UC29  Moderar denúncias de usuários e chat" as UC29
     }
 }
 
