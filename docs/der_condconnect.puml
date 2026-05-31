@@ -1,0 +1,294 @@
+@startuml DER_CondConnect
+
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+skinparam entity {
+    BackgroundColor #1B4F8A
+    FontColor white
+    BorderColor #0D3369
+    FontSize 12
+    FontStyle bold
+}
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 10
+skinparam ArrowFontColor #444444
+
+title Diagrama Entidade-Relacionamento (DER) — CondConnect
+
+' ── CORE ────────────────────────────────────────────────────────────────────
+entity "usuarios" as U {
+    * **id** <<PK>>
+    --
+    nome
+    email
+    senha (bcrypt)
+    cpf
+    telefone
+    apartamento
+    bloco
+    condominio
+    cep / logradouro / numero
+    bairro / cidade / estado
+    foto_url
+    bio
+    pix_key
+    rating
+    total_vendas / total_compras
+    papel (usuario|admin)
+    ativo
+    suspenso_ate
+    total_suspensoes
+    codigo_2fa / codigo_2fa_expira
+    session_version
+    criado_em / atualizado_em
+}
+
+entity "produtos" as P {
+    * **id** <<PK>>
+    --
+    usuario_id <<FK>>
+    titulo
+    descricao
+    preco
+    custo
+    categoria
+    condicao (Novo|Seminovo|Usado)
+    status (pendente|disponivel|vendido|rejeitado)
+    foto_principal
+    motivo_rejeicao
+    quantidade
+    visualizacoes
+    criado_em / atualizado_em
+}
+
+entity "imagens_produto" as IP {
+    * **id** <<PK>>
+    --
+    produto_id <<FK>>
+    url
+    ordem
+}
+
+entity "favoritos" as F {
+    * **id** <<PK>>
+    --
+    usuario_id <<FK>>
+    produto_id <<FK>>
+    criado_em
+}
+
+entity "itens_carrinho" as IC {
+    * **id** <<PK>>
+    --
+    usuario_id <<FK>>
+    produto_id <<FK>>
+    quantidade
+    preco_negociado
+    criado_em
+}
+
+entity "pedidos" as PED {
+    * **id** <<PK>>
+    --
+    comprador_id <<FK>>
+    vendedor_id <<FK>>
+    produto_id <<FK>>
+    quantidade
+    preco_total
+    status (aguardando|confirmado|enviado|entregue|cancelado)
+    codigo_entrega (CHAR 4)
+    criado_em / atualizado_em
+}
+
+entity "propostas" as PR {
+    * **id** <<PK>>
+    --
+    produto_id <<FK>>
+    comprador_id <<FK>>
+    vendedor_id <<FK>>
+    valor_proposto
+    quantidade
+    mensagem
+    status (pendente|aceita|recusada|cancelada)
+    criado_em / atualizado_em
+}
+
+entity "produto_insumos" as PI {
+    * **id** <<PK>>
+    --
+    produto_id <<FK>>
+    nome
+    quantidade
+    unidade
+    custo
+}
+
+' ── COMUNICAÇÃO ──────────────────────────────────────────────────────────────
+entity "conversas" as C {
+    * **id** <<PK>>
+    --
+    usuario1_id <<FK>>
+    usuario2_id <<FK>>
+    produto_id <<FK>>
+    ultima_mensagem
+    ultima_mensagem_em
+    criado_em
+}
+
+entity "mensagens" as M {
+    * **id** <<PK>>
+    --
+    conversa_id <<FK>>
+    remetente_id <<FK>>
+    texto
+    lida
+    criado_em
+}
+
+' ── PÓS-VENDA ────────────────────────────────────────────────────────────────
+entity "avaliacoes" as AV {
+    * **id** <<PK>>
+    --
+    avaliador_id <<FK>>
+    avaliado_id <<FK>>
+    produto_id <<FK>>
+    pedido_id <<FK>>
+    nota (1-5)
+    comentario
+    criado_em
+}
+
+entity "notificacoes" as N {
+    * **id** <<PK>>
+    --
+    usuario_id <<FK>>
+    tipo
+    titulo
+    mensagem
+    lida
+    link
+    criado_em
+}
+
+' ── CONFIGURAÇÕES ─────────────────────────────────────────────────────────────
+entity "configuracoes_usuario" as CFG {
+    * **usuario_id** <<PK, FK>>
+    --
+    notif_email
+    notif_sms
+    tema
+    idioma
+    privacidade_endereco
+    metodo_2fa
+    dois_fatores
+}
+
+' ── MODERAÇÃO ─────────────────────────────────────────────────────────────────
+entity "relatorios" as R {
+    * **id** <<PK>>
+    --
+    reporter_id <<FK>>
+    tipo (produto|usuario)
+    alvo_id
+    motivo
+    descricao
+    status (pendente|resolvido|rejeitado)
+    criado_em
+}
+
+entity "denuncias_avaliacao" as DA {
+    * **id** <<PK>>
+    --
+    avaliacao_id <<FK>>
+    denunciante_id <<FK>>
+    motivo
+    status
+    resolvido_por
+    criado_em
+}
+
+entity "denuncias_produto" as DP {
+    * **id** <<PK>>
+    --
+    produto_id <<FK>>
+    denunciante_id <<FK>>
+    motivo
+    status
+    resolvido_por
+    criado_em
+}
+
+entity "cpf_banidos" as CB {
+    * **id** <<PK>>
+    --
+    cpf
+    motivo
+    criado_em
+}
+
+entity "password_resets" as PSW {
+    * **id** <<PK>>
+    --
+    email
+    token
+    expira_em
+    usado
+    criado_em
+}
+
+' ── RELACIONAMENTOS ───────────────────────────────────────────────────────────
+
+' Usuário → Produtos (vende)
+U ||--o{ P : "vende (1,n)"
+
+' Produto → Imagens
+P ||--o{ IP : "possui (1,n)"
+
+' Produto → Insumos
+P ||--o{ PI : "composto por (1,n)"
+
+' Usuário → Favoritos ← Produto
+U ||--o{ F : "favorita (1,n)"
+P ||--o{ F : "(1,n)"
+
+' Usuário → Carrinho ← Produto
+U ||--o{ IC : "adiciona (1,n)"
+P ||--o{ IC : "(1,n)"
+
+' Usuário → Pedidos (compra / vende)
+U ||--o{ PED : "compra (1,n)"
+P ||--o{ PED : "(1,n)"
+
+' Usuário → Propostas
+U ||--o{ PR : "propõe (1,n)"
+P ||--o{ PR : "(1,n)"
+
+' Usuário → Conversas
+U ||--o{ C : "inicia (1,n)"
+
+' Conversa → Mensagens
+C ||--o{ M : "contém (1,n)"
+
+' Usuário → Avaliações
+U ||--o{ AV : "avalia (1,n)"
+PED ||--o{ AV : "origina (1,n)"
+
+' Usuário → Notificações
+U ||--o{ N : "recebe (1,n)"
+
+' Usuário → Configurações (1:1)
+U ||--|| CFG : "possui (1,1)"
+
+' Usuário → Relatórios
+U ||--o{ R : "denuncia (1,n)"
+
+' Avaliação → Denúncias
+AV ||--o{ DA : "denunciada (1,n)"
+
+' Produto → Denúncias
+P ||--o{ DP : "denunciado (1,n)"
+
+@enduml
