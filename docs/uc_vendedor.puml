@@ -36,18 +36,34 @@ actor "Vendedor" as V
 
 rectangle "CondConnect — Sistema" {
 
+    rectangle "Autenticação e Conta" {
+        (UC01 Cadastrar usuário) as UC01
+        (UC02 Realizar login com 2FA) as UC02
+        (UC03 Recuperar senha) as UC03
+        (UC04 Editar perfil) as UC04
+        (UC05 Gerenciar configurações) as UC05
+    }
+
+    rectangle "Marketplace" {
+        (UC09 Buscar produto) as UC09
+        (UC10 Favoritar produto) as UC10
+    }
+
     rectangle "Gestão de Anúncios" {
         (UC06 Cadastrar produto/serviço) as UC06
         (UC07 Editar produto) as UC07
         (UC08 Remover produto) as UC08
     }
 
-    rectangle "Negociação" {
+    rectangle "Negociação e Pedidos" {
         (UC13 Responder proposta) as UC13
+        (UC15 Acompanhar pedidos) as UC15
+        (UC16 Confirmar entrega) as UC16
     }
 
-    rectangle "Pedidos" {
-        (UC16 Confirmar entrega) as UC16
+    rectangle "Comunicação e Denúncia" {
+        (UC17 Enviar mensagem) as UC17
+        (UC19 Denunciar produto ou usuário) as UC19
     }
 
     rectangle "Analytics e Relatórios" {
@@ -55,17 +71,34 @@ rectangle "CondConnect — Sistema" {
         (UC21 Visualizar relatório completo) as UC21
         (UC22 Exportar relatório em Excel) as UC22
     }
+
+    rectangle "Acessibilidade" {
+        (UC28 Utilizar recursos de acessibilidade) as UC28
+    }
 }
 
+V --> UC01
+V --> UC02
+V --> UC03
+V --> UC04
+V --> UC05
 V --> UC06
 V --> UC07
 V --> UC08
+V --> UC09
+V --> UC10
 V --> UC13
+V --> UC15
 V --> UC16
+V --> UC17
+V --> UC19
 V --> UC20
 V --> UC21
 V --> UC22
+V --> UC28
 
+UC03 ..> UC02 : <<extend>>
+UC16 ..> UC15 : <<include>>
 UC22 ..> UC21 : <<include>>
 
 @enduml

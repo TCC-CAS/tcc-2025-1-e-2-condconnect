@@ -36,22 +36,58 @@ actor "Comprador" as C
 
 rectangle "CondConnect — Sistema" {
 
+    rectangle "Autenticação e Conta" {
+        (UC01 Cadastrar usuário) as UC01
+        (UC02 Realizar login com 2FA) as UC02
+        (UC03 Recuperar senha) as UC03
+        (UC04 Editar perfil) as UC04
+        (UC05 Gerenciar configurações) as UC05
+    }
+
+    rectangle "Marketplace" {
+        (UC09 Buscar produto) as UC09
+        (UC10 Favoritar produto) as UC10
+    }
+
     rectangle "Negociação e Compra" {
         (UC11 Adicionar ao carrinho) as UC11
         (UC12 Fazer proposta de preço) as UC12
         (UC14 Finalizar compra) as UC14
     }
 
-    rectangle "Pós-Venda" {
+    rectangle "Pedidos e Pós-Venda" {
+        (UC15 Acompanhar pedidos) as UC15
         (UC18 Avaliar vendedor) as UC18
+    }
+
+    rectangle "Comunicação e Denúncia" {
+        (UC17 Enviar mensagem) as UC17
+        (UC19 Denunciar produto ou usuário) as UC19
+    }
+
+    rectangle "Acessibilidade" {
+        (UC28 Utilizar recursos de acessibilidade) as UC28
     }
 }
 
+C --> UC01
+C --> UC02
+C --> UC03
+C --> UC04
+C --> UC05
+C --> UC09
+C --> UC10
 C --> UC11
 C --> UC12
 C --> UC14
+C --> UC15
+C --> UC17
 C --> UC18
+C --> UC19
+C --> UC28
 
+UC03 ..> UC02 : <<extend>>
 UC14 ..> UC11 : <<include>>
+UC18 ..> UC15 : <<include>>
 
 @enduml
