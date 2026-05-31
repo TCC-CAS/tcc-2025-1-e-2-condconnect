@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="/static/css/accessibility.css">
     <style>
         .rel-card { background:white; border-radius:16px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin-bottom:20px; }
+        @media (max-width:600px) {
+            .rel-card { padding:14px; }
+            #tabela-produtos th, #tabela-produtos td { font-size:11px; padding:8px 6px; white-space:nowrap; }
+            #tabela-produtos { min-width:520px; }
+        }
         .rel-label { font-size:12px; color:#64748b; font-weight:600; }
         .rel-value { font-size:26px; font-weight:800; color:#1e293b; margin-top:4px; }
         .rel-value.green { color:#16a34a; }
@@ -222,11 +227,11 @@
         <h2 style="font-size:16px;font-weight:700;color:#64748b;margin:0 0 16px;">2. Performance de Produtos</h2>
         <div class="rel-card" style="margin-bottom:24px;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
-                <div>
+                <div style="min-width:0;">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:16px;" class="chart-info-wrap">Mais vendidos por receita <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Top 5 produtos por faturamento no período.<br><br><strong>Como é calculado:</strong><br>• Preço × unidades vendidas<br>• Apenas pedidos entregues<br>• Ordenado do maior para o menor</span></span></div>
                     <div style="position:relative;height:220px;"><canvas id="chart-r-top"></canvas></div>
                 </div>
-                <div>
+                <div style="min-width:0;overflow:hidden;">
                     <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:12px;" class="chart-info-wrap">Tabela de produtos <span class="chart-info-icon">i<span class="chart-tooltip"><strong>O que é:</strong> Desempenho individual dos seus produtos no período.<br><br><strong>Limite:</strong> exibe os 15 com maior receita — use os filtros de categoria ou produto para ver outros.<br><br><strong>Colunas:</strong><br>• <strong>Vendas:</strong> pedidos entregues e unidades<br>• <strong>Receita:</strong> faturamento bruto do produto<br>• <strong>Taxa 5%:</strong> valor retido pela plataforma<br>• <strong>Rec. Líquida:</strong> receita após a taxa<br>• <strong>Margem:</strong> % de lucro (se custo cadastrado)<br>• <strong>Views:</strong> acessos à página do produto</span></span></div>
                     <div style="overflow-x:auto;">
                         <table id="tabela-produtos">

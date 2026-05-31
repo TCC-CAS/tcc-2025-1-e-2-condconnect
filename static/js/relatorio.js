@@ -284,14 +284,14 @@ document.addEventListener('DOMContentLoaded', async function () {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: { padding: { right: 70 } },
+                    layout: { padding: { right: window.innerWidth < 600 ? 0 : 70 } },
                     plugins: {
                         legend: { display: true, position: 'top', labels: { font: { size: 11 }, padding: 8 } },
                         datalabels: { display: false }
                     },
                     scales: {
                         x: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v >= 1000 ? 'R$' + (v/1000).toFixed(1) + 'k' : 'R$' + v } },
-                        y: { grid: { display: false } }
+                        y: { grid: { display: false }, ticks: { font: { size: window.innerWidth < 600 ? 9 : 11 } } }
                     }
                 }
             });
