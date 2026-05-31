@@ -177,6 +177,48 @@
     if (sendBtn) sendBtn.addEventListener('click', sendMessage);
     if (chatInput) chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
+    const btnDenunciar = document.getElementById('btn-denunciar-usuario');
+    if (btnDenunciar) {
+        btnDenunciar.addEventListener('click', async () => {
+            if (!activeConv) return CondConnect.showAlert('Selecione uma conversa primeiro.', 'warning');
+            const outroNome = activeConv.outro_usuario?.nome || 'este usuário';
+            const motivos = ['Comportamento inadequado', 'Assédio ou ameaça', 'Tentativa de golpe', 'Spam ou conteúdo falso', 'Outro'];
+            const motivo = await new Promise(resolve => {
+                const ov = document.createElement('div');
+                ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+                ov.innerHTML = `<div style="background:#fff;border-radius:20px;padding:28px;max-width:380px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.18);">
+                    <h3 style="margin:0 0 6px;color:#0f172a;font-size:17px;font-weight:700;">Denunciar ${outroNome}</h3>
+                    <p style="margin:0 0 18px;color:#64748b;font-size:13px;">Selecione o motivo da denúncia:</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+                        ${motivos.map((m, i) => `<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:14px;color:#374151;">
+                            <input type="radio" name="motivo_denuncia" value="${m}" ${i === 0 ? 'checked' : ''} style="accent-color:#ef4444;"> ${m}
+                        </label>`).join('')}
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button id="den-cancel" style="flex:1;background:#f1f5f9;color:#475569;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+                        <button id="den-ok" style="flex:1;background:#ef4444;color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Denunciar</button>
+                    </div>
+                </div>`;
+                document.body.appendChild(ov);
+                ov.querySelector('#den-cancel').addEventListener('click', () => { ov.remove(); resolve(null); });
+                ov.querySelector('#den-ok').addEventListener('click', () => {
+                    const sel = ov.querySelector('input[name="motivo_denuncia"]:checked');
+                    ov.remove();
+                    resolve(sel ? sel.value : null);
+                });
+                ov.addEventListener('click', e => { if (e.target === ov) { ov.remove(); resolve(null); } });
+            });
+            if (!motivo) return;
+            try {
+                const outroId = activeConv.outro_usuario?.id;
+                await CondConnect.api('/relatorios', { method: 'POST', body: { tipo: 'usuario', alvo_id: outroId, motivo } });
+                await CondConnect.showAlert('Denúncia enviada. Nossa equipe irá analisar em breve.', 'success');
+            } catch (err) {
+                await CondConnect.showAlert(err.message || 'Erro ao enviar denúncia.', 'error');
+            }
+        });
+    }
+
     await loadConversations();
     await renderMessages();
 
