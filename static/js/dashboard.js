@@ -278,9 +278,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         const el = document.getElementById('dash-anos-chips');
         if (!el) return;
         const anos = [...new Set(_dashPeriodos.map(p => p.ano))].sort((a,b) => b-a);
-        el.innerHTML = anos.map(a =>
-            `<button type="button" class="fchip${_dashAnosAtiv.has(a) ? ' sel' : ''}" onclick="dashToggleAno(${a})">${a}</button>`
-        ).join('');
+        el.innerHTML = anos.length
+            ? anos.map(a => `<button type="button" class="fchip${_dashAnosAtiv.has(a) ? ' sel' : ''}" onclick="dashToggleAno(${a})">${a}</button>`).join('')
+            : '<span style="font-size:12px;color:#94a3b8;font-style:italic;">Sem vendas</span>';
     }
     function dashRenderMeses() {
         const el = document.getElementById('dash-meses-chips');
@@ -288,9 +288,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         const pool = _dashAnosAtiv.size ? _dashPeriodos.filter(p => _dashAnosAtiv.has(p.ano)) : _dashPeriodos;
         const meses = [...new Set(pool.map(p => p.mes))].sort((a,b) => a-b);
         _dashMesesAtiv = new Set([..._dashMesesAtiv].filter(m => meses.includes(m)));
-        el.innerHTML = meses.map(m =>
-            `<button type="button" class="fchip${_dashMesesAtiv.has(m) ? ' sel' : ''}" onclick="dashToggleMes(${m})">${_DASH_MESES_SHORT[m-1]}</button>`
-        ).join('');
+        el.innerHTML = meses.length
+            ? meses.map(m => `<button type="button" class="fchip${_dashMesesAtiv.has(m) ? ' sel' : ''}" onclick="dashToggleMes(${m})">${_DASH_MESES_SHORT[m-1]}</button>`).join('')
+            : '<span style="font-size:12px;color:#94a3b8;font-style:italic;">—</span>';
     }
     window.dashToggleAno = function(ano) {
         _dashAnosAtiv.has(ano) ? _dashAnosAtiv.delete(ano) : _dashAnosAtiv.add(ano);

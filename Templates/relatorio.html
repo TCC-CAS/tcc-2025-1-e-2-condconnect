@@ -147,10 +147,15 @@
             <p style="color:#64748b;margin:0;font-size:14px;" id="rel-subtitulo">Carregando...</p>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;" class="no-print">
-            <select id="rel-produto" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;min-width:160px;">
-                <option value="">Todos os produtos</option>
-            </select>
-            <select id="rel-categoria" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;">
+            <div class="fchip-group">
+                <span class="fchip-label">Produto</span>
+                <select id="rel-produto" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;min-width:160px;">
+                    <option value="">Todos os produtos</option>
+                </select>
+            </div>
+            <div class="fchip-group">
+                <span class="fchip-label">Categoria</span>
+                <select id="rel-categoria" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;font-size:13px;font-family:inherit;color:#374151;cursor:pointer;">
                 <option value="">Todas as categorias</option>
                 <option value="eletronicos">Eletrônicos</option>
                 <option value="roupas">Roupas</option>
@@ -164,8 +169,9 @@
                 <option value="servicos">Serviços</option>
                 <option value="outros">Outros</option>
             </select>
-            <div class="fchip-group"><span class="fchip-label">Ano</span><div id="rel-anos-chips"></div></div>
-            <div class="fchip-group"><span class="fchip-label">Mês</span><div id="rel-meses-chips"></div></div>
+            </div>
+            <div class="fchip-group"><span class="fchip-label">Ano</span><div id="rel-anos-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>
+            <div class="fchip-group"><span class="fchip-label">Mês</span><div id="rel-meses-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div></div>
             <button onclick="msRelAplicar()" style="padding:8px 16px;background:#00a6a6;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Aplicar</button>
             <button id="btn-exportar" onclick="exportarExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

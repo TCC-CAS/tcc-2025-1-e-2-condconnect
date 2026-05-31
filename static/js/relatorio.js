@@ -539,9 +539,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         const el = document.getElementById('rel-anos-chips');
         if (!el) return;
         const anos = [...new Set(_relPeriodos.map(p => p.ano))].sort((a,b) => b-a);
-        el.innerHTML = anos.map(a =>
-            `<button type="button" class="fchip${_anosAtivos.has(a) ? ' sel' : ''}" onclick="relToggleAno(${a})">${a}</button>`
-        ).join('');
+        el.innerHTML = anos.length
+            ? anos.map(a => `<button type="button" class="fchip${_anosAtivos.has(a) ? ' sel' : ''}" onclick="relToggleAno(${a})">${a}</button>`).join('')
+            : '<span style="font-size:12px;color:#94a3b8;font-style:italic;">Sem vendas</span>';
     }
     function relRenderMesesChips() {
         const el = document.getElementById('rel-meses-chips');
@@ -549,9 +549,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         const pool = _anosAtivos.size ? _relPeriodos.filter(p => _anosAtivos.has(p.ano)) : _relPeriodos;
         const meses = [...new Set(pool.map(p => p.mes))].sort((a,b) => a-b);
         _mesesAtivos = new Set([..._mesesAtivos].filter(m => meses.includes(m)));
-        el.innerHTML = meses.map(m =>
-            `<button type="button" class="fchip${_mesesAtivos.has(m) ? ' sel' : ''}" onclick="relToggleMes(${m})">${_MESES_SHORT[m-1]}</button>`
-        ).join('');
+        el.innerHTML = meses.length
+            ? meses.map(m => `<button type="button" class="fchip${_mesesAtivos.has(m) ? ' sel' : ''}" onclick="relToggleMes(${m})">${_MESES_SHORT[m-1]}</button>`).join('')
+            : '<span style="font-size:12px;color:#94a3b8;font-style:italic;">—</span>';
     }
     window.relToggleAno = function(ano) {
         _anosAtivos.has(ano) ? _anosAtivos.delete(ano) : _anosAtivos.add(ano);
