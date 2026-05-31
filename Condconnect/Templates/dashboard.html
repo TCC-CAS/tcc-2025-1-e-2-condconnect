@@ -13,20 +13,23 @@
     <style>
         .stat-tip {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 14px; height: 14px; border-radius: 50%;
-            background: #e2e8f0; color: #64748b;
-            font-size: 9px; font-weight: 700; font-style: normal;
-            cursor: help; vertical-align: middle; margin-left: 3px;
-            position: relative;
+            width: 13px; height: 13px; border-radius: 50%;
+            background: #cbd5e1; color: white;
+            font-size: 8px; font-weight: 800; font-style: italic; font-family: Georgia, serif;
+            cursor: help; vertical-align: middle; margin-left: 4px;
+            flex-shrink: 0; line-height: 1; user-select: none;
         }
-        .stat-tip:hover::after {
-            content: attr(title);
-            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: white; font-size: 12px; font-weight: 400;
-            padding: 6px 10px; border-radius: 8px; white-space: nowrap;
-            max-width: 240px; white-space: normal; width: max-content;
-            z-index: 100; line-height: 1.4; pointer-events: none;
+        #dash-tooltip {
+            position: fixed; z-index: 9999; pointer-events: none;
+            background: #1e293b; color: white;
+            padding: 10px 13px; border-radius: 10px;
+            font-size: 12px; line-height: 1.55; max-width: 240px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.25);
+            display: none;
         }
+        #dash-tooltip strong { display: block; margin-bottom: 3px; font-size: 12px; }
+        #dash-tooltip ul { margin: 4px 0 0; padding-left: 14px; }
+        #dash-tooltip ul li { margin-bottom: 2px; }
     </style>
 </head>
 
@@ -364,7 +367,7 @@
         <section class="stats-grid">
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Produtos Anunciados <span class="stat-tip" title="Total de anúncios publicados por você no marketplace, em qualquer status.">ℹ</span></span>
+                    <span>Produtos Anunciados <span class="stat-tip" data-tip="<strong>O que é:</strong> Total de anúncios publicados por você.<br><strong>Como é calculado:</strong><ul><li>COUNT de produtos vinculados ao seu usuário</li><li>Inclui todos os status (ativo, vendido, inativo)</li></ul>">i</span></span>
                     <strong id="stat-produtos">—</strong>
                 </div>
                 <div class="stat-icon blue">
@@ -376,7 +379,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Pedidos Ativos <span class="stat-tip" title="Pedidos em andamento: aguardando, confirmados ou enviados — excluindo entregues e cancelados.">ℹ</span></span>
+                    <span>Pedidos Ativos <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos em andamento como comprador.<br><strong>Como é calculado:</strong><ul><li>Pedidos com status aguardando, confirmado ou enviado</li><li>Exclui entregues e cancelados</li></ul>">i</span></span>
                     <strong id="stat-pedidos">—</strong>
                 </div>
                 <div class="stat-icon orange">
@@ -388,7 +391,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Vendas Realizadas <span class="stat-tip" title="Total de pedidos com status 'entregue' nos quais você é o vendedor.">ℹ</span></span>
+                    <span>Vendas Realizadas <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos finalizados onde você é o vendedor.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Apenas pedidos onde você é o vendedor</li></ul>">i</span></span>
                     <strong id="stat-vendas">—</strong>
                 </div>
                 <div class="stat-icon green">
@@ -400,7 +403,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <span>Favoritos <span class="stat-tip" title="Quantidade de vezes que seus produtos foram salvos como favoritos por outros usuários.">ℹ</span></span>
+                    <span>Favoritos <span class="stat-tip" data-tip="<strong>O que é:</strong> Seus produtos salvos por outros usuários.<br><strong>Como é calculado:</strong><ul><li>COUNT de favoritos vinculados aos seus produtos</li><li>Contagem acumulada de todos os períodos</li></ul>">i</span></span>
                     <strong id="stat-favoritos">—</strong>
                 </div>
                 <div class="stat-icon purple">
@@ -415,7 +418,7 @@
         <section style="margin-bottom: 28px;">
             <div class="stat-card" style="max-width: 280px;">
                 <div class="stat-info">
-                    <span>Faturamento Total <span class="stat-tip" title="Soma de todos os pedidos com status 'entregue' nos quais você é o vendedor, sem dedução de taxas.">ℹ</span></span>
+                    <span>Faturamento Total <span class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta acumulada de todas as vendas.<br><strong>Como é calculado:</strong><ul><li>SUM do valor de todos os pedidos entregues</li><li>Sem dedução de taxas ou custos</li><li>Todo o histórico da conta</li></ul>">i</span></span>
                     <strong id="stat-faturamento">—</strong>
                 </div>
                 <div class="stat-icon green">
@@ -464,31 +467,31 @@
             <!-- Métricas financeiras -->
             <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Faturamento <span class="stat-tip" title="Soma bruta de todos os pedidos entregues no período selecionado.">ℹ</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Faturamento <span class="stat-tip" data-tip="<strong>O que é:</strong> Receita bruta do período.<br><strong>Como é calculado:</strong><ul><li>SUM do valor dos pedidos entregues</li><li>Filtrado pelo período selecionado</li><li>Sem dedução de taxas</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-faturamento">—</div>
                 </div>
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket Médio <span class="stat-tip" title="Faturamento ÷ número de pedidos entregues no período.">ℹ</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket Médio <span class="stat-tip" data-tip="<strong>O que é:</strong> Valor médio por pedido no período.<br><strong>Como é calculado:</strong><ul><li>Faturamento ÷ número de pedidos entregues</li><li>Reflete o preço médio praticado</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-ticket">—</div>
                 </div>
                 <div style="background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:100px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pedidos <span class="stat-tip" title="Total de pedidos com status 'entregue' no período selecionado.">ℹ</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pedidos <span class="stat-tip" data-tip="<strong>O que é:</strong> Pedidos entregues no período.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos com status 'entregue'</li><li>Filtrado pelo período selecionado</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-pedidos">—</div>
                 </div>
                 <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:150px;flex:1;">
-                    <div style="font-size:11px;color:#c2410c;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Taxa da Plataforma (5%) <span class="stat-tip" title="5% do faturamento bruto cobrado pela plataforma como taxa de serviço.">ℹ</span></div>
+                    <div style="font-size:11px;color:#c2410c;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Taxa da Plataforma (5%) <span class="stat-tip" data-tip="<strong>O que é:</strong> Custo do serviço da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,05</li><li>Deduzida automaticamente da receita</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#c2410c;" id="an-taxa-plat">—</div>
                 </div>
                 <div style="background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:140px;flex:1;">
-                    <div style="font-size:11px;color:#0f766e;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Receita Líquida <span class="stat-tip" title="Faturamento após dedução da taxa de 5% da plataforma (95% do faturamento bruto).">ℹ</span></div>
+                    <div style="font-size:11px;color:#0f766e;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Receita Líquida <span class="stat-tip" data-tip="<strong>O que é:</strong> O que fica após a taxa da plataforma.<br><strong>Como é calculado:</strong><ul><li>Faturamento × 0,95</li><li>95% do faturamento bruto</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#0f766e;" id="an-receita-liq">—</div>
                 </div>
                 <div id="an-lucro-card" style="display:none;background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:130px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Lucro Estimado <span class="stat-tip" title="Receita líquida menos os custos cadastrados nos seus produtos. Só aparece quando você cadastrou custo em pelo menos um produto vendido.">ℹ</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Lucro Estimado <span class="stat-tip" data-tip="<strong>O que é:</strong> Ganho real após custos e taxa.<br><strong>Como é calculado:</strong><ul><li>Receita líquida − (custo × unidades vendidas)</li><li>Só aparece se você cadastrou custo nos produtos</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-lucro">—</div>
                 </div>
                 <div id="an-margem-card" style="display:none;background:white;border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);min-width:120px;flex:1;">
-                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Margem de Lucro <span class="stat-tip" title="Lucro estimado ÷ receita líquida × 100. Percentual de retorno sobre a receita após custos e taxa da plataforma.">ℹ</span></div>
+                    <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Margem de Lucro <span class="stat-tip" data-tip="<strong>O que é:</strong> Percentual de retorno sobre a receita.<br><strong>Como é calculado:</strong><ul><li>(Lucro estimado ÷ Receita líquida) × 100</li><li>Após dedução de custos e taxa da plataforma</li></ul>">i</span></div>
                     <div style="font-size:18px;font-weight:800;color:#1e293b;" id="an-margem">—</div>
                 </div>
             </div>
@@ -498,14 +501,14 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Produtos mais vendidos</h3>
-                        <span class="stat-tip" title="Receita gerada por cada produto nos pedidos entregues do período. Calculado como soma de (quantidade × preço) por produto.">ℹ</span>
+                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Top 5 produtos por faturamento.<br><strong>Como é calculado:</strong><ul><li>Preço × unidades vendidas por produto</li><li>Apenas pedidos entregues</li><li>Ordenado do maior para o menor</li></ul>">i</span>
                     </div>
                     <div style="height: 220px; position: relative;"><canvas id="chart-top-produtos"></canvas></div>
                 </div>
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Funil de conversão</h3>
-                        <span class="stat-tip" title="Mostra a taxa de conversão do seu catálogo: Visualizações → Favoritos → Pedidos iniciados → Pedidos entregues. Quanto mais próximas as barras, melhor sua conversão.">ℹ</span>
+                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Conversão do catálogo em vendas.<br><strong>Como é calculado:</strong><ul><li>Visualizações: acessos às páginas dos produtos</li><li>Favoritos: vezes que seus produtos foram salvos</li><li>Pedidos iniciados: compras realizadas</li><li>Pedidos entregues: compras concluídas</li></ul>">i</span>
                     </div>
                     <div style="height: 220px; position: relative;"><canvas id="chart-funil"></canvas></div>
                 </div>
@@ -514,7 +517,7 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Pico de vendas por dia</h3>
-                        <span class="stat-tip" title="Distribuição dos pedidos entregues por dia da semana no período. Identifica os melhores dias para anunciar ou fazer promoções.">ℹ</span>
+                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Seus melhores dias para vender.<br><strong>Como é calculado:</strong><ul><li>COUNT de pedidos entregues por dia da semana</li><li>Agrupado por DAYOFWEEK() do MySQL</li><li>Identifica picos para planejar anúncios</li></ul>">i</span>
                     </div>
                     <p style="font-size:12px;color:#94a3b8;margin:0 0 14px;">Pedidos entregues por dia da semana</p>
                     <div style="height: 200px; position: relative;"><canvas id="chart-dias"></canvas></div>
@@ -522,7 +525,7 @@
                 <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow);">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
                         <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Comportamento de clientes</h3>
-                        <span class="stat-tip" title="Novos: compradores que compraram de você pela primeira vez no período. Recorrentes: compradores que já haviam comprado antes. LTV médio: valor total gasto por cliente ao longo de todo o histórico.">ℹ</span>
+                        <span class="stat-tip" data-tip="<strong>O que é:</strong> Perfil dos seus compradores.<br><strong>Como é calculado:</strong><ul><li>Novos: 1ª compra com você no período</li><li>Recorrentes: já compraram antes do período</li><li>LTV médio: faturamento total ÷ compradores únicos</li></ul>">i</span>
                     </div>
                     <div id="clientes-stats" style="display: flex; flex-direction: column; gap: 14px;"></div>
                 </div>
@@ -664,8 +667,28 @@
         </button>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <div id="dash-tooltip"></div>
+    <script>
+        (function(){
+            const tip = document.getElementById('dash-tooltip');
+            document.addEventListener('mouseover', function(e){
+                const el = e.target.closest('.stat-tip[data-tip]');
+                if(!el) return;
+                tip.innerHTML = el.dataset.tip;
+                tip.style.display = 'block';
+            });
+            document.addEventListener('mousemove', function(e){
+                if(tip.style.display === 'none') return;
+                const tw = tip.offsetWidth, th = tip.offsetHeight;
+                const vw = window.innerWidth, vh = window.innerHeight;
+                tip.style.left = (e.clientX + tw + 16 > vw ? e.clientX - tw - 8 : e.clientX + 12) + 'px';
+                tip.style.top  = (e.clientY + th + 12 > vh ? e.clientY - th - 8 : e.clientY + 12) + 'px';
+            });
+            document.addEventListener('mouseout', function(e){
+                if(e.target.closest('.stat-tip[data-tip]')) tip.style.display = 'none';
+            });
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="/static/js/main.js"></script>
